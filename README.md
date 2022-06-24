@@ -3,6 +3,6 @@
 ## Includes
 
 - Breeze
-= Tailwind CSS
+- Tailwind CSS
 - Roles, Permissions: migrations, factories, seeers
 - Models: User, Role, Permission with functions to assign/remove roles/permissions
