@@ -24,5 +24,6 @@ Route::get('/dashboard', [DashboardController::class, 'dashboard'])->middleware(
 require __DIR__.'/auth.php';
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('users/select-ids', [UserController::class, 'queryIds'])->name('users.selectIds');
     Route::resource('users', UserController::class);
 });

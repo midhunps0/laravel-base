@@ -5373,8 +5373,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           };
         }
 
-        console.log('params');
-        console.log(params);
         axios__WEBPACK_IMPORTED_MODULE_0___default().get(link, {
           params: params
         }).then(function (r) {

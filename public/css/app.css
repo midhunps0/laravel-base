@@ -1975,6 +1975,9 @@ body[dir="rtl"] .checkbox:checked,
 .max-w-7xl {
   max-width: 80rem;
 }
+.max-w-xl {
+  max-width: 36rem;
+}
 .flex-1 {
   flex: 1 1 0%;
 }
@@ -2130,6 +2133,9 @@ body[dir="rtl"] .checkbox:checked,
 .border-b-2 {
   border-bottom-width: 2px;
 }
+.border-r {
+  border-right-width: 1px;
+}
 .border-none {
   border-style: none;
 }
@@ -2159,6 +2165,10 @@ body[dir="rtl"] .checkbox:checked,
 }
 .border-transparent {
   border-color: transparent;
+}
+.border-gray-400 {
+  --tw-border-opacity: 1;
+  border-color: rgb(156 163 175 / var(--tw-border-opacity));
 }
 .bg-white {
   --tw-bg-opacity: 1;
@@ -2331,6 +2341,9 @@ body[dir="rtl"] .checkbox:checked,
 }
 .tracking-widest {
   letter-spacing: 0.1em;
+}
+.tracking-wider {
+  letter-spacing: 0.05em;
 }
 .text-gray-500 {
   --tw-text-opacity: 1;

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -14,57 +15,31 @@ class UserController extends SmartController
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(UserService $userService)
     {
-        $itemsCount = $this->request->input('items_count', 10);
-        $page = $this->request->input('page');
-        $searches = $this->request->input('search', []);
-        $searchParams = [];
-        $sorts = $this->request->input('sort', []);
-        $sortParams = [];
-        $filters = $this->request->input('filter', []);
-        $filterData = [];
-        $selectedIds = $this->request->input('selected_ids', []);
-
-        $query = User::with('roles');
-
-        foreach ($searches as $search) {
-            $data = explode('::', $search);
-            $query->where($data[0], 'like', '%'.$data[1].'%');
-            $searchParams[$data[0]] = $data[1];
-        }
-        foreach ($sorts as $sort) {
-            $data = explode('::', $sort);
-            $query->orderBy($data[0], $data[1]);
-            $sortParams[$data[0]] = $data[1];
-        }
-        foreach ($filters as $filter) {
-            $data = explode('::', $filter);
-            if ($data[0] == 'roles') {
-                $query->withRoles([$data[1]]);
-            }
-            $filterData[$data[0]]['selected'] = $data[1];
-        }
-        $users = $query->paginate(
-            $itemsCount,
-            ['*'],
-            'page',
-            $page
+        $data = $userService->index(
+            $this->request->input('items_count', 10),
+            $this->request->input('page'),
+            $this->request->input('search', []),
+            $this->request->input('sort', []),
+            $this->request->input('filter', []),
+            $this->request->input('selected_ids', [])
         );
 
-        $filterData['roles']['options'] = Role::all();
-        $itemIds = $users->pluck('id')->toArray();
-        $data = $users->toArray();
+        return $this->getView('admin.users.index', $data);
+    }
 
-        return $this->ajaxView('admin.users.index', [
-            'users' => $users,
-            'params' => $searchParams,
-            'sort' => $sortParams,
-            'filter' => $filterData,
-            'items_count' => $itemsCount,
-            'items_ids' => implode(',',$itemIds),
-            'total_results' => $data['total'],
-            'current_page' => $data['current_page']
+    public function queryIds(UserService $userService)
+    {
+        $ids = $userService->getIdsForParams(
+            $this->request->input('search', []),
+            $this->request->input('sort', []),
+            $this->request->input('filter', [])
+        );
+
+        return response()->json([
+            'success' => true,
+            'ids' => $ids
         ]);
     }
 

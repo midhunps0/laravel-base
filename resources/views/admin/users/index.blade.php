@@ -35,11 +35,13 @@
                 filters: {},
                 itemsCount: {{ $items_count }},
                 itemIds: [{{$items_ids}}],
-                selectedIds: $persist([]),
+                selectedIds: $persist([]).as('ids'),
                 pageSelected: false,
                 allSelected: false,
                 totalResults: {{$total_results}},
                 currentPage: {{$current_page}},
+
+
                 processParams(params) {
                     let processed = [];
                     let paramkeys = Object.keys(params);
@@ -63,12 +65,12 @@
                     console.log(allParams);
                     $dispatch('linkaction', { link: this.url, params: allParams });
                 },
-                /*
-                triggerFetchWithoutSelection() {
-                    let allParams = this.paramsExceptSelection();
-                    console.log(allParams);
-                    $dispatch('linkaction', { link: this.url, params: allParams });
-                },*/
+
+                //triggerFetchWithoutSelection() {
+                //    let allParams = this.paramsExceptSelection();
+                //    console.log(allParams);
+                //    $dispatch('linkaction', { link: this.url, params: allParams });
+                //},
                 fetchResults(param) {
                     this.setParam(param);
                     this.triggerFetch();
@@ -130,14 +132,34 @@
                     this.selectedIds = this.itemIds;
                     this.pageSelected = true;
                 },
-                selectAll() {},
-                cancelselection() {
+                selectAll() {
+                    let params = this.paramsExceptSelection();
+                    ajaxLoading = true;
+                    console.log('select start');
+                    axios.get('{{route('users.selectIds')}}', {params: params} ).then(
+                        (r) => {
+                            console.log('got response');
+                            console.log(r);
+                            this.itemIds = r.data.ids;
+                            this.selectedIds = r.data.ids;
+                            this.pageSelected = true;
+                            this.allSelected = true;
+                            ajaxLoading = false;
+                        }
+                    ).catch(
+                        function (e) {
+                            console.log(e);
+                        }
+                    );
+                },
+                cancelSelection() {
                     this.selectedIds = [];
                     this.pageSelected = false;
                     this.asllSelected = false;
                 }
             }" @spotsearch.window="fetchResults($event.detail)"
-                @setparam.window="setParam($event.detail)" @spotsort.window="doSort($event.detail)"
+                @setparam.window="setParam($event.detail)"
+                @spotsort.window="doSort($event.detail)"
                 @setsort.window="setSort($event.detail)"
                 @spotfilter.window="console.log('spot filter fn');console.log($event); doFilter($event.detail);"
                 @setfilter.window="console.log('set filter fn');setFilter($event.detail)"

@@ -13,7 +13,7 @@ class SmartController extends Controller
         $this->request = $request;
     }
 
-    protected function ajaxView($view, $args = [])
+    protected function getView($view, $args = [])
     {
         $args['x_ajax'] = $this->request->input('x_mode') == 'ajax';
         if ($args['x_ajax']) {

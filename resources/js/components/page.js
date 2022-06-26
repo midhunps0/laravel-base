@@ -102,8 +102,7 @@ export default () => ({
             } else {
                 params = {x_mode: 'ajax'};
             }
-            console.log('params');
-            console.log(params);
+
             axios.get(link, {params: params} ).then(
                 (r) => {
                     this.showPage = false;
