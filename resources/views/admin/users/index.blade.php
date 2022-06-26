@@ -10,20 +10,22 @@
                     <label for="compact">Compact View</label>
                 </div>
                 <div x-data="{dropopen: false, url_all: '', url_selected: ''}"
-                    @downloadurl.window="url_all = $event.detail.url_all; url_selected=$event.detail.url_selected;" class="relative">
-                    <label @click="dropopen = !dropopen;" tabindex="0" class="btn btn-xs m-1">Bulk&nbsp;
+                    @downloadurl.window="url_all = $event.detail.url_all; url_selected=$event.detail.url_selected;"
+                    @click.outside="dropopen = false;"
+                    class="relative">
+                    <label @click="dropopen = !dropopen;" tabindex="0" class="btn btn-xs m-1">Export&nbsp;
                         <x-display.icon icon="icons.down" />
                     </label>
                     <ul tabindex="0"
-                        class="absolute top-5 right-0 z-50 p-2 shadow bg-base-200 rounded-md w-52 scale-90 origin-top-right transition-all duration-200 opacity-0"
+                        class="absolute top-5 right-0 z-50 p-2 shadow-md bg-base-200 rounded-md w-52 scale-90 origin-top-right transition-all duration-100 opacity-0"
                         :class="!dropopen || 'top-8 scale-110 opacity-100'">
-                        <li><a :href="url_all" download>Download All</a></li>
-                        <li><a :href="url_selected" download>Download Selected</a></li>
+                        <li class="py-2 px-4 hover:bg-base-100"><a :href="url_selected" download>Download Selected</a></li>
+                        <li class="py-2 px-4 hover:bg-base-100"><a :href="url_all" download>Download All</a></li>
                     </ul>
                 </div>
-                <a href="#" role="button" class="btn btn-xs">Add&nbsp;
+                {{-- <a href="#" role="button" class="btn btn-xs">Add&nbsp;
                     <x-display.icon icon="icons.plus" />
-                </a>
+                </a> --}}
             </div>
         </div>
 
