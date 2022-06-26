@@ -9,15 +9,16 @@
                     <input x-model="compact" type="checkbox" id="compact" class="checkbox checkbox-xs checkbox-primary">
                     <label for="compact">Compact View</label>
                 </div>
-                <div x-data="{ dropopen: false }" class="relative">
+                <div x-data="{dropopen: false, url_all: '', url_selected: ''}"
+                    @downloadurl.window="url_all = $event.detail.url_all; url_selected=$event.detail.url_selected;" class="relative">
                     <label @click="dropopen = !dropopen;" tabindex="0" class="btn btn-xs m-1">Bulk&nbsp;
                         <x-display.icon icon="icons.down" />
                     </label>
                     <ul tabindex="0"
                         class="absolute top-5 right-0 z-50 p-2 shadow bg-base-200 rounded-md w-52 scale-90 origin-top-right transition-all duration-200 opacity-0"
                         :class="!dropopen || 'top-8 scale-110 opacity-100'">
-                        <li><a>Item 1</a></li>
-                        <li><a>Item 2</a></li>
+                        <li><a :href="url_all" download>Download All</a></li>
+                        <li><a :href="url_selected" download>Download Selected</a></li>
                     </ul>
                 </div>
                 <a href="#" role="button" class="btn btn-xs">Add&nbsp;
@@ -30,17 +31,17 @@
             <form x-data="{
                 url: '{{ route('users.index') }}',
                 params: {},
-                search: {},
+                {{-- search: {}, --}}
                 sort: {},
                 filters: {},
                 itemsCount: {{ $items_count }},
                 itemIds: [{{$items_ids}}],
-                selectedIds: $persist([]).as('ids'),
+                selectedIds: $persist([]).as('uxids'),
                 pageSelected: false,
                 allSelected: false,
                 totalResults: {{$total_results}},
                 currentPage: {{$current_page}},
-
+                downloadUrl: '{{route('users.download')}}',
 
                 processParams(params) {
                     let processed = [];
@@ -52,17 +53,25 @@
                 },
                 paramsExceptSelection() {
                     let params = {};
-                    params.search = this.processParams(this.params);
-                    params.sort = this.processParams(this.sort);
-                    params.filter = this.processParams(this.filters);
+
+                    if (Object.keys(this.params).length > 0) {
+                        params.search = this.processParams(this.params);
+                    }
+                    if (Object.keys(this.sort).length > 0) {
+                        params.sort = this.processParams(this.sort);
+                    }
+                    if (Object.keys(this.filters).length > 0) {
+                        params.filter = this.processParams(this.filters);
+                    }
                     params.items_count = this.itemsCount;
+
                     return params;
                 },
                 triggerFetch() {
                     let allParams = this.paramsExceptSelection();
                     //allParams.selected_ids = this.selectedIds.join('|');
                     this.selectedIds = [];
-                    console.log(allParams);
+
                     $dispatch('linkaction', { link: this.url, params: allParams });
                 },
 
@@ -107,18 +116,13 @@
                             delete this.filters[keys[0]];
                         }
                     }
-                    console.log('filters');
-                    console.log(this.filters);
                 },
                 doFilter(detail) {
                     this.setFilter(detail);
-                    console.log('filter data');
-                    console.log(detail.data);
                     this.triggerFetch();
                 },
                 pageUpdateCount(count) {
                     this.itemsCount = count;
-                    console.log('count:' + this.itemsCount);
                     this.triggerFetch();
                 },
                 processPageSelect() {
@@ -135,11 +139,8 @@
                 selectAll() {
                     let params = this.paramsExceptSelection();
                     ajaxLoading = true;
-                    console.log('select start');
                     axios.get('{{route('users.selectIds')}}', {params: params} ).then(
                         (r) => {
-                            console.log('got response');
-                            console.log(r);
                             this.itemIds = r.data.ids;
                             this.selectedIds = r.data.ids;
                             this.pageSelected = true;
@@ -156,13 +157,24 @@
                     this.selectedIds = [];
                     this.pageSelected = false;
                     this.asllSelected = false;
+                },
+                setDownloadUrl() {
+                    let allParams = this.paramsExceptSelection();
+                    let url_all = getQueryString(allParams);
+
+                    if (this.selectedIds.length > 0) {
+                        allParams.selected_ids = this.selectedIds.join('|');
+                    }
+                    let url_selected = getQueryString(allParams);
+
+                    $dispatch('downloadurl', {url_all: this.downloadUrl+'?'+url_all, url_selected: this.downloadUrl+'?'+url_selected});
                 }
             }" @spotsearch.window="fetchResults($event.detail)"
                 @setparam.window="setParam($event.detail)"
                 @spotsort.window="doSort($event.detail)"
                 @setsort.window="setSort($event.detail)"
-                @spotfilter.window="console.log('spot filter fn');console.log($event); doFilter($event.detail);"
-                @setfilter.window="console.log('set filter fn');setFilter($event.detail)"
+                @spotfilter.window="doFilter($event.detail);"
+                @setfilter.window="setFilter($event.detail)"
                 @countchange.window="pageUpdateCount($event.detail.count)"
                 @selectpage="selectPage()"
                 @selectall="selectAll()"
@@ -173,7 +185,8 @@
                         pageSelected = false;
                         allSelected = false;
                     }
-                })"
+                    setDownloadUrl();
+                }); $nextTick(() => {setDownloadUrl();});"
                 action="#">
                 <table class="table min-w-200 w-full border-2 border-base-200 rounded-md"
                     :class="!compact || 'table-compact'">
@@ -183,7 +196,8 @@
                             <th>
                                 <input type="checkbox" x-model="pageSelected"
                                     @change="$dispatch('pageselect')"
-                                    class="checkbox checkbox-primary checkbox-xs">
+                                    class="checkbox checkbox-xs"
+                                    :class="!allSelected ? 'checkbox-primary' : 'checkbox-secondary'">
                             </th>
                             <th class="relative w-3/12">
                                 <div class="flex flex-row items-center">
@@ -246,8 +260,7 @@
                         @foreach ($users as $user)
                             <tr>
                                 <td><input type="checkbox" value="{{ $user->id }}" x-model="selectedIds"
-                                        class="checkbox checkbox-primary checkbox-xs"
-                                        @click="$nextTick(()=>{console.log(selectedIds)})"></td>
+                                        class="checkbox checkbox-primary checkbox-xs"></td>
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
                                 <td>

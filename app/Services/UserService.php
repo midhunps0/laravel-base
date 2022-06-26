@@ -42,6 +42,22 @@ class UserService
         ];
     }
 
+    public function processDownload(
+        $searches,
+        $sorts,
+        $filters,
+        $selectedIds
+    ){
+        $queryData = $this->getQueryAndParams(
+            $searches,
+            $sorts,
+            $filters,
+            $selectedIds
+        );
+        $users = $queryData['query']->get();
+        return $users;
+    }
+
     public function getIdsForParams(
         $searches,
         $sorts,
@@ -61,7 +77,7 @@ class UserService
         $searches,
         $sorts,
         $filters,
-        $selectedIds = []
+        $selectedIds = ''
     ) {
         $searchParams = [];
         $sortParams = [];
@@ -87,6 +103,12 @@ class UserService
             $filterData[$data[0]]['selected'] = $data[1];
         }
         $filterData['roles']['options'] = Role::all();
+
+        if (strlen(trim($selectedIds)) > 0) {
+            $ids = explode('|', $selectedIds);
+            $query->whereIn('id', $ids);
+        }
+
         return [
             'query' => $query,
             'searchParams' => $searchParams,

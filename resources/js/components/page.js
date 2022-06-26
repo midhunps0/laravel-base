@@ -48,13 +48,10 @@ export default () => ({
             }
         }
     },
-    fetchLink(detail) {
-        let link = detail.link;
-        let params = detail.params;
-        let thelink = link;
-        if (detail.params != null) {
-            thelink += "?";
+    getQueryString(params) {
+        let thelink = "";
             let keys = Object.keys(params);
+
             for (let j=0; j < keys.length; j++) {
                 if (Array.isArray(params[keys[j]])) {
                     for (let x = 0; x < params[keys[j]].length; x++) {
@@ -66,12 +63,41 @@ export default () => ({
                 } else {
                     thelink += keys[j]+'=' + params[keys[j]];
                 }
-                if (j < (keys.length -1) && params[keys[j]].length > 0) {
+
+                if (j < (keys.length - 1)) {
                     thelink += '&';
                 }
+                console.log('thelink: '+thelink);
             }
             console.log('link:');
             console.log(thelink);
+            return thelink;
+    },
+    fetchLink(detail) {
+        let link = detail.link;
+        let params = detail.params;
+        let thelink = link;
+        if (detail.params != null) {
+            thelink += "?" + this.getQueryString(params);
+            console.log(thelink);
+            // let keys = Object.keys(params);
+            // for (let j=0; j < keys.length; j++) {
+            //     if (Array.isArray(params[keys[j]])) {
+            //         for (let x = 0; x < params[keys[j]].length; x++) {
+            //             thelink += keys[j]+'[]=' + params[keys[j]][x];
+            //             if (x < (params[keys[j]].length -1)) {
+            //                 thelink += '&';
+            //             }
+            //         }
+            //     } else {
+            //         thelink += keys[j]+'=' + params[keys[j]];
+            //     }
+            //     if (j < (keys.length -1) && params[keys[j]].length > 0) {
+            //         thelink += '&';
+            //     }
+            // }
+            // console.log('link:');
+            // console.log(thelink);
         }
         if (this.$store.app.xpages != undefined && this.$store.app.xpages[thelink] != undefined) {
             this.showPage = false;

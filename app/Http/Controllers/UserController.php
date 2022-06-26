@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\ImportExports\UserExports;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\UserService;
 use Illuminate\Http\Request;
+use App\Services\UserService;
 use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends SmartController
 {
@@ -23,7 +25,7 @@ class UserController extends SmartController
             $this->request->input('search', []),
             $this->request->input('sort', []),
             $this->request->input('filter', []),
-            $this->request->input('selected_ids', [])
+            $this->request->input('selected_ids', '')
         );
 
         return $this->getView('admin.users.index', $data);
@@ -43,6 +45,16 @@ class UserController extends SmartController
         ]);
     }
 
+    public function download(UserService $userService)
+    {
+        $users = $userService->processDownload(
+            $this->request->input('search', []),
+            $this->request->input('sort', []),
+            $this->request->input('filter', []),
+            $this->request->input('selected_ids', '')
+        );
+        return Excel::download(new UserExports($users), 'invoices.xlsx');
+    }
     /**
      * Show the form for creating a new resource.
      *

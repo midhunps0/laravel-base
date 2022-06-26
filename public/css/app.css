@@ -1304,6 +1304,28 @@ html {
   --tw-text-opacity: 1;
   color: hsl(var(--pc) / var(--tw-text-opacity));
 }
+.checkbox-secondary {
+  --chkbg: var(--s);
+  --chkfg: var(--sc);
+  --tw-border-opacity: 1;
+  border-color: hsl(var(--s) / var(--tw-border-opacity));
+}
+.checkbox-secondary:hover {
+  --tw-border-opacity: 1;
+  border-color: hsl(var(--s) / var(--tw-border-opacity));
+}
+.checkbox-secondary:focus-visible {
+  outline: 2px solid hsl(var(--s));
+}
+.checkbox-secondary:checked, 
+    .checkbox-secondary[checked="true"] {
+  --tw-border-opacity: 1;
+  border-color: hsl(var(--s) / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--s) / var(--tw-bg-opacity));
+  --tw-text-opacity: 1;
+  color: hsl(var(--sc) / var(--tw-text-opacity));
+}
 .checkbox:disabled {
   cursor: not-allowed;
   border-color: transparent;

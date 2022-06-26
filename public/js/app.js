@@ -5304,6 +5304,34 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }
       }
     },
+    getQueryString: function getQueryString(params) {
+      var thelink = "";
+      var keys = Object.keys(params);
+
+      for (var j = 0; j < keys.length; j++) {
+        if (Array.isArray(params[keys[j]])) {
+          for (var x = 0; x < params[keys[j]].length; x++) {
+            thelink += keys[j] + '[]=' + params[keys[j]][x];
+
+            if (x < params[keys[j]].length - 1) {
+              thelink += '&';
+            }
+          }
+        } else {
+          thelink += keys[j] + '=' + params[keys[j]];
+        }
+
+        if (j < keys.length - 1) {
+          thelink += '&';
+        }
+
+        console.log('thelink: ' + thelink);
+      }
+
+      console.log('link:');
+      console.log(thelink);
+      return thelink;
+    },
     fetchLink: function fetchLink(detail) {
       var _this3 = this;
 
@@ -5312,29 +5340,25 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var thelink = link;
 
       if (detail.params != null) {
-        thelink += "?";
-        var keys = Object.keys(params);
-
-        for (var j = 0; j < keys.length; j++) {
-          if (Array.isArray(params[keys[j]])) {
-            for (var x = 0; x < params[keys[j]].length; x++) {
-              thelink += keys[j] + '[]=' + params[keys[j]][x];
-
-              if (x < params[keys[j]].length - 1) {
-                thelink += '&';
-              }
-            }
-          } else {
-            thelink += keys[j] + '=' + params[keys[j]];
-          }
-
-          if (j < keys.length - 1 && params[keys[j]].length > 0) {
-            thelink += '&';
-          }
-        }
-
-        console.log('link:');
-        console.log(thelink);
+        thelink += "?" + this.getQueryString(params);
+        console.log(thelink); // let keys = Object.keys(params);
+        // for (let j=0; j < keys.length; j++) {
+        //     if (Array.isArray(params[keys[j]])) {
+        //         for (let x = 0; x < params[keys[j]].length; x++) {
+        //             thelink += keys[j]+'[]=' + params[keys[j]][x];
+        //             if (x < (params[keys[j]].length -1)) {
+        //                 thelink += '&';
+        //             }
+        //         }
+        //     } else {
+        //         thelink += keys[j]+'=' + params[keys[j]];
+        //     }
+        //     if (j < (keys.length -1) && params[keys[j]].length > 0) {
+        //         thelink += '&';
+        //     }
+        // }
+        // console.log('link:');
+        // console.log(thelink);
       }
 
       if (this.$store.app.xpages != undefined && this.$store.app.xpages[thelink] != undefined) {
