@@ -7,7 +7,6 @@ export default () => ({
     ajaxLoading: false,
     async initAction() {
         let link = window.landingUrl;
-        console.log('lu: '+link);
         let el = document.getElementById('renderedpanel');
         while (el == null) {
             await window.sleep(50);
@@ -49,14 +48,38 @@ export default () => ({
             }
         }
     },
-    fetchLink(link) {
-        if (this.$store.app.xpages != undefined && this.$store.app.xpages[link] != undefined) {
+    fetchLink(detail) {
+        let link = detail.link;
+        let params = detail.params;
+        let thelink = link;
+        if (detail.params != null) {
+            thelink += "?";
+            let keys = Object.keys(params);
+            for (let j=0; j < keys.length; j++) {
+                if (Array.isArray(params[keys[j]])) {
+                    for (let x = 0; x < params[keys[j]].length; x++) {
+                        thelink += keys[j]+'[]=' + params[keys[j]][x];
+                        if (x < (params[keys[j]].length -1)) {
+                            thelink += '&';
+                        }
+                    }
+                } else {
+                    thelink += keys[j]+'=' + params[keys[j]];
+                }
+                if (j < (keys.length -1) && params[keys[j]].length > 0) {
+                    thelink += '&';
+                }
+            }
+            console.log('link:');
+            console.log(thelink);
+        }
+        if (this.$store.app.xpages != undefined && this.$store.app.xpages[thelink] != undefined) {
             this.showPage = false;
             this.ajaxLoading = true;
-            if (this.$store.app.xpages[link] != undefined) {
+            if (this.$store.app.xpages[thelink] != undefined) {
                 setTimeout(() => {
                     this.showPage = true;
-                    this.page = this.$store.app.xpages[link];
+                    this.page = this.$store.app.xpages[thelink];
                     this.$dispatch('pagechanged', {currentpath: link});
                     this.ajaxLoading = false;
                 },
@@ -70,11 +93,18 @@ export default () => ({
                     100
                 );
             }
-            history.pushState({href: link}, '', link);
+            history.pushState({href: thelink}, '', thelink);
         } else {
             this.$store.app.pageloading = true;
             // this.$dispatch('pageload');
-            axios.get(link, {params: {x_mode: 'ajax'}} ).then(
+            if (params != null) {
+                params['x_mode'] = 'ajax';
+            } else {
+                params = {x_mode: 'ajax'};
+            }
+            console.log('params');
+            console.log(params);
+            axios.get(link, {params: params} ).then(
                 (r) => {
                     this.showPage = false;
                     this.ajaxLoading = true;
@@ -91,8 +121,8 @@ export default () => ({
                     if (this.$store.app.xpages == undefined || this.$store.app.xpages == null) {
                         this.$store.app.xpages = [];
                     }
-                    this.$store.app.xpages[link] = r.data;
-                    history.pushState({href: link}, '', link);
+                    this.$store.app.xpages[thelink] = r.data;
+                    history.pushState({href: thelink}, '', thelink);
                     this.$store.app.pageloading = false;
                     this.$dispatch('pagechanged', {currentpath: link});
                 }
@@ -104,6 +134,15 @@ export default () => ({
             // this.$store.app.pageloading = false;
         }
     },
+    // doSearch(detail) {
+    //     let fullUrl = detail.url + '?';
+    //     let keys = Object.keys(detail.params);
+    //     keys.forEach((key) => {
+    //         fullUrl += key + '=' + details.params[key];
+    //     });
+    //     console.log(fullUrl);
+    //     this.fetchLink(fullUrl);
+    // },
     resetPages() {
         this.$store.app.xpages = [];
         console.log('pages reset');

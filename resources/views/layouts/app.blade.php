@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html x-data="{theme: $persist('newdark'), href: '', panelcontent: null, currentpath: '{{url()->current()}}'}" @themechange.window="theme = $event.detail.darktheme ? 'newdark' : 'light';" lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-x-init="window.landingUrl = '{{url()->current()}}'"
+<html x-data="{theme: $persist('newdark'), href: '', currentpath: '{{url()->current()}}'}" @themechange.window="theme = $event.detail.darktheme ? 'newdark' : 'light';" lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+x-init="window.landingUrl = '{{\Request::getRequestUri()}}'"
 @pagechanged.window="currentpath=$event.detail.currentpath;"
 :data-theme="theme">
     <head>
@@ -19,7 +19,10 @@ x-init="window.landingUrl = '{{url()->current()}}'"
         <!-- Scripts -->
         <script src="{{ asset('js/app.js') }}" defer></script>
     </head>
-    <body x-data="initPage" x-init="initAction();" @linkaction.window="fetchLink($event.detail.link);" class="font-sans antialiased">
+    <body x-data="initPage" x-init="initAction();"
+        @linkaction.window="fetchLink($event.detail);"
+        @popstate.window="historyAction($event)"
+        class="font-sans antialiased text-sm">
         <div class="min-h-screen bg-base-200 flex flex-col">
             @include('layouts.navigation')
 {{--

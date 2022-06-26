@@ -108,4 +108,11 @@ class User extends Authenticatable
         }
         $this->roles()->detach($theRole->id);
     }
+
+    public function scopeWithRoles($query, $roles)
+    {
+        return $query->whereHas('roles', function($q) use ($roles){
+            $q->whereIn('id', $roles);
+        });
+    }
 }

@@ -5238,24 +5238,23 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             switch (_context.prev = _context.next) {
               case 0:
                 link = window.landingUrl;
-                console.log('lu: ' + link);
                 el = document.getElementById('renderedpanel');
 
-              case 3:
+              case 2:
                 if (!(el == null)) {
-                  _context.next = 9;
+                  _context.next = 8;
                   break;
                 }
 
-                _context.next = 6;
+                _context.next = 5;
                 return window.sleep(50);
 
-              case 6:
+              case 5:
                 el = document.getElementById('renderedpanel');
-                _context.next = 3;
+                _context.next = 2;
                 break;
 
-              case 9:
+              case 8:
                 _this.$store.app.xpages[link] = el.innerHTML;
                 history.pushState({
                   href: link
@@ -5271,7 +5270,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 //     }
                 // );
 
-              case 11:
+              case 10:
               case "end":
                 return _context.stop();
             }
@@ -5305,17 +5304,47 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }
       }
     },
-    fetchLink: function fetchLink(link) {
+    fetchLink: function fetchLink(detail) {
       var _this3 = this;
 
-      if (this.$store.app.xpages != undefined && this.$store.app.xpages[link] != undefined) {
+      var link = detail.link;
+      var params = detail.params;
+      var thelink = link;
+
+      if (detail.params != null) {
+        thelink += "?";
+        var keys = Object.keys(params);
+
+        for (var j = 0; j < keys.length; j++) {
+          if (Array.isArray(params[keys[j]])) {
+            for (var x = 0; x < params[keys[j]].length; x++) {
+              thelink += keys[j] + '[]=' + params[keys[j]][x];
+
+              if (x < params[keys[j]].length - 1) {
+                thelink += '&';
+              }
+            }
+          } else {
+            thelink += keys[j] + '=' + params[keys[j]];
+          }
+
+          if (j < keys.length - 1 && params[keys[j]].length > 0) {
+            thelink += '&';
+          }
+        }
+
+        console.log('link:');
+        console.log(thelink);
+      }
+
+      if (this.$store.app.xpages != undefined && this.$store.app.xpages[thelink] != undefined) {
         this.showPage = false;
         this.ajaxLoading = true;
 
-        if (this.$store.app.xpages[link] != undefined) {
+        if (this.$store.app.xpages[thelink] != undefined) {
           setTimeout(function () {
             _this3.showPage = true;
-            _this3.page = _this3.$store.app.xpages[link];
+            _this3.page = _this3.$store.app.xpages[thelink];
 
             _this3.$dispatch('pagechanged', {
               currentpath: link
@@ -5331,15 +5360,23 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }
 
         history.pushState({
-          href: link
-        }, '', link);
+          href: thelink
+        }, '', thelink);
       } else {
         this.$store.app.pageloading = true; // this.$dispatch('pageload');
 
-        axios__WEBPACK_IMPORTED_MODULE_0___default().get(link, {
-          params: {
+        if (params != null) {
+          params['x_mode'] = 'ajax';
+        } else {
+          params = {
             x_mode: 'ajax'
-          }
+          };
+        }
+
+        console.log('params');
+        console.log(params);
+        axios__WEBPACK_IMPORTED_MODULE_0___default().get(link, {
+          params: params
         }).then(function (r) {
           _this3.showPage = false;
           _this3.ajaxLoading = true;
@@ -5358,10 +5395,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             _this3.$store.app.xpages = [];
           }
 
-          _this3.$store.app.xpages[link] = r.data;
+          _this3.$store.app.xpages[thelink] = r.data;
           history.pushState({
-            href: link
-          }, '', link);
+            href: thelink
+          }, '', thelink);
           _this3.$store.app.pageloading = false;
 
           _this3.$dispatch('pagechanged', {
@@ -5372,6 +5409,15 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }); // this.$store.app.pageloading = false;
       }
     },
+    // doSearch(detail) {
+    //     let fullUrl = detail.url + '?';
+    //     let keys = Object.keys(detail.params);
+    //     keys.forEach((key) => {
+    //         fullUrl += key + '=' + details.params[key];
+    //     });
+    //     console.log(fullUrl);
+    //     this.fetchLink(fullUrl);
+    // },
     resetPages: function resetPages() {
       this.$store.app.xpages = [];
       console.log('pages reset');
