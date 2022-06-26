@@ -24,7 +24,10 @@ class UserController extends SmartController
         $sortParams = [];
         $filters = $this->request->input('filter', []);
         $filterData = [];
+        $selectedIds = $this->request->input('selected_ids', []);
+
         $query = User::with('roles');
+
         foreach ($searches as $search) {
             $data = explode('::', $search);
             $query->where($data[0], 'like', '%'.$data[1].'%');
@@ -48,14 +51,20 @@ class UserController extends SmartController
             'page',
             $page
         );
+
         $filterData['roles']['options'] = Role::all();
+        $itemIds = $users->pluck('id')->toArray();
+        $data = $users->toArray();
 
         return $this->ajaxView('admin.users.index', [
             'users' => $users,
             'params' => $searchParams,
             'sort' => $sortParams,
             'filter' => $filterData,
-            'items_count' => $itemsCount
+            'items_count' => $itemsCount,
+            'items_ids' => implode(',',$itemIds),
+            'total_results' => $data['total'],
+            'current_page' => $data['current_page']
         ]);
     }
 
