@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Auth\Custom\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,9 +16,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('auth.login');
-});
+Route::get('/', [LoginController::class, 'create']);
 
 Route::get('/dashboard', [DashboardController::class, 'dashboard'])->middleware(['auth'])->name('dashboard');
 
