@@ -53,9 +53,9 @@ class User extends Authenticatable
         if (is_int($role)) {
             return in_array($role, array_values($this->roles()->pluck('id')));
         } elseif (is_string($role)) {
-            return in_array($role, array_values($this->roles()->pluck('name')));
+            return in_array($role, array_values($this->roles()->pluck('name')->toArray()));
         } elseif ($role instanceof Role) {
-            return in_array($role->id, array_values($this->roles()->pluck('id')));
+            return in_array($role->id, array_values($this->roles()->pluck('id')->toArray()));
         }
     }
 

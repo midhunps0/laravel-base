@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use App\Models\ClientFamily;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class ClientSeeder extends Seeder
@@ -18,6 +19,10 @@ class ClientSeeder extends Seeder
      */
     public function run()
     {
+        $path = database_path('clients.sql');
+        $sql = file_get_contents($path);
+        DB::unprepared($sql);
+
         $data = DB::table('clients_raw')
             ->select(['*'])
             ->get();
@@ -64,5 +69,7 @@ class ClientSeeder extends Seeder
                 info('Duplicate entry for client code: '.$d->Client_Code);
             }
         }
+
+        Schema::dropIfExists('clients_raw');
     }
 }

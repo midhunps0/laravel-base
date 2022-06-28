@@ -100,30 +100,16 @@ class UserSeeder extends Seeder
                 'name' => $tl['name'],
                 'username' => $tl['username'],
                 'email' => $tl['email'],
-                'password' => Hash::make(
-                    substr(
-                        Str::lower(
-                            str_replace('.', '', str_replace(' ', '', $tl['username']))
-                        ),
-                        0,
-                        4
-                    ).'1234'),
+                'password' => Hash::make('abcd1234'),
             ]);
             $u->assignRole('Team Leader');
             foreach ($tl['dealers'] as $dl) {
                 $d = User::factory()->create([
+                    'teamleader_id' => $u->id,
                     'name' => $dl['name'],
                     'username' => $dl['username'],
                     'email' => $dl['email'],
-                    'password' => Hash::make(
-                        substr(
-                            Str::lower(
-                                str_replace('.', '', str_replace(' ', '', $tl['username']))
-                            ),
-                            0,
-                            4
-                        ).'1234'
-                    ),
+                    'password' => Hash::make('abcd1234'),
                 ]);
                 $d->assignRole('Dealer');
             }

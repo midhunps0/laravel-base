@@ -12,7 +12,11 @@
     class="form-control w-full h-full flex flex-row justify-end items-center absolute top-0 left-0">
     <div x-show="visible" class="absolute z-10 w-full flex flex-row">
         <input type="text" x-ref="search_box" x-model="textval"
-        @input.debounce="if (textval.length > 0) {$dispatch('spotsearch', { {{$textname}}: textval});}"
+        @change="if (textval.length > 0) {$dispatch('spotsearch', { {{$textname}}: textval});}"
+        @keyup="if($event.code == 'Escape') {
+            textval='';
+            visible=false; $dispatch('spotsearch', { {{$textname}}: textval});  
+        }"
         @click.outside="visible=textval.length > 0;"
         placeholder="{{$label}}" class="input input-sm input-bordered text-accent flex-grow"/>
         <button

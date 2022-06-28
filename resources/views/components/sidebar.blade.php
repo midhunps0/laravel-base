@@ -16,9 +16,10 @@
         </span>
     </div>
     <ul>
-        <li><x-menu-item title="Home" href="{{route('dashboard')}}"/></li>
+        <li><x-menu-item title="Clients Overview" href="{{route('clients.index')}}" icon="icons.users"/></li>
+        <li><x-menu-item title="Client wise" href="{{route('clients.show', 0)}}" icon="icons.user"/></li>
+        <li><x-menu-item title="Script wise" href="{{route('client_scripts.index')}}"/></li>
         <li><x-menu-item title="Users" href="{{route('users.index')}}"/></li>
-        <li><x-menu-item /></li>
         <li><x-menu-item /></li>
     </ul>
 </div>
