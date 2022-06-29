@@ -1,14 +1,14 @@
 <x-utils.panelbase
     :x_ajax="$x_ajax"
-    title="Client wise Details"
-    indexUrl="{{route('clients.show', $model->id)}}"
-    downloadUrl="{{route('clients.show.download', $model->id)}}"
-    selectIdsUrl="{{route('clients.show.selectIds', $model->id)}}"
+    title="Script wise Details"
+    indexUrl="{{route('client_scripts.show', $model->id)}}"
+    downloadUrl="{{route('client_scripts.show.download', $model->id)}}"
+    selectIdsUrl="{{route('client_scripts.show.selectIds', $model->id)}}"
     :items_count="$items_count"
     :items_ids="$items_ids"
     :total_results="$total_results"
     :current_page="$current_page"
-    :results="$scripts"
+    :results="$client_scripts"
     unique_str="clxone">
     <x-slot:body>
         <div class="flex flex-row space-x-4" >
@@ -16,12 +16,7 @@
             <h1><span class="inline-block w-12">Client: </span><span class="text-warning">{{$model->client_code}}, {{$model->name}}</span></h1>
             <h1><span class="inline-block w-12">AUM: </span><span class="text-warning">Rs. {{$model->total_aum}}</span></h1>
         </div>
-        <x-utils.itemssearch
-            itemsName="clients"
-            url="{{route('clients.show', 0)}}"
-            searchUrl="{{route('clients.list')}}"
-            routeName="clients.show"
-            />
+        <x-utils.clientsearch />
     </div>
     </x-slot>
     <x-slot:thead>
@@ -36,8 +31,17 @@
             </div> --}}
             Sl. No.
         </th>
+        <th class="relative w-52">DOP
+            {{-- <div class="flex flex-row items-center">
+                <x-utils.spotsort name="symbol" val="{{ $sort['symbol'] ?? 'symbol' }}" />
+                <div class="relative flex-grow ml-2">
+                    Script
+                    <x-utils.spotsearch textval="{{ $params['symbol'] ?? '' }}" textname="symbol"
+                        label="Search script" />
+                </div>
+            </div> --}}
+        </th>
         <th>Symbol</th>
-        <th class="relative w-52">DOP</th>
         <th>PA %</th>
         <th>Category</th>
         <th>Sector</th>
@@ -56,7 +60,7 @@
     </x-slot>
 
     <x-slot:rows>
-        @foreach ($scripts as $result)
+        @foreach ($client_scripts as $result)
             <tr>
                 {{-- @if ($selectionEnabled) --}}
                 <td><input type="checkbox" value="{{ $result->id }}" x-model="selectedIds"
@@ -65,7 +69,6 @@
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}
                 <td>{{ $result->symbol }}</td>
-                <td>{{ $result->entry_date }}</td>
                 <td>{{ $result->pa }}</td>
                 <td>{{ $result->category }}</td>
                 <td>{{ $result->sector }}</td>

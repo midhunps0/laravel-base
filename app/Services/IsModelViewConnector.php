@@ -2,16 +2,18 @@
 namespace App\Services;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Database\Query\Builder;
 
 trait IsModelViewConnector{
     protected $query;
     protected $itemQuery;
+    protected $relationQuery;
     protected $selects = '*';
 
-    public function __construct($query)
-    {
-        $this->query = $query;
-    }
+    // public function __construct($query)
+    // {
+    //     $this->query = $query;
+    // }
 
     public function index(
         int $itemsCount,
@@ -111,6 +113,113 @@ trait IsModelViewConnector{
     public function getItem(string $arg): Collection
     {
         return $this->itemQuery->find($arg);
+    }
+
+    public function processShowDownload(
+        array $searches,
+        array $sorts,
+        array $filters,
+        string $selectedIds
+    ): Collection {
+        $queryData = $this->getReQueryAndParams(
+            $searches,
+            $sorts,
+            $filters,
+            $selectedIds
+        );
+        $results = $queryData['query']->get();
+        return $results;
+    }
+
+    public function getShowIdsForParams(
+        array $searches,
+        array $sorts,
+        array $filters
+    ): array {
+        $queryData = $this->getRelationQueryAndParams(
+            $this->relationQuery,
+            $searches,
+            $sorts,
+            $filters
+        );
+
+        $results = $queryData['query']->get()->pluck('id');
+        return $results;
+    }
+
+    public function getShowData(
+        int $id,
+        int $itemsCount = 10,
+        ?int $page = 1,
+        array $searches = [],
+        array $sorts = [],
+        array $filters = [],
+        string $selectedIds = '',
+        string $relationsResultsName = 'results'
+    ) {
+        $this->accessCheck($id);
+        $item = $this->itemQuery->find($id);
+        $query = $this->relationQuery($item->id);
+        $queryData = $this->getRelationQueryAndParams(
+            $query,
+            $searches,
+            $sorts,
+            $filters,
+            $selectedIds
+        );
+// dd($queryData['query']->toSql());
+        $relatedResults = $queryData['query']->paginate(
+            $itemsCount,
+            $this->scriptsSelects,
+            'page',
+            $page
+        );
+
+        // dd($scripts);
+        $itemIds = $relatedResults->pluck('id')->toArray();
+        $data = $relatedResults->toArray();
+        return [
+            'model' => $item,
+            $relationsResultsName => $relatedResults,
+            'params' => $queryData['searchParams'],
+            'sort' => $queryData['sortParams'],
+            'filter' => $queryData['filterData'],
+            'items_count' => $itemsCount,
+            'items_ids' => implode(',',$itemIds),
+            'total_results' => $data['total'],
+            'current_page' => $data['current_page']
+        ];
+    }
+
+    public function getRelationQueryAndParams(
+        Builder $query,
+        array $searches,
+        array $sorts,
+        array $filters,
+        string $selectedIds = ''): array
+    {
+        $filterData = $this->getFilterParams($query, $filters);
+        $searchParams = $this->getSearchParams($query, $searches);
+        $sortParams = $this->getSortParams($query, $sorts);
+
+        if (strlen(trim($selectedIds)) > 0) {
+            $ids = explode('|', $selectedIds);
+            $query->whereIn('id', $ids);
+        }
+
+        return [
+            'query' => $query,
+            'searchParams' => $searchParams,
+            'sortParams' => $sortParams,
+            'filterData' => $filterData
+        ];
+    }
+
+    abstract protected function relationQuery(int $id = null);
+
+    protected function accessCheck(int $id): bool
+    {
+        return true;
     }
 
     private function getSearchParams($query, array $searches): array

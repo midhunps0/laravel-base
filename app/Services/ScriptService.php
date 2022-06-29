@@ -1,37 +1,69 @@
 <?php
 namespace App\Services;
 
-use App\Models\Role;
-use App\Models\User;
+use App\Models\Client;
+use App\Models\Script;
+use Illuminate\Support\Facades\DB;
+use App\Contracts\ModelViewConnector;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Database\Query\Builder;
 
-class ScriptService
+class ScriptService implements ModelViewConnector
 {
-    public function index(
-        $itemsCount,
-        $page,
-        $searches,
-        $sorts,
-        $filters,
-        $selectedIds
-    ){
-        $queryData = $this->getQueryAndParams(
+    use IsModelViewConnector;
+
+    private $scriptsSelects;
+    public function __construct()
+    {
+        $this->query = Script::query()->userAccessControlled();
+        $this->itemQuery = Script::query();
+        $this->scriptsSelects = [
+            'c.id as id',
+            'c.name as client_name',
+            's.symbol',
+            'cs.dp_qty as qty',
+            'cs.buy_avg_price as buy_avg_price',
+            DB::raw('cs.buy_avg_price * cs.dp_qty as avg_buy_value'),
+            DB::raw('cs.buy_avg_price * cs.dp_qty * 100 / c.total_aum as pa'),
+        ];
+    }
+
+    public function getShowData(
+        int $id,
+        int $itemsCount = 10,
+        ?int $page = 1,
+        array $searches = [],
+        array $sorts = [],
+        array $filters = [],
+        string $selectedIds = '',
+        $relationsResultsName = 'results'
+    ) {
+        $script = $this->itemQuery->find($id);
+        $query = DB::table('scripts', 's')
+            ->join('clients_scripts as cs', 's.id', '=', 'cs.script_id')
+            ->join('clients as c', 'c.id', '=', 'cs.client_id')
+            ->where('s.id', $script->id);
+        $queryData = $this->getRelationQueryAndParams(
+            $query,
             $searches,
             $sorts,
             $filters,
             $selectedIds
         );
-        $users = $queryData['query']->paginate(
+// dd($queryData['query']->toSql());
+        $scripts = $queryData['query']->paginate(
             $itemsCount,
-            ['*'],
+            $this->scriptsSelects,
             'page',
             $page
         );
 
-        $itemIds = $users->pluck('id')->toArray();
-        $data = $users->toArray();
-
+        // dd($scripts);
+        $itemIds = $scripts->pluck('id')->toArray();
+        $data = $scripts->toArray();
         return [
-            'users' => $users,
+            'model' => $script,
+            $relationsResultsName => $scripts,
             'params' => $queryData['searchParams'],
             'sort' => $queryData['sortParams'],
             'filter' => $queryData['filterData'],
@@ -42,67 +74,16 @@ class ScriptService
         ];
     }
 
-    public function processDownload(
-        $searches,
-        $sorts,
-        $filters,
-        $selectedIds
-    ){
-        $queryData = $this->getQueryAndParams(
-            $searches,
-            $sorts,
-            $filters,
-            $selectedIds
-        );
-        $users = $queryData['query']->get();
-        return $users;
-    }
-
-    public function getIdsForParams(
-        $searches,
-        $sorts,
-        $filters
-    ){
-        $queryData = $this->getQueryAndParams(
-            $searches,
-            $sorts,
-            $filters
-        );
-
-        $users = $queryData['query']->get()->pluck('id');
-        return $users;
-    }
-
-    private function getQueryAndParams(
-        $searches,
-        $sorts,
-        $filters,
-        $selectedIds = ''
-    ) {
-        $searchParams = [];
-        $sortParams = [];
-        $filterData = [];
-
-        $query = User::with('roles');
-
-        foreach ($searches as $search) {
-            $data = explode('::', $search);
-            $query->where($data[0], 'like', '%'.$data[1].'%');
-            $searchParams[$data[0]] = $data[1];
-        }
-        foreach ($sorts as $sort) {
-            $data = explode('::', $sort);
-            $query->orderBy($data[0], $data[1]);
-            $sortParams[$data[0]] = $data[1];
-        }
-        foreach ($filters as $filter) {
-            $data = explode('::', $filter);
-            if ($data[0] == 'roles') {
-                $query->withRoles([$data[1]]);
-            }
-            $filterData[$data[0]]['selected'] = $data[1];
-        }
-        $filterData['roles']['options'] = Role::all();
+    public function getRelationQueryAndParams(
+        Builder $query,
+        array $searches,
+        array $sorts,
+        array $filters,
+        string $selectedIds = ''): array
+    {
+        $filterData = $this->getFilterParams($query, $filters);
+        $searchParams = $this->getSearchParams($query, $searches);
+        $sortParams = $this->getSortParams($query, $sorts);
 
         if (strlen(trim($selectedIds)) > 0) {
             $ids = explode('|', $selectedIds);
@@ -116,5 +97,19 @@ class ScriptService
             'filterData' => $filterData
         ];
     }
+
+    public function getList($search)
+    {
+        $clients = Client::where('client_code', 'like', $search.'%')
+            ->orWhere('name', 'like', '%'.$search.'%')->select(['id', 'client_code as code', 'name'])->limit(15)->get();
+        return [
+            'clients' => $clients
+        ];
+    }
+
+    private function getFilterParams($query, $filters) {
+        return [];
+    }
 }
+
 ?>

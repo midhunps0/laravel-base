@@ -60,21 +60,27 @@ class ClientController extends SmartController
         if ($id == 0) {
             return $this->getView('admin.clients.search');
         }
-        $data = $clientService->getShowData(
-            $id,
-            $this->request->input('items_count', 10),
-            $this->request->input('page'),
-            $this->request->input('search', []),
-            $this->request->input('sort', []),
-            $this->request->input('filter', []),
-            $this->request->input('selected_ids', ''),
-            'client_scripts'
-        );
+        try {
+            $data = $clientService->getShowData(
+                $id,
+                $this->request->input('items_count', 10),
+                $this->request->input('page'),
+                $this->request->input('search', []),
+                $this->request->input('sort', []),
+                $this->request->input('filter', []),
+                $this->request->input('selected_ids', ''),
+                'scripts'
+            );
+        } catch (\Throwable $e) {
+            return $this->getView('admin.clients.search', [
+                'error' => $e->__toString()
+            ]);
+        }
 
         return $this->getView('admin.clients.show', $data);
     }
 
-    public function list( ClientService $clientService)
+    public function list(ClientService $clientService)
     {
         $data = $clientService->getList($this->request->input('search'));
 
@@ -83,4 +89,29 @@ class ClientController extends SmartController
         ]);
     }
 
+    public function queryShowIds(ClientService $userService)
+    {
+        $ids = $userService->getShowIdsForParams(
+            $this->request->input('search', []),
+            $this->request->input('sort', []),
+            $this->request->input('filter', [])
+        );
+
+        return response()->json([
+            'success' => true,
+            'ids' => $ids
+        ]);
+    }
+
+    public function showDownload(ClientService $clientService)
+    {
+        $clients = $clientService->processShowDownload(
+            $this->request->input('search', []),
+            $this->request->input('sort', []),
+            $this->request->input('filter', []),
+            $this->request->input('selected_ids', '')
+        );
+
+        return Excel::download(new DefaultCollectionExports($clients), 'clients.xlsx');
+    }
 }

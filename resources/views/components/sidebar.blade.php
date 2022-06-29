@@ -18,7 +18,11 @@
     <ul>
         <li><x-menu-item title="Clients Overview" route="clients.index" href="{{route('clients.index')}}" icon="icons.users"/></li>
         <li><x-menu-item title="Client wise" route="clients.show" href="{{route('clients.show', 0)}}" icon="icons.user"/></li>
-        <li><x-menu-item title="Script wise" route="client_scripts.index" href="{{route('client_scripts.index')}}"/></li>
-        <li><x-menu-item title="Users" route="users.index" href="{{route('users.index')}}"/></li>
+        <li><x-menu-item title="Script wise" route="client_scripts.index" href="{{route('client_scripts.index')}}"
+            icon="icons.list"/></li>
+        @if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Superadmin'))
+        <li><x-menu-item title="Users" route="users.index" href="{{route('users.index')}}"
+            icon="icons.lock"/></li>
+        @endif
     </ul>
 </div>
