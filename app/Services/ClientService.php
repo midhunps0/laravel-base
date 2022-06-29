@@ -40,11 +40,11 @@ class ClientService implements ModelViewConnector
             ->where('c.id', $id);
         $user = auth()->user();
         if($user->hasRole('Dealer')) {
-            $query->where('u.id', $user->id);
+            $query->where('c.rm_id', $user->id);
         } else if($user->hasRole('Dealer')) {
             $dealers = array_values(User::where('teamleader_id', $user->id)->pluck('id')->toArray());
             $dealers[] = $user->id;
-            $query->whereIn('u.id', $dealers);
+            $query->whereIn('c.rm_id', $dealers);
         }
         return $query;
     }
@@ -52,7 +52,7 @@ class ClientService implements ModelViewConnector
     public function getList($search)
     {
         $clients = Client::where('client_code', 'like', $search.'%')
-            ->orWhere('name', 'like', '%'.$search.'%')->select(['id', 'client_code as code', 'name'])->limit(15)->get();
+            ->orWhere('name', 'like', '%'.$search.'%')->select(['id', 'client_code as code', 'name'])->userAccessControlled()->limit(15)->get();
         return [
             'clients' => $clients
         ];
@@ -66,10 +66,12 @@ class ClientService implements ModelViewConnector
             if ($client->rm_id != $user->id) {
                 throw new AccessDeniedException('You are not allowed to view this client');
             }
-        } else if($user->hasRole('Dealer')) {
+        } else if($user->hasRole('Team Leader')) {
             $dealers = array_values(User::where('teamleader_id', $user->id)->pluck('id')->toArray());
             $dealers[] = $user->id;
             if (!in_array($client->rm_id, $dealers)) {
+
+            dd('error', $dealers, $client);
                 throw new AccessDeniedException('You are not allowed to view this client');
             }
         }

@@ -26,6 +26,7 @@ class Client extends Model
             $query->whereIn('rm_id', [$user->id]);
         } else if ($user->hasRole('Team Leader')) {
             $dealers =  array_values(User::where('teamleader_id', $user->id)->pluck('id')->toArray());
+            $dealers[] = $user->id;
             $query->whereIn('rm_id', $dealers);
         }
         return $query;

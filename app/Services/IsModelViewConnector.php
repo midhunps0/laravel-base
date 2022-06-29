@@ -217,10 +217,7 @@ trait IsModelViewConnector{
 
     abstract protected function relationQuery(int $id = null);
 
-    protected function accessCheck(int $id): bool
-    {
-        return true;
-    }
+    abstract protected function accessCheck(int $id);
 
     private function getSearchParams($query, array $searches): array
     {

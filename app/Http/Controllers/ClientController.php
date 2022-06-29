@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\ImportExports\DefaultCollectionExports;
 use App\Services\ClientService;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 class ClientController extends SmartController
 {
@@ -71,9 +72,15 @@ class ClientController extends SmartController
                 $this->request->input('selected_ids', ''),
                 'scripts'
             );
+        } catch (AccessDeniedException $e) {
+            return $this->getView('admin.clients.search', [
+                'error' => $e->__toString(),
+                'error_type' => 'access denied'
+            ]);
         } catch (\Throwable $e) {
             return $this->getView('admin.clients.search', [
-                'error' => $e->__toString()
+                'error' => $e->__toString(),
+                'error_type' => 'access denied'
             ]);
         }
 
