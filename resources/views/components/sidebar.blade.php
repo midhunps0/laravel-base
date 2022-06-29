@@ -20,6 +20,5 @@
         <li><x-menu-item title="Client wise" route="clients.show" href="{{route('clients.show', 0)}}" icon="icons.user"/></li>
         <li><x-menu-item title="Script wise" route="client_scripts.index" href="{{route('client_scripts.index')}}"/></li>
         <li><x-menu-item title="Users" route="users.index" href="{{route('users.index')}}"/></li>
-        <li><x-menu-item /></li>
     </ul>
 </div>

@@ -52,8 +52,16 @@
                         class="checkbox checkbox-primary checkbox-xs"></td>
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}
-                <td>{{ $result->client_code }}</td>
-                <td>{{ $result->name }}</td>
+                <td>
+                    <a class="link no-underline hover:underline" href="{{route('clients.show', $result->id)}}">
+                        {{ $result->client_code }}
+                    </a>
+                </td>
+                <td>
+                    <a class="link no-underline hover:underline" href="{{route('clients.show', $result->id)}}">
+                        {{ $result->name }}
+                    </a>
+                </td>
                 <td>{{ $result->total_aum }}</td>
                 <td></td>
                 <td></td>

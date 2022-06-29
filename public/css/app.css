@@ -2495,6 +2495,10 @@ body[dir="rtl"] .checkbox:checked,
   -webkit-text-decoration-line: underline;
           text-decoration-line: underline;
 }
+.no-underline {
+  -webkit-text-decoration-line: none;
+          text-decoration-line: none;
+}
 .antialiased {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -2637,6 +2641,10 @@ body[dir="rtl"] .checkbox:checked,
 .hover\:text-warning:hover {
   --tw-text-opacity: 1;
   color: hsl(var(--wa) / var(--tw-text-opacity));
+}
+.hover\:underline:hover {
+  -webkit-text-decoration-line: underline;
+          text-decoration-line: underline;
 }
 .hover\:no-underline:hover {
   -webkit-text-decoration-line: none;
