@@ -5292,7 +5292,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             _this2.page = _this2.$store.app.xpages[link];
 
             _this2.$dispatch('pagechanged', {
-              currentpath: link
+              currentpath: link,
+              currentroute: detail.route
             });
 
             _this2.ajaxLoading = false;
@@ -5371,7 +5372,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             _this3.page = _this3.$store.app.xpages[thelink];
 
             _this3.$dispatch('pagechanged', {
-              currentpath: link
+              currentpath: link,
+              currentroute: detail.route
             });
 
             _this3.ajaxLoading = false;
@@ -5424,7 +5426,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           _this3.$store.app.pageloading = false;
 
           _this3.$dispatch('pagechanged', {
-            currentpath: link
+            currentpath: link,
+            currentroute: detail.route
           });
         })["catch"](function (e) {
           console.log(e);

@@ -74,5 +74,13 @@ class ClientController extends SmartController
         return $this->getView('admin.clients.show', $data);
     }
 
+    public function list( ClientService $clientService)
+    {
+        $data = $clientService->getList($this->request->input('search'));
+
+        return response()->json([
+            'data' => $data
+        ]);
+    }
 
 }

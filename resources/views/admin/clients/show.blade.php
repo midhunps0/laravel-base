@@ -11,8 +11,13 @@
     :results="$client_scripts"
     unique_str="clxone">
     <x-slot:body>
-        <h1>Client: {{$model->client_code}}, , {{$model->name}}</h1>
-        <h1>AUM: {{$model->total_aum}}</h1>
+        <div class="flex flex-row space-x-4" >
+        <div class="font-bold border border-base-300 rounded-md p-4">
+            <h1><span class="inline-block w-12">Client: </span><span class="text-warning">{{$model->client_code}}, {{$model->name}}</span></h1>
+            <h1><span class="inline-block w-12">AUM: </span><span class="text-warning">Rs. {{$model->total_aum}}</span></h1>
+        </div>
+        <x-utils.clientsearch />
+    </div>
     </x-slot>
     <x-slot:thead>
         <th class="relative">

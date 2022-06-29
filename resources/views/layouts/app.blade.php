@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html x-data="{theme: $persist('newdark'), href: '', currentpath: '{{url()->current()}}'}" @themechange.window="theme = $event.detail.darktheme ? 'newdark' : 'light';" lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+<html x-data="{theme: $persist('newdark'), href: '', currentpath: '{{url()->current()}}', currentroute: '{{ Route::currentRouteName() }}'}" @themechange.window="theme = $event.detail.darktheme ? 'newdark' : 'light';" lang="{{ str_replace('_', '-', app()->getLocale()) }}"
 x-init="window.landingUrl = '{{\Request::getRequestUri()}}'"
-@pagechanged.window="currentpath=$event.detail.currentpath;"
+@pagechanged.window="currentpath=$event.detail.currentpath; currentroute=$event.detail.currentroute;"
 :data-theme="theme">
     <head>
         <meta charset="utf-8">

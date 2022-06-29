@@ -31,6 +31,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('clients/select-ids', [ClientController::class, 'queryIds'])->name('clients.selectIds');
     Route::get('clients/download', [ClientController::class, 'download'])->name('clients.download');
+    Route::get('clients/get-list', [ClientController::class, 'list'])->name('clients.list');
     Route::resource('clients', ClientController::class);
 
     Route::get('client_scripts/select-ids', [ClientScriptController::class, 'queryIds'])->name('client_scripts.selectIds');

@@ -1,7 +1,7 @@
 <div x-data="{hidden: false}"
     x-init="console.log('test');hidden = screen.width < 768;"
     @sidebarvisibility.window="hidden=$event.detail.hidden;"
-    class="overflow-hidden fixed top-0 left-0 z-50 sm:relative bg-base-100 w-full sm:w-auto transition-all"
+    class="overflow-hidden fixed top-0 left-0 z-50 sm:relative bg-base-100 w-full sm:w-auto min-w-fit ransition-all"
     :class="!hidden || 'w-0'">
     <div class="border-b border-base-300">
         <span x-data="{sidebarcollapse: false, collapsed: false}"
@@ -16,10 +16,10 @@
         </span>
     </div>
     <ul>
-        <li><x-menu-item title="Clients Overview" href="{{route('clients.index')}}" icon="icons.users"/></li>
-        <li><x-menu-item title="Client wise" href="{{route('clients.show', 0)}}" icon="icons.user"/></li>
-        <li><x-menu-item title="Script wise" href="{{route('client_scripts.index')}}"/></li>
-        <li><x-menu-item title="Users" href="{{route('users.index')}}"/></li>
+        <li><x-menu-item title="Clients Overview" route="clients.index" href="{{route('clients.index')}}" icon="icons.users"/></li>
+        <li><x-menu-item title="Client wise" route="clients.show" href="{{route('clients.show', 0)}}" icon="icons.user"/></li>
+        <li><x-menu-item title="Script wise" route="client_scripts.index" href="{{route('client_scripts.index')}}"/></li>
+        <li><x-menu-item title="Users" route="users.index" href="{{route('users.index')}}"/></li>
         <li><x-menu-item /></li>
     </ul>
 </div>

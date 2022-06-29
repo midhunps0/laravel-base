@@ -74,7 +74,7 @@
                     //allParams.selected_ids = this.selectedIds.join('|');
                     this.selectedIds = [];
 
-                    $dispatch('linkaction', { link: this.url, params: allParams });
+                    $dispatch('linkaction', { link: this.url, params: allParams, route: 'users.index'});
                 },
 
                 //triggerFetchWithoutSelection() {

@@ -98,6 +98,15 @@ class ClientService implements ModelViewConnector
         ];
     }
 
+    public function getList($search)
+    {
+        $clients = Client::where('client_code', 'like', $search.'%')
+            ->orWhere('name', 'like', '%'.$search.'%')->select(['id', 'client_code as code', 'name'])->limit(15)->get();
+        return [
+            'clients' => $clients
+        ];
+    }
+
     private function getFilterParams($query, $filters) {
         return [];
     }

@@ -35,7 +35,7 @@ export default () => ({
                 setTimeout(() => {
                     this.showPage = true;
                     this.page = this.$store.app.xpages[link];
-                    this.$dispatch('pagechanged', {currentpath: link});
+                    this.$dispatch('pagechanged', {currentpath: link, currentroute: detail.route});
                     this.ajaxLoading = false;
                 },
                     100
@@ -106,7 +106,7 @@ export default () => ({
                 setTimeout(() => {
                     this.showPage = true;
                     this.page = this.$store.app.xpages[thelink];
-                    this.$dispatch('pagechanged', {currentpath: link});
+                    this.$dispatch('pagechanged', {currentpath: link, currentroute: detail.route});
                     this.ajaxLoading = false;
                 },
                     100
@@ -149,7 +149,7 @@ export default () => ({
                     this.$store.app.xpages[thelink] = r.data;
                     history.pushState({href: thelink}, '', thelink);
                     this.$store.app.pageloading = false;
-                    this.$dispatch('pagechanged', {currentpath: link});
+                    this.$dispatch('pagechanged', {currentpath: link, currentroute: detail.route});
                 }
             ).catch(
                 function (e) {
