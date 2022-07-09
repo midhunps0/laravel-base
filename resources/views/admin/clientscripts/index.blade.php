@@ -11,20 +11,19 @@
     :results="$clientscripts"
     results_name="clientscripts"
     :results_json="$results_json"
-    :result_calcs="[
-
-    ]"
     total_disp_cols="24"
     unique_str="clnscrx"
     adv_fields="
-        none: {key: 'none', text: 'Select A Field', type: 'none'},
         client_code: {key: 'client_code', text: 'Client Code', type: 'string'},
         name: {key: 'name', text: 'Client Name', type: 'string'},
         allocated_aum: {key: 'allocated_aum', text: 'ALCTD AUM', type: 'numeric'},
         aum: {key: 'aum', text: 'AUM', type: 'numeric'},
     "
     :enableAdvSearch="true"
-    :paginator="$paginator">
+    :paginator="$paginator"
+    :columns="[
+        'client_code', 'name', 'symbol', 'aum', 'allocated_aum', 'client_cur_value', 'client_pnl', 'client_pnl_pc', 'realised_pnl', 'liquidbees', 'cash', 'cash_pc', 'returns', 'returns_pc', 'qty', 'buy_avg_price', 'cmp', 'ldc', 'day_high', 'day_low', 'pnl', 'pnl_pc', 'nof_days', 'impact', 'industry', 'sector', 'dealer'
+    ]">
     {{-- {{dd($clientscripts->links())}} --}}
     <x-slot:thead>
         <input type="hidden" value="{{$results_json}}" id="results_json">
@@ -79,7 +78,7 @@
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="client_cur_value" val="{{ $sort['client_cur_value'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    Cur Value
+                    Cl. Cur Value
                 </div>
             </div>
         </th>
@@ -280,20 +279,20 @@
                 <td>
                     <div class="flex flex-row items-baseline justify-end"
                         :class="{'text-error' : result.client_cur_value < result.allocated_aum, 'text-accent' : result.client_cur_value > result.allocated_aum}">
-                    <x-display.icon x-show="result.cur_value > result.allocated_aum" icon="icons.up-arrow"/>
-                    <x-display.icon x-show="result.cur_value < result.allocated_aum" icon="icons.down-arrow"/>
+                    <x-display.icon x-show="result.client_cur_value > result.allocated_aum" icon="icons.up-arrow"/>
+                    <x-display.icon x-show="result.client_cur_value < result.allocated_aum" icon="icons.down-arrow"/>
                         <span x-text="formatted(result.client_cur_value)"></span>
                     </div>
                 </td>
                 <td>
                     <div class="flex flex-row items-baseline justify-end"
                     :class="{'text-error' : result.pnl < 0, 'text-accent' : result.pnl > 0}">
-                        <span x-text="formatted(result.pnl)"></span>
+                        <span x-text="formatted(result.client_pnl)"></span>
                     </div>
                 </td>
                 <td>
                     <div class="flex flex-row items-baseline justify-end" :class="{'text-error' : result.pnl < 0, 'text-accent' : result.pnl > 0}">
-                        <span x-text="formatted(result.pnl_pc, 2)"></span>
+                        <span x-text="formatted(result.client_pnl_pc, 2)"></span>
                     </div>
                 </td>
                 <td>

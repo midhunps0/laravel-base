@@ -87,6 +87,8 @@ class ClientScriptService implements ModelViewConnector
             DB::raw('(c.total_aum - cst.allocated_aum) / c.total_aum * 100 as cash_pc'),
             DB::raw('c.realised_pnl + cst.cur_value - c.total_aum as returns'),
             DB::raw('(c.realised_pnl + cst.cur_value - c.total_aum) /c.total_aum * 100 as returns_pc'),
+            DB::raw('cst.cur_value - c.total_aum as client_pnl'),
+            DB::raw('(cst.cur_value - c.total_aum) / c.total_aum * 100 as client_pnl_pc'),
         ];
 
         $this->searchesMap = [
@@ -175,6 +177,7 @@ class ClientScriptService implements ModelViewConnector
             $row['total_aum'] = $aum;
             $row['allocated_aum'] = $al_aum ?? 0;
             $row['client_cur_value'] = $cv ?? 0;
+            $row['client_pnl_pc'] = $aum > 0 ? $result['pnl_pc'] : 0;
 
             $formatted[] = $row;
         }

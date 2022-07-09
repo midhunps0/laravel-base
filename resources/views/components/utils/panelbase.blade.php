@@ -1,23 +1,29 @@
 @props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'paginator', 'columns' => []])
 <x-dashboard-base :ajax="$x_ajax">
-    <div x-data="{ compact: $persist(false), showAdvSearch: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative">
+    <div x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative">
 
         @if (isset($body))
             <h3 class="text-xl font-bold">{{ $title }}</h3>
             <div>{{ $body }}</div>
         @endif
 
-        <div class="flex flex-row justify-between items-center mb-4">
+        <div class="flex flex-row flex-wrap justify-between items-center mb-4">
             @if (!isset($body))
                 <h3 class="text-xl font-bold">{{ $title }}</h3>
             @endif
-            <div class="flex-grow flex flex-row justify-end items-center space-x-4">
+            <div class="flex-grow flex flex-row flex-wrap justify-end items-center space-x-4">
                 @if ($enableAdvSearch)
                     <div>
                         <button @click.prevent.stop="showAdvSearch = true;"
                             class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center"
                             :class="noconditions || 'bg-accent text-base-200'">
                             <x-display.icon icon="icons.settings" height="h-5" width="w-5" />
+                        </button>
+                    </div>
+                    <div>
+                        <button @click.prevent.stop="showOrderForm = true;"
+                            class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center">
+                            <x-display.icon icon="icons.play" height="h-5" width="w-5" />&nbsp;Create Order
                         </button>
                     </div>
                 @endif
@@ -65,6 +71,18 @@
                 currentPage: {{ $current_page }},
                 downloadUrl: '{{ $downloadUrl }}',
                 results: null,
+                order_bors: 'Sell',
+                order_qty: 0,
+                order_price: 0,
+                order_slippage: 0,
+                order_base_url: '',
+                order_url: '',
+                exportOrder() {
+                    alert(this.order_bors+' '+
+                    this.order_qty+' '+
+                    this.order_price+' '+
+                    this.order_slippage+' ');
+                },
                 paginatorPage: null,
                 paginator: {
                     currentPage: 0,
@@ -101,9 +119,13 @@
                     ],
                 },
                 advFields: {
+                     none: {key: 'none', text: 'Select A Field', type: 'none'},
                     {{ $adv_fields }}
                 },
                 advQueryParams() {
+                    if ((this.conditions.length == 1 && this.conditions[0].field == 'none')) {
+                        return [];
+                    }
                     let processed = this.conditions.map((c) => {
                         return c.field + '::' + c.operation + '::' + c.value;
                     });
@@ -123,12 +145,51 @@
                     console.log(this.conditions);
                     if ((this.conditions.length == 1 && this.conditions[0].field == 'none')) {
                         noconditions = true;
-                        this.runQuery();
+                        this.triggerFetch();
                     } else {
                         noconditions = false;
                     }
                 },
+                /*
+                getConditionsText() {
+                    let str = '';
+                    this.conditions.forEach((c) => {
+                        str +=
+                    });
+                },
+                findTextForOprKey(key) {
+                    let item = null;
+                    let item = this.fieldOperators.numeric.filter((x) => {
+                        return x.key == key;
+                    });
+                    if (!item) {
+                        item = this.fieldOperators.string.filter((x) => {
+                            return x.key == key;
+                        });
+                    }
+                    return item.text;
+                },
+                findTextForFieldKey(key) {
+                    let text = 'Some field';
+                    Object.keys(this.advFields).forEach((f) => {
+                        if(this.advFields[f].key == key) {
+                            text = this.advFields[f].text;
+                        }
+                    });
+                    return text;
+                },*/
                 runQuery() {
+                    this.params = {};
+                    this.sort = {};
+                    this.filters = {};
+                    if ((this.conditions.length == 1 && this.conditions[0].field == 'none')) {
+                        noconditions = true;
+                    } else {
+                        noconditions = false;
+                    }
+                    showAdvSearch = false;
+                    this.triggerFetch();
+                    /*
                     let searchParams = this.advQueryParams();
                     let allParams = {
                         adv_search: searchParams
@@ -157,7 +218,10 @@
                             noconditions = false;
                         }
                         showAdvSearch = false;
-                    });
+                    }).catch((e) => {
+                        alert('Unexpected error. No results fetched.')
+                        console.log(e);
+                    });*/
                 },
                 processParams(params) {
                     let processed = [];
@@ -339,6 +403,9 @@
                 getPaginatedPage(page) {
                     this.paginatorPage = page;
                     this.triggerFetch();
+                },
+                getOrderItemsCount() {
+                    return this.selectedIds.length > 0 ? this.selectedIds.length : this.totalResults;
                 }
             }" @spotsearch.window="fetchResults($event.detail)"
                 @setparam.window="setParam($event.detail)" @spotsort.window="doSort($event.detail)"
@@ -449,7 +516,7 @@
                                 </div>
                                 <div class="w-10 px-2 flex flex-row items-center">
                                     <button @click.prevent.stop="conditions.splice(index, 1);"
-                                        class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center">
+                                        class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center disabled:bg-opacity-70" :disabled="conditions.length == 1">
                                         <x-display.icon icon="icons.delete" height="h-5" width="w-5" />
                                     </button>
                                 </div>
@@ -477,6 +544,53 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+                {{-- Order Form --}}
+                <div x-show="showOrderForm" x-transition
+                    class="absolute top-0 left-0 z-30 w-full flex flex-row justify-center p-16 items-start bg-base-100 bg-opacity-60 min-h-full">
+                    <div class="flex flex-col items-center px-4 py-6 rounded-md w-2/3 mx-auto bg-base-200 shadow-lg relative">
+                        <button @click.prevent.stop="showOrderForm = false;"
+                            class="w-8 h-8 p-1 bg-base-100 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center absolute top-2 right-2">
+                            <x-display.icon icon="icons.close" height="h-7" width="w-7" />
+                        </button>
+                        <div class="w-full flex flex-row justify-center">
+                            <h3 class="text-lg font-bold mb-4">Create Order</h3>
+                        </div>
+                        <div class="w-full justify-center items-center rounded-md">
+                            <h6 class="text-sm p-4">
+                                This order will be generated for <span class="font-bold text-warning text-lg" x-text="getOrderItemsCount()"></span> items.
+                            </h6>
+                        </div>
+                        <form action="#" class="w-full border border-warning rounded-md">
+                            <div class="flex flex-row justify-between w-full mx-auto p-4 m-4 space-x-2">
+                                <div class="w-1/4">
+                                    <label for="bors">Action</label><br/>
+                                    <select x-model="order_bors" id="bors" class="select select-sm py-0 w-full">
+                                        <option value="Buy">Buy</option>
+                                        <option value="Sell">Sell</option>
+                                    </select>
+                                </div>
+                                <div class="w-1/4">
+                                    <label for="order_qty">Quantity</label><br/>
+                                    <input x-model="order_qty" id="order_qty" type="number" class="input input-sm w-full">
+                                </div>
+                                <div class="w-1/4">
+                                    <label for="order_price">Price</label><br/>
+                                    <input x-model="order_price" id="order_price" type="text" class="input input-sm w-full">
+                                </div>
+                                <div class="w-1/4">
+                                    <label for="order_slippage">Slippage</label><br/>
+                                    <input x-model="order_slippage" id="order_slippage" type="text" class="input input-sm w-full">
+                                </div>
+                            </div>
+                            <div class="my-4 px-1 text-center">
+                                <button @click.prevent.stop="exportOrder()"
+                                    class="btn btn-sm btn-success py-0 border border-base-100 flex felx-row items-center justify-center mx-auto">
+                                    <x-display.icon icon="icons.info" height="h-4" width="w-4" />&nbsp;Generate Order
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
                 @endif
