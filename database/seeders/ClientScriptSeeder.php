@@ -38,16 +38,15 @@ class ClientScriptSeeder extends Seeder
                 info('Unmatched '.$param.': '.$item->$code);
                 continue;
             }
-            $clientId = $client->id;
-            $scriptId = $script->id;
-            ClientScript::create([
-                'client_id' => $clientId,
-                'script_id' => $scriptId,
-                'entry_date' => $item->entry_date,
-                'dp_qty' => $item->dp_qty,
-                'available_qty' => $item->available_qty,
-                'buy_avg_price' => $item->buy_avg_price
-            ]);
+            $client->scripts()->attach(
+                $script->id,
+                [
+                    'entry_date' => $item->entry_date,
+                    'dp_qty' => $item->dp_qty,
+                    'available_qty' => $item->available_qty,
+                    'buy_avg_price' => $item->buy_avg_price
+                ]
+            );
         }
 
         Schema::dropIfExists('portfolio');

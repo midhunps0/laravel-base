@@ -28,7 +28,7 @@ class UserController extends SmartController
             $this->request->input('selected_ids', '')
         );
 
-        return $this->getView('admin.users.index', $data);
+        return $this->buildResponse('admin.users.index', $data);
     }
 
     public function queryIds(UserService $userService)

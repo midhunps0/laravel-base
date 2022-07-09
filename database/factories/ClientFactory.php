@@ -30,6 +30,7 @@ class ClientFactory extends Factory
             'total_aum' => rand(1000000, 10000000),
             'other_funds' => rand(1000000, 10000000),
             'brokerage' => rand(1000000, 10000000),
+            'realised_pnl' => rand(100000, 1000000),
             'pfo_type' => '',
             'category' => '',
             'type' => '',

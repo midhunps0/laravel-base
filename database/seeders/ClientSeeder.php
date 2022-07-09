@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Helpers\GeneralHelper;
 use App\Models\Client;
 use Illuminate\Support\Str;
 use App\Models\ClientFamily;
@@ -37,7 +38,6 @@ class ClientSeeder extends Seeder
                 $fid = $f->id;
             } else {
                 $fid = null;
-                info('$fid null for fcode: '.$d->Family_Code.', calulated code: '. $code);
             }
 
             $cl = Client::where('client_code', $d->Client_Code)->get()->first();
@@ -51,9 +51,10 @@ class ClientSeeder extends Seeder
                     're_invest' => $d->Re_Invest,
                     'withdrawal' => $d->Withdrawal,
                     'payout' => $d->Payout,
-                    'total_aum' => $d->Total_AUM,
+                    'total_aum' => abs($d->Total_AUM),
                     'other_funds' => $d->Other_Funds,
                     'brokerage' => $d->Brokerage,
+                    'realised_pnl' => $d->Total_AUM == 0 ? 0 : $d->Total_AUM * GeneralHelper::randomPercentage(-5, 30) / 100,
                     'pfo_type' => $d->PFO_Type,
                     'category' => $d->Category,
                     'type' => $d->Type,

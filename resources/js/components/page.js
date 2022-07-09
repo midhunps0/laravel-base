@@ -128,8 +128,7 @@ export default () => ({
             } else {
                 params = {x_mode: 'ajax'};
             }
-
-            axios.get(link, {params: params} ).then(
+            axios.get(link, {params: params}).then(
                 (r) => {
                     this.showPage = false;
                     this.ajaxLoading = true;
@@ -171,5 +170,8 @@ export default () => ({
     resetPages() {
         this.$store.app.xpages = [];
         console.log('pages reset');
+    },
+    formatted(e, n = 0) {
+        return (e * 1).toFixed(n);
     }
 });

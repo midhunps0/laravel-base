@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html x-data="{theme: $persist('newdark'), href: '', currentpath: '{{url()->current()}}', currentroute: '{{ Route::currentRouteName() }}'}" @themechange.window="theme = $event.detail.darktheme ? 'newdark' : 'light';" lang="{{ str_replace('_', '-', app()->getLocale()) }}"
 x-init="window.landingUrl = '{{\Request::getRequestUri()}}'"
-@pagechanged.window="currentpath=$event.detail.currentpath; currentroute=$event.detail.currentroute;"
+@pagechanged.window="console.log('pcanged');console.log($event.detail);
+currentpath=$event.detail.currentpath;
+currentroute=$event.detail.currentroute;"
+@routechange.window="currentroute=$event.detail.route;"
 :data-theme="theme">
     <head>
         <meta charset="utf-8">

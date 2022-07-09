@@ -4,6 +4,7 @@
         options: ['none', 'asc', 'desc'],
         exclusive: {{$exclusive}},
         processClick() {
+            console.log('sp: '+this.spotsort);
             for(let i = 0; i < this.options.length; i++) {
                 if(this.options[i] == this.spotsort) {
                     this.spotsort = (i+1) < this.options.length ? this.options[i+1] : this.options[0];
@@ -11,16 +12,27 @@
                     break;
                 }
             }
+            console.log('sp: '+this.spotsort);
             $dispatch('spotsort', {exclusive: this.exclusive, data: { {{$name}}: this.spotsort}});
+            console.log('sp: dispatched');
+        },
+        reset(sorts) {
+            console.log('sorts: ->'+'{{$name}}');
+            console.log(sorts);
+            if(!Object.keys(sorts).includes('{{$name}}')){
+                this.spotsort = 'none';
+            }
         }
     }"
-    x-init="console.log('spot sort init');
+    x-init="
+        {{-- console.log('spot sort init');
         if(!options.includes(spotsort)) {
             spotsort = options['0'];
         }
-        $dispatch('setsort', {exclusive: exclusive, data: { {{$name}}: spotsort}});
+        $dispatch('setsort', {exclusive: exclusive, data: { {{$name}}: spotsort}}); --}}
     "
     @click.prevent.stop="processClick"
+    @clearsorts.window="reset($event.detail.sorts);"
     :class="spotsort=='none' || 'text-accent'"
     >
     <x-display.icon icon="icons.up-down" x-show="spotsort=='none'"/>

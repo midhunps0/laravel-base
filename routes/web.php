@@ -1,13 +1,14 @@
 <?php
 
+use App\Services\ScriptService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Auth\Custom\LoginController;
 use App\Http\Controllers\ClientController;
-use App\Http\Controllers\ClientScriptController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ScriptController;
-use App\Services\ScriptService;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ClientScriptController;
+use App\Http\Controllers\Auth\Custom\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,9 +48,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('scripts/get-list', [ScriptController::class, 'list'])->name('scripts.list');
     Route::resource('scripts', ScriptController::class);
 
-    Route::get('client_scripts/select-ids', [ClientScriptController::class, 'queryIds'])->name('client_scripts.selectIds');
-    Route::get('client_scripts/download', [ClientScriptController::class, 'download'])->name('client_scripts.download');
-    Route::get('client_scripts/{id}/select-ids', [ClientScriptController::class, 'queryShowIds'])->name('client_scripts.show.selectIds');
-    Route::get('client_scripts/{id}/download', [ClientScriptController::class, 'showDownload'])->name('client_scripts.show.download');
-    Route::resource('client_scripts', ClientScriptController::class);
+    Route::get('import/trade-backup', [ImportController::class, 'tradeBackupForm'])->name('get.import.trade_backup');
+    Route::post('import/trade-backup', [ImportController::class, 'tradeBackupImport'])->name('post.import.trade_backup');
+
+    Route::get('clientsripts/get-list', [ClientController::class, 'list'])->name('clientsripts.list');
+    Route::get('clientsripts/select-ids', [ClientController::class, 'queryIds'])->name('clientscripts.selectIds');
+    Route::get('clientsripts/download', [ClientController::class, 'download'])
+        ->name('clientscripts.download');
+    Route::resource('clientscripts', ClientScriptController::class)->only('index');
 });

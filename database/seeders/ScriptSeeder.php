@@ -25,9 +25,10 @@ class ScriptSeeder extends Seeder
             ->select(['*'])
             ->get();
         foreach ($data as $script) {
-            Script::create([
+            Script::factory()->create([
                 'isin_code' => $script->ISIN_Code,
                 'symbol' =>  $script->Symbol,
+                'tracked' =>  $script->Tracked ?? true,
                 'company_name' => $script->Company_Name,
                 'industry' => $script->Industry,
                 'series' => $script->Series,

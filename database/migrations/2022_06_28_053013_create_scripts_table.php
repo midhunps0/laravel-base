@@ -17,7 +17,12 @@ return new class extends Migration
             $table->id();
             $table->string('isin_code', 50);
             $table->string('symbol', 50);
+            $table->boolean('tracked')->default(true);
             $table->string('company_name', 50);
+            $table->double('cmp', 12,2)->nullable();
+            $table->double('last_day_closing', 10,2)->nullable();
+            $table->double('day_high', 12,2)->nullable();
+            $table->double('day_low', 12,2)->nullable();
             $table->string('industry', 50)->nullable();
             $table->string('series', 50)->nullable();
             $table->boolean('fno')->nullable();

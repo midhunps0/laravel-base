@@ -1,4 +1,4 @@
-@props(['itemsName', 'url', 'searchUrl', 'routeName'])
+@props(['itemsName', 'url', 'searchUrl', 'routeName', 'searchDisplayKeys'])
 <form x-data="{
     id: 0,
     search: '',
@@ -35,8 +35,11 @@
                     @keyup="if($event.code=='Escape') {
                         search='';
                         list=[];
-                    }" class="btn-link text-left border-b border-base-300 py-1 text-base-content hover:text-warning hover:no-underline focus:text-warning" :key="item.code">
-                    <span x-text="item.code"></span>, <span x-text="item.name"></span>
+                    }" class="btn-link text-left border-b border-base-300 py-1 text-base-content hover:text-warning hover:no-underline focus:text-warning">
+                    @foreach ($searchDisplayKeys as $key)
+                        <span x-text="item.{{$key}}"></span>@if(!$loop->last),@endif
+                    @endforeach
+
                 </a>
             </template>
         </ul>

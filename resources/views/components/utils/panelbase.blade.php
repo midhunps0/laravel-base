@@ -1,47 +1,46 @@
-@props([
-    'x_ajax',
-    'title',
-    'indexUrl',
-    'downloadUrl',
-    'selectIdsUrl',
-    'results',
-    'items_count',
-    'items_ids',
-    'total_results',
-    'current_page',
-    'unique_str',
-    'selectionEnabled' => true,
-])
+@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'paginator', 'columns' => []])
 <x-dashboard-base :ajax="$x_ajax">
-    <div x-data="{ compact: $persist(false) }" class="p-3 border-b border-base-200 overflow-x-scroll">
+    <div x-data="{ compact: $persist(false), showAdvSearch: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative">
 
         @if (isset($body))
-        <h3 class="text-xl font-bold">{{$title}}</h3>
-        <div>{{$body}}</div>
+            <h3 class="text-xl font-bold">{{ $title }}</h3>
+            <div>{{ $body }}</div>
         @endif
 
         <div class="flex flex-row justify-between items-center mb-4">
             @if (!isset($body))
-            <h3 class="text-xl font-bold">{{$title}}</h3>
+                <h3 class="text-xl font-bold">{{ $title }}</h3>
             @endif
             <div class="flex-grow flex flex-row justify-end items-center space-x-4">
+                @if ($enableAdvSearch)
+                    <div>
+                        <button @click.prevent.stop="showAdvSearch = true;"
+                            class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center"
+                            :class="noconditions || 'bg-accent text-base-200'">
+                            <x-display.icon icon="icons.settings" height="h-5" width="w-5" />
+                        </button>
+                    </div>
+                @endif
                 <x-utils.itemscount items_count="{{ $items_count }}" />
                 <div>
-                    <input x-model="compact" type="checkbox" id="compact" class="checkbox checkbox-xs checkbox-primary">
-                    <label for="compact">{{__('Compact View')}}</label>
+                    <input x-model="compact" type="checkbox" id="compact"
+                        class="checkbox checkbox-xs checkbox-primary">
+                    <label for="compact">{{ __('Compact View') }}</label>
                 </div>
-                <div x-data="{dropopen: false, url_all: '', url_selected: ''}"
+                <div x-data="{ dropopen: false, url_all: '', url_selected: '' }"
                     @downloadurl.window="url_all = $event.detail.url_all; url_selected=$event.detail.url_selected;"
-                    @click.outside="dropopen = false;"
-                    class="relative">
-                    <label @click="dropopen = !dropopen;" tabindex="0" class="btn btn-xs m-1">{{__('Export')}}&nbsp;
+                    @click.outside="dropopen = false;" class="relative">
+                    <label @click="dropopen = !dropopen;" tabindex="0"
+                        class="btn btn-xs m-1">{{ __('Export') }}&nbsp;
                         <x-display.icon icon="icons.down" />
                     </label>
-                    <ul tabindex="0"
+                    <ul x-show="dropopen" tabindex="0"
                         class="absolute top-5 right-0 z-50 p-2 shadow-md bg-base-200 rounded-md w-52 scale-90 origin-top-right transition-all duration-100 opacity-0"
                         :class="!dropopen || 'top-8 scale-110 opacity-100'">
-                        <li class="py-2 px-4 hover:bg-base-100"><a :href="url_selected" download>{{__('Download Selected')}}</a></li>
-                        <li class="py-2 px-4 hover:bg-base-100"><a :href="url_all" download>{{__('Download All')}}</a></li>
+                        <li class="py-2 px-4 hover:bg-base-100"><a :href="url_selected"
+                                download>{{ __('Download Selected') }}</a></li>
+                        <li class="py-2 px-4 hover:bg-base-100"><a :href="url_all"
+                                download>{{ __('Download All') }}</a></li>
                     </ul>
                 </div>
                 {{-- <a href="#" role="button" class="btn btn-xs">Add&nbsp;
@@ -54,18 +53,112 @@
             <form x-data="{
                 url: '{{ $indexUrl }}',
                 params: {},
-                {{-- search: {}, --}}
                 sort: {},
                 filters: {},
                 itemsCount: {{ $items_count }},
-                itemIds: [{{$items_ids}}],
-                selectedIds: $persist([]).as('{{$unique_str}}ids'),
+                itemIds: [{{ $items_ids }}],
+                selectedIds: $persist([]).as('{{ $unique_str }}ids'),
                 pageSelected: false,
                 allSelected: false,
-                totalResults: {{$total_results}},
-                currentPage: {{$current_page}},
-                downloadUrl: '{{$downloadUrl}}',
+                pages: [],
+                totalResults: {{ $total_results }},
+                currentPage: {{ $current_page }},
+                downloadUrl: '{{ $downloadUrl }}',
+                results: null,
+                paginatorPage: null,
+                paginator: {
+                    currentPage: 0,
+                    totalItems: 0,
+                    lastPage: 0,
+                    itemsPerPage: 0,
+                    nextPageUrl: '',
+                    pervPageUrl: '',
+                    elements: [],
+                    firstItem: null,
+                    lastItem: null,
+                    count: 0,
+                },
+                conditions: [{
+                    field: 'none',
+                    type: '',
+                    operation: 'none',
+                    value: 0
+                }],
+                fieldOperators: {
+                    none: [{ key: 'none', text: 'Choose A Condition' }],
+                    numeric: [
+                        { key: 'gt', text: 'Greater Than' },
+                        { key: 'lt', text: 'Less Than' },
+                        { key: 'gte', text: 'Greater Than Or Equal To' },
+                        { key: 'lte', text: 'Less Than Or Equal To' },
+                        { key: 'eq', text: 'Equal To' },
+                        { key: 'neq', text: 'Not Equal To' },
+                    ],
+                    string: [
+                        { key: 'ct', text: 'Contains' },
+                        { key: 'st', text: 'Starts With' },
+                        { key: 'en', text: 'Ends With' },
+                    ],
+                },
+                advFields: {
+                    {{ $adv_fields }}
+                },
+                advQueryParams() {
+                    let processed = this.conditions.map((c) => {
+                        return c.field + '::' + c.operation + '::' + c.value;
+                    });
+                    return processed;
+                },
+                addContition() {
+                    this.conditions.push({
+                        field: 'none',
+                        type: '',
+                        operation: 'none',
+                        value: 0
+                    });
+                },
+                advSearchStatus() {
+                    showAdvSearch = false;
+                    console.log('conditions:');
+                    console.log(this.conditions);
+                    if ((this.conditions.length == 1 && this.conditions[0].field == 'none')) {
+                        noconditions = true;
+                        this.runQuery();
+                    } else {
+                        noconditions = false;
+                    }
+                },
+                runQuery() {
+                    let searchParams = this.advQueryParams();
+                    let allParams = {
+                        adv_search: searchParams
+                    };
+                    axios.get(
+                        this.url, {
+                            headers: {
+                                'X-ACCEPT-MODE': 'only-json'
+                            },
+                            params: allParams
+                        }
+                    ).then((r) => {
+                        this.results = JSON.parse(r.data.results_json);
+                        this.totalResults = r.data.total_results;
+                        this.currentPage = r.data.current_page;
+                        {{-- this.conditions = [{
+                            field: 'none',
+                            type: '',
+                            operation: 'none',
+                            value: 0
+                        }]; --}}
 
+                        if ((this.conditions.length == 1 && this.conditions[0].field == 'none')) {
+                            noconditions = true;
+                        } else {
+                            noconditions = false;
+                        }
+                        showAdvSearch = false;
+                    });
+                },
                 processParams(params) {
                     let processed = [];
                     let paramkeys = Object.keys(params);
@@ -86,23 +179,33 @@
                     if (Object.keys(this.filters).length > 0) {
                         params.filter = this.processParams(this.filters);
                     }
+                    if (!(this.conditions.length == 1 && this.conditions[0].field == 'none')) {
+                        params.adv_search = this.advQueryParams();
+                    }
                     params.items_count = this.itemsCount;
+                    params.page = this.paginatorPage;
 
                     return params;
                 },
                 triggerFetch() {
                     let allParams = this.paramsExceptSelection();
-                    //allParams.selected_ids = this.selectedIds.join('|');
-                    this.selectedIds = [];
 
-                    $dispatch('linkaction', { link: this.url, params: allParams });
+                    axios.get(
+                        this.url, {
+                            headers: {
+                                'X-ACCEPT-MODE': 'only-json'
+                            },
+                            params: allParams
+                        }
+                    ).then((r) => {
+                        this.results = JSON.parse(r.data.results_json);
+                        this.totalResults = r.data.total_results;
+                        this.currentPage = r.data.current_page;
+                        $dispatch('setpagination', {paginator: JSON.parse(r.data.paginator)});
+                        console.log('r: '+r.data.route);
+                        $dispatch('routechange', {route: r.data.route});
+                    });
                 },
-
-                //triggerFetchWithoutSelection() {
-                //    let allParams = this.paramsExceptSelection();
-                //    console.log(allParams);
-                //    $dispatch('linkaction', { link: this.url, params: allParams });
-                //},
                 fetchResults(param) {
                     this.setParam(param);
                     this.triggerFetch();
@@ -121,7 +224,9 @@
                 },
                 setSort(detail) {
                     let keys = Object.keys(detail.data);
-                    if (detail.exclusive) { this.sort = {}; }
+                    if (detail.exclusive) {
+                        this.sort = {};
+                    }
                     if (detail.data[keys[0]] != 'none') {
                         this.sort[keys[0]] = detail.data[keys[0]];
                     } else {
@@ -129,6 +234,7 @@
                             delete this.sort[keys[0]];
                         }
                     }
+                    $dispatch('clearsorts', {sorts: this.sort});
                 },
                 setFilter(detail) {
                     let keys = Object.keys(detail.data);
@@ -162,7 +268,7 @@
                 selectAll() {
                     let params = this.paramsExceptSelection();
                     ajaxLoading = true;
-                    axios.get('{{$selectIdsUrl}}', {params: params} ).then(
+                    axios.get('{{ $selectIdsUrl }}', { params: params }).then(
                         (r) => {
                             this.itemIds = r.data.ids;
                             this.selectedIds = r.data.ids;
@@ -171,7 +277,7 @@
                             ajaxLoading = false;
                         }
                     ).catch(
-                        function (e) {
+                        function(e) {
                             console.log(e);
                         }
                     );
@@ -190,66 +296,195 @@
                     }
                     let url_selected = getQueryString(allParams);
 
-                    $dispatch('downloadurl', {url_all: this.downloadUrl+'?'+url_all, url_selected: this.downloadUrl+'?'+url_selected});
+                    $dispatch('downloadurl', { url_all: this.downloadUrl + '?' + url_all, url_selected: this.downloadUrl + '?' + url_selected });
+                },
+                setResults(results) {
+                    this.results.map((result) => {
+                        {{-- result.cur_val = result.cmp * result.qty; --}}
+                        @foreach($result_calcs as $calc)
+                        {{ $calc }}
+                        @endforeach
+                        return result;
+                    });
+                    return results;
+                },
+
+                resetAdvSearch() {
+                    this.conditions = [{
+                        field: 'none',
+                        operation: 'none',
+                        value: 0
+                    }];
+                },
+                getFieldOperators(field) {
+                    console.log('field:');
+                    console.log(field);
+                    let f = this.advFields.filter((f) => {
+                        return f.key == field;
+                    })[0];
+                    console.log('f');
+                    console.log(f);
+                    if (f == null) {
+                        return [];
+                    }
+                    switch (f.type) {
+                        case 'numeric':
+                            return this.MathOprs;
+                            break;
+                        case 'text':
+                            return this.stringOprs;
+                            break;
+                    }
+                },
+                getPaginatedPage(page) {
+                    this.paginatorPage = page;
+                    this.triggerFetch();
                 }
             }" @spotsearch.window="fetchResults($event.detail)"
-                @setparam.window="setParam($event.detail)"
-                @spotsort.window="doSort($event.detail)"
-                @setsort.window="setSort($event.detail)"
-                @spotfilter.window="doFilter($event.detail);"
-                @setfilter.window="setFilter($event.detail)"
-                @countchange.window="pageUpdateCount($event.detail.count)"
-                @selectpage="selectPage()"
-                @selectall="selectAll()"
-                @cancelselection="cancelSelection()"
-                @pageselect="processPageSelect()"
+                @setparam.window="setParam($event.detail)" @spotsort.window="doSort($event.detail)"
+                @setsort.window="setSort($event.detail)" @spotfilter.window="doFilter($event.detail);"
+                @setfilter.window="setFilter($event.detail)" @countchange.window="pageUpdateCount($event.detail.count);"
+                @selectpage="selectPage();"
+                @selectall="selectAll();"
+                @cancelselection="cancelSelection();"
+                @pageselect="processPageSelect();"
+                @paginator.window="getPaginatedPage($event.detail.page);"
                 x-init="$watch('selectedIds', (ids) => {
                     if (ids.length < itemIds.length) {
                         pageSelected = false;
                         allSelected = false;
                     }
                     setDownloadUrl();
-                }); $nextTick(() => {setDownloadUrl();});"
-                action="#">
+                });
+
+                $nextTick(() => {
+                    setDownloadUrl();
+                    results = JSON.parse(document.getElementById('results_json').value);
+                    results = setResults(results);
+                    $dispatch('setpagination', {paginator: JSON.parse('{{$paginator}}')});
+                });" action="#">
                 <table class="table min-w-200 w-full border-2 border-base-200 rounded-md"
-                    :class="!compact || 'table-compact'">
+                    :class="compact ? 'table-mini' : 'table-compact'">
 
                     <thead>
                         <tr>
                             @if ($selectionEnabled)
-                            <th class="w-7">
-                                <input type="checkbox" x-model="pageSelected"
-                                    @change="$dispatch('pageselect')"
-                                    class="checkbox checkbox-xs"
-                                    :class="!allSelected ? 'checkbox-primary' : 'checkbox-secondary'">
-                            </th>
+                                <th class="w-7">
+                                    <input type="checkbox" x-model="pageSelected" @change="$dispatch('pageselect')"
+                                        class="checkbox checkbox-xs"
+                                        :class="!allSelected ? 'checkbox-primary' : 'checkbox-secondary'">
+                                </th>
                             @endif
-                            {{$thead}}
+                            {{ $thead }}
                         </tr>
                     </thead>
                     <tbody>
                         <tr x-show="selectedIds.length > 0" x-transition>
-                            <td colspan="5" class="text-center bg-warning text-base-200">
+                            <td colspan="{{ $total_disp_cols }}" class="text-center bg-warning text-base-200">
                                 <span x-text="selectedIds.length" class="font-bold"></span>
-                                &nbsp;<span class="font-bold">item<span x-show="selectedIds.length > 1">s</span>  selected.</span>
-                                &nbsp;<button @click.prevent.stop="$dispatch('selectpage')"
-                                class="btn btn-xs" :disabled="pageSelected">Select Page</button>
-                                &nbsp;<button @click.prevent.stop="$dispatch('selectall')"
-                                    class="btn btn-xs">Select All {{$total_results}} items</button>
+                                &nbsp;<span class="font-bold">item<span x-show="selectedIds.length > 1">s</span>
+                                    selected.</span>
+                                &nbsp;<button @click.prevent.stop="$dispatch('selectpage')" class="btn btn-xs"
+                                    :disabled="pageSelected">Select Page</button>
+                                &nbsp;<button @click.prevent.stop="$dispatch('selectall')" class="btn btn-xs">Select All
+                                    {{ $total_results }} items</button>
                                 &nbsp;<button @click.prevent.stop="$dispatch('cancelselection')"
                                     class="btn btn-xs">Cancel All</button>
                             </td>
                         </tr>
-                        {{$rows}}
+                        {{ $rows }}
                     </tbody>
                 </table>
+                @if ($enableAdvSearch)
+                <div x-show="showAdvSearch" x-transition
+                    class="absolute top-0 left-0 z-30 w-full flex flex-row justify-center p-16 items-start bg-base-100 bg-opacity-60 min-h-full">
+                    <div
+                        class="flex flex-col items-center px-4 py-6 rounded-md w-2/3 mx-auto bg-base-200 shadow-lg relative">
+                        <button @click.prevent.stop="advSearchStatus"
+                            class="w-8 h-8 p-1 bg-base-100 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center absolute top-2 right-2">
+                            <x-display.icon icon="icons.close" height="h-7" width="w-7" />
+                        </button>
+                        <div class="w-full flex flex-row justify-center">
+                            <h3 class="text-lg font-bold mb-4">Advanced Query</h3>
+                        </div>
+                        <div class="w-full flex flex-row justify-center mb-2">
+                            <div
+                                class="flex-1 px-2 py-1 mx-1 font-bold text-center border-b border-opacity-60 border-base-content">
+                                Field</div>
+                            <div
+                                class="flex-1 px-2 py-1 mx-1 font-bold text-center border-b border-opacity-60 border-base-content">
+                                Condition</div>
+                            <div
+                                class="w-24 px-2 py-1 mx-1 font-bold text-center border-b border-opacity-60 border-base-content">
+                                Value</div>
+                            <div class="w-10 px-2 flex flex-row space-x-2">
+                            </div>
+                        </div>
+                        <template x-for="(condition, index) in conditions">
+                            <div class="w-full flex flex-row justify-center my-2">
+                                <div class="w-full flex-1 mx-1">
+                                    <select x-model="condition.field" :id="'advf' + index"
+                                        class="select select-sm select-bordered py-0 w-full"
+                                        @change="document.getElementById('advop'+index).dispatchEvent(new Event('change', { 'bubbles': true }));">
+                                        {{-- <option value="none">Select Field</option> --}}
+                                        <template x-for="field in Object.values(advFields)">
+                                            <option :value="field.key"></span><span x-text="field.text"></span>
+                                            </option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="flex-1 mx-1">
+                                    <select x-model="condition.operation" :id="'advop' + index"
+                                        class="select select-sm select-bordered py-0 w-full">
+                                        {{-- <option value="none">Choose Condition</option> --}}
+                                        <template x-for="op in fieldOperators[(advFields[condition.field]).type]"
+                                            :key="op.key">
+                                            <option :value="op.key"><span x-text="op.text"></span></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="w-24 mx-1">
+                                    <input type="text" x-model="condition.value"
+                                        class="input input-sm input-bordered w-full">
+                                </div>
+                                <div class="w-10 px-2 flex flex-row items-center">
+                                    <button @click.prevent.stop="conditions.splice(index, 1);"
+                                        class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center">
+                                        <x-display.icon icon="icons.delete" height="h-5" width="w-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                        <div class="w-full flex flex-row justify-center mt-6 mb-2">
+                            <div class="flex-1 flex-grow px-1">
+                                <button @click.prevent.stop="addContition"
+                                    class="btn btn-sm btn-warning p-0 w-full border border-base-100 flex felx-row items-center justify-center">
+                                    <x-display.icon icon="icons.plus" height="h-4" width="w-4" />&nbsp;Add
+                                    Condition
+                                </button>
+                            </div>
+                            <div class="flex-1 flex-grow px-1">
+                                <button @click.prevent.stop="runQuery"
+                                    class="btn btn-sm btn-success p-0 w-full border border-base-100 flex felx-row items-center justify-center">
+                                    <x-display.icon icon="icons.info" height="h-4" width="w-4" />&nbsp;Fetch
+                                    Results
+                                </button>
+                            </div>
+                            <div class="w-10 px-2 flex flex-row items-center">
+                                <button @click.prevent.stop="resetAdvSearch"
+                                    class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center">
+                                    <x-display.icon icon="icons.refresh" height="h-5" width="w-5" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </form>
+
         </div>
         <div class="my-4 p-2">
-            @php
-                $params = \Request::except(['x_mode']);
-            @endphp
-            {{ $results->appends($params)->links() }}
+            <x-utils.paginator />
         </div>
     </div>
 </x-dashboard-base>

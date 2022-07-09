@@ -1,5 +1,5 @@
 export default () => ({
-    someFunction: (e) => {
-
+    formatted: (e) => {
+        return e.toFixed(2);
     }
 });

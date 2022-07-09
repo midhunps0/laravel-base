@@ -2,27 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ClientScript;
-use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Services\ClientScriptService;
-use App\ImportExports\DefaultCollectionExports;
+use Maatwebsite\Excel\Facades\Excel;
+use App\ImportExports\DefaultArrayExports;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 class ClientScriptController extends SmartController
 {
-    public function index(ClientScriptService $clientScriptService)
+    public function index(ClientScriptService $ClientScriptService)
     {
-        $data = $clientScriptService->index(
+        $data = $ClientScriptService->index(
             $this->request->input('items_count', 10),
             $this->request->input('page'),
             $this->request->input('search', []),
             $this->request->input('sort', []),
             $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
             $this->request->input('selected_ids', ''),
-            'client_scripts'
+            'clientscripts'
         );
 
-        return $this->getView('admin.clientscripts.index', $data);
+        return $this->buildResponse('admin.clientscripts.index', $data);
     }
 
     public function queryIds(ClientScriptService $clientScriptService)
@@ -30,7 +30,8 @@ class ClientScriptController extends SmartController
         $ids = $clientScriptService->getIdsForParams(
             $this->request->input('search', []),
             $this->request->input('sort', []),
-            $this->request->input('filter', [])
+            $this->request->input('filter', []),
+            $this->request->input('adv_search', [])
         );
 
         return response()->json([
@@ -39,81 +40,87 @@ class ClientScriptController extends SmartController
         ]);
     }
 
-    public function download(ClientScriptService $clientScriptService)
+    public function download(ClientScriptService $ClientScriptService)
     {
-        $clientScripts = $clientScriptService->processDownload(
+        $clients = $ClientScriptService->processDownload(
             $this->request->input('search', []),
             $this->request->input('sort', []),
             $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
             $this->request->input('selected_ids', '')
         );
-
-        return Excel::download(new DefaultCollectionExports($clientScripts), 'clients.xlsx');
+        $colsFormat = [
+            'client_code',
+            'name',
+            'total_aum',
+            'allocated_aum',
+            'cur_value',
+            'pnl',
+            'pnl_pc',
+            'realised_pnl',
+            'liquidbees',
+            'cash',
+            'cash_pc',
+            'returns',
+            'returns_pc',
+            'rm'
+        ];
+        return Excel::download(new DefaultArrayExports($clients, $colsFormat), 'clients.xlsx');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function list(ClientScriptService $ClientScriptService)
     {
-        //
+        $data = $ClientScriptService->getList($this->request->input('search'));
+
+        return response()->json([
+            'data' => $data
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    // public function queryShowIds(ClientScriptService $ClientScriptService)
+    // {
+    //     $ids = $ClientScriptService->getShowIdsForParams(
+    //         $this->request->input('search', []),
+    //         $this->request->input('sort', []),
+    //         $this->request->input('filter', []),
+    //         $this->request->input('adv_search', []),
+    //     );
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\ClientScript  $clientScript
-     * @return \Illuminate\Http\Response
-     */
-    public function show(ClientScript $clientScript)
-    {
-        //
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'ids' => $ids
+    //     ]);
+    // }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\ClientScript  $clientScript
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(ClientScript $clientScript)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\ClientScript  $clientScript
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, ClientScript $clientScript)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\ClientScript  $clientScript
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(ClientScript $clientScript)
-    {
-        //
-    }
+    // public function showDownload($id, ClientScriptService $ClientScriptService)
+    // {
+    //     $clients = $ClientScriptService->processShowDownload(
+    //         $id,
+    //         $this->request->input('search', []),
+    //         $this->request->input('sort', []),
+    //         $this->request->input('filter', []),
+    //         $this->request->input('adv_search', []),
+    //         $this->request->input('selected_ids', '')
+    //     );
+    //     $colsFormat = [
+    //         'symbol',
+    //         'entry_date',
+    //         'pa',
+    //         'category',
+    //         'sector',
+    //         'qty',
+    //         'buy_avg_price',
+    //         'amt_invested',
+    //         'cmp',
+    //         'cur_value',
+    //         'overall_gain',
+    //         'pc_change',
+    //         'todays_gain',
+    //         'day_high',
+    //         'day_low',
+    //         'impact',
+    //         'nof_days'
+    //     ];
+    //     return Excel::download(new DefaultArrayExports($clients, $colsFormat), 'clients.xlsx');
+    // }
 }

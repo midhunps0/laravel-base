@@ -6,6 +6,7 @@
                     <h1>You are not authorised to view this client. Use the search box to find your client.</h1>
                 @else
                     <h1>Oops! Something went wrong :( Please try again.</h1>
+                    {{$error}}
                 @endif
 
             @endif
@@ -16,6 +17,7 @@
             url="{{route('clients.show', 0)}}"
             searchUrl="{{route('clients.list')}}"
             routeName="clients.show"
+            :searchDisplayKeys="['code', 'name']"
             />
     </div>
 </x-dashboard-base>

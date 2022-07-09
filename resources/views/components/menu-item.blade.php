@@ -1,7 +1,7 @@
 @props(['title' => 'Menu Item', 'route' => '', 'href' => '#', 'icon' => 'icons.info'])
 <a x-data="{collapsed: false}"
     @sidebarresize.window="collapsed = $event.detail.collapsed;"
-    @click.prevent.stop="$dispatch('linkaction', {link: '{{$href}}'});"
+    @click.prevent.stop="$dispatch('linkaction', {link: '{{$href}}', route: '{{$route}}'});"
     href="{{$href}}" class="flex flex-row items-center my-1 text-sm px-2 hover:bg-base-300"
     :class="currentroute != '{{$route}}' || 'text-accent font-bold bg-base-300'">
     <x-display.icon icon="{{$icon}}" height="h-6" width="w-6"/>

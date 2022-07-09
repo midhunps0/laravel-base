@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\ImportExports\DefaultCollectionExports;
 use App\Services\ClientService;
 use Maatwebsite\Excel\Facades\Excel;
+use App\ImportExports\DefaultArrayExports;
+use App\ImportExports\DefaultCollectionExports;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 class ClientController extends SmartController
@@ -17,11 +18,12 @@ class ClientController extends SmartController
             $this->request->input('search', []),
             $this->request->input('sort', []),
             $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
             $this->request->input('selected_ids', ''),
             'clients'
         );
-
-        return $this->getView('admin.clients.index', $data);
+    // dd($data);
+        return $this->buildResponse('admin.clients.index', $data);
     }
 
     public function queryIds(ClientService $userService)
@@ -29,7 +31,8 @@ class ClientController extends SmartController
         $ids = $userService->getIdsForParams(
             $this->request->input('search', []),
             $this->request->input('sort', []),
-            $this->request->input('filter', [])
+            $this->request->input('filter', []),
+            $this->request->input('adv_search', [])
         );
 
         return response()->json([
@@ -44,10 +47,26 @@ class ClientController extends SmartController
             $this->request->input('search', []),
             $this->request->input('sort', []),
             $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
             $this->request->input('selected_ids', '')
         );
-
-        return Excel::download(new DefaultCollectionExports($clients), 'clients.xlsx');
+        $colsFormat = [
+            'client_code',
+            'name',
+            'total_aum',
+            'allocated_aum',
+            'cur_value',
+            'pnl',
+            'pnl_pc',
+            'realised_pnl',
+            'liquidbees',
+            'cash',
+            'cash_pc',
+            'returns',
+            'returns_pc',
+            'rm'
+        ];
+        return Excel::download(new DefaultArrayExports($clients, $colsFormat), 'clients.xlsx');
     }
 
     /**
@@ -59,7 +78,7 @@ class ClientController extends SmartController
     public function show($id, ClientService $clientService)
     {
         if ($id == 0) {
-            return $this->getView('admin.clients.search');
+            return $this->buildResponse('admin.clients.search');
         }
         try {
             $data = $clientService->getShowData(
@@ -69,22 +88,23 @@ class ClientController extends SmartController
                 $this->request->input('search', []),
                 $this->request->input('sort', []),
                 $this->request->input('filter', []),
+                $this->request->input('adv_search', []),
                 $this->request->input('selected_ids', ''),
                 'scripts'
             );
         } catch (AccessDeniedException $e) {
-            return $this->getView('admin.clients.search', [
+            return $this->buildResponse('admin.clients.search', [
                 'error' => $e->__toString(),
                 'error_type' => 'access denied'
             ]);
         } catch (\Throwable $e) {
-            return $this->getView('admin.clients.search', [
+            return $this->buildResponse('admin.clients.search', [
                 'error' => $e->__toString(),
-                'error_type' => 'access denied'
+                'error_type' => 'unknown'
             ]);
         }
 
-        return $this->getView('admin.clients.show', $data);
+        return $this->buildResponse('admin.clients.show', $data);
     }
 
     public function list(ClientService $clientService)
@@ -96,12 +116,13 @@ class ClientController extends SmartController
         ]);
     }
 
-    public function queryShowIds(ClientService $userService)
+    public function queryShowIds(ClientService $clientService)
     {
-        $ids = $userService->getShowIdsForParams(
+        $ids = $clientService->getShowIdsForParams(
             $this->request->input('search', []),
             $this->request->input('sort', []),
-            $this->request->input('filter', [])
+            $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
         );
 
         return response()->json([
@@ -110,15 +131,35 @@ class ClientController extends SmartController
         ]);
     }
 
-    public function showDownload(ClientService $clientService)
+    public function showDownload($id, ClientService $clientService)
     {
         $clients = $clientService->processShowDownload(
+            $id,
             $this->request->input('search', []),
             $this->request->input('sort', []),
             $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
             $this->request->input('selected_ids', '')
         );
-
-        return Excel::download(new DefaultCollectionExports($clients), 'clients.xlsx');
+        $colsFormat = [
+            'symbol',
+            'entry_date',
+            'pa',
+            'category',
+            'sector',
+            'qty',
+            'buy_avg_price',
+            'amt_invested',
+            'cmp',
+            'cur_value',
+            'overall_gain',
+            'pc_change',
+            'todays_gain',
+            'day_high',
+            'day_low',
+            'impact',
+            'nof_days'
+        ];
+        return Excel::download(new DefaultArrayExports($clients, $colsFormat), 'clients.xlsx');
     }
 }

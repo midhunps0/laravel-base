@@ -9,6 +9,10 @@ class Client extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'realised_pnl'
+    ];
+
     public function family()
     {
         return $this->belongsTo(ClientFamily::class, 'family_id', 'id');
@@ -16,7 +20,8 @@ class Client extends Model
 
     public function scripts()
     {
-        return $this->belongsToMany(Script::class, 'clients_scripts', 'client_id', 'script_id');
+        return $this->belongsToMany(Script::class, 'clients_scripts', 'client_id', 'script_id')
+            ->withPivot('entry_date', 'dp_qty', 'available_qty', 'buy_avg_price');
     }
 
     public function scopeUserAccessControlled($query, $user = null)

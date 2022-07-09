@@ -5135,7 +5135,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var alpinejs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! alpinejs */ "./node_modules/alpinejs/dist/module.esm.js");
 /* harmony import */ var _alpinejs_persist__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @alpinejs/persist */ "./node_modules/@alpinejs/persist/dist/module.esm.js");
 /* harmony import */ var _components_page__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @/components/page */ "./resources/js/components/page.js");
-/* harmony import */ var _components_progressbar__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @/components/progressbar */ "./resources/js/components/progressbar.js");
+/* harmony import */ var _components_utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @/components/utils */ "./resources/js/components/utils.js");
+/* harmony import */ var _components_progressbar__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @/components/progressbar */ "./resources/js/components/progressbar.js");
+
 
 
 
@@ -5155,7 +5157,7 @@ alpinejs__WEBPACK_IMPORTED_MODULE_1__["default"].store('app', {
   pageloading: false
 });
 alpinejs__WEBPACK_IMPORTED_MODULE_1__["default"].data('initPage', _components_page__WEBPACK_IMPORTED_MODULE_3__["default"]);
-alpinejs__WEBPACK_IMPORTED_MODULE_1__["default"].data('progressBar', _components_progressbar__WEBPACK_IMPORTED_MODULE_4__["default"]);
+alpinejs__WEBPACK_IMPORTED_MODULE_1__["default"].data('progressBar', _components_progressbar__WEBPACK_IMPORTED_MODULE_5__["default"]);
 alpinejs__WEBPACK_IMPORTED_MODULE_1__["default"].start();
 
 /***/ }),
@@ -5446,6 +5448,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     resetPages: function resetPages() {
       this.$store.app.xpages = [];
       console.log('pages reset');
+    },
+    formatted: function formatted(e) {
+      var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+      return (e * 1).toFixed(n);
     }
   };
 });
@@ -5484,6 +5490,27 @@ __webpack_require__.r(__webpack_exports__);
           _this.barInit = false;
         }, 200);
       }
+    }
+  };
+});
+
+/***/ }),
+
+/***/ "./resources/js/components/utils.js":
+/*!******************************************!*\
+  !*** ./resources/js/components/utils.js ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (function () {
+  return {
+    formatted: function formatted(e) {
+      return e.toFixed(2);
     }
   };
 });

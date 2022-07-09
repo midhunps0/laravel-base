@@ -11,6 +11,7 @@ interface ModelViewConnector
         array $searches,
         array $sorts,
         array $filters,
+        array $advSearch,
         string $selectedIds,
         string $resultsName = 'results'
     ): array;
@@ -19,19 +20,22 @@ interface ModelViewConnector
         array $searches,
         array $sorts,
         array $filters,
+        array $advSearch,
         string $selectedIds
-    ): Collection;
+    ): array;
 
     public function getIdsForParams(
         array $searches,
         array $sorts,
-        array $filters
+        array $filters,
+        array $advSearch,
     ): array;
 
     public function getQueryAndParams(
         array $searches,
         array $sorts,
         array $filters,
+        array $advSearch,
         string $selectedIds = ''
     ): array;
 

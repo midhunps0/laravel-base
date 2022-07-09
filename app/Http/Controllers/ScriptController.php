@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\ScriptService;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\SmartController;
+use App\ImportExports\DefaultArrayExports;
 use App\ImportExports\DefaultCollectionExports;
 
 class ScriptController extends SmartController
@@ -19,19 +20,21 @@ class ScriptController extends SmartController
             $this->request->input('search', []),
             $this->request->input('sort', []),
             $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
             $this->request->input('selected_ids', ''),
-            'clients'
+            'scripts'
         );
 
-        return $this->getView('admin.clients.index', $data);
+        return $this->buildResponse('admin.scripts.index', $data);
     }
 
-    public function queryIds(ScriptService $userService)
+    public function queryIds(ScriptService $scriptService)
     {
-        $ids = $userService->getIdsForParams(
+        $ids = $scriptService->getIdsForParams(
             $this->request->input('search', []),
             $this->request->input('sort', []),
-            $this->request->input('filter', [])
+            $this->request->input('filter', []),
+            $this->request->input('adv_search', [])
         );
 
         return response()->json([
@@ -42,14 +45,15 @@ class ScriptController extends SmartController
 
     public function download(ScriptService $scriptService)
     {
-        $clients = $scriptService->processDownload(
+        $scripts = $scriptService->processDownload(
             $this->request->input('search', []),
             $this->request->input('sort', []),
             $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
             $this->request->input('selected_ids', '')
         );
 
-        return Excel::download(new DefaultCollectionExports($clients), 'clients.xlsx');
+        return Excel::download(new DefaultCollectionExports($scripts), 'scripts.xlsx');
     }
 
     /**
@@ -61,7 +65,7 @@ class ScriptController extends SmartController
     public function show($id, ScriptService $scriptService)
     {
         if ($id == 0) {
-            return $this->getView('admin.clients.search');
+            return $this->buildResponse('admin.scripts.search');
         }
         $data = $scriptService->getShowData(
             $id,
@@ -70,20 +74,62 @@ class ScriptController extends SmartController
             $this->request->input('search', []),
             $this->request->input('sort', []),
             $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
             $this->request->input('selected_ids', ''),
-            'client_scripts'
+            'clients'
         );
 
-        return $this->getView('admin.clients.show', $data);
+        return $this->buildResponse('admin.scripts.show', $data);
     }
 
-    public function list( ScriptService $scriptService)
+    public function list(ScriptService $scriptService)
     {
         $data = $scriptService->getList($this->request->input('search'));
 
         return response()->json([
             'data' => $data
         ]);
+    }
+
+    public function queryShowIds(ScriptService $scriptService)
+    {
+        $ids = $scriptService->getShowIdsForParams(
+            $this->request->input('search', []),
+            $this->request->input('sort', []),
+            $this->request->input('filter', []),
+            $this->request->input('adv_search', [])
+        );
+
+        return response()->json([
+            'success' => true,
+            'ids' => $ids
+        ]);
+    }
+
+    public function showDownload($id, ScriptService $scriptService)
+    {
+        $scripts = $scriptService->processShowDownload(
+            $id,
+            $this->request->input('search', []),
+            $this->request->input('sort', []),
+            $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
+            $this->request->input('selected_ids', '')
+        );
+        $colFormat = [
+            'code',
+            'qty',
+            'buy_avg_price',
+            'buy_val',
+            'cmp',
+            'cur_val',
+            'pnl',
+            'pnl_pc',
+            'nof_days',
+            'impact',
+            'pa'
+        ];
+        return Excel::download(new DefaultArrayExports($scripts, $colFormat), 'scripts.xlsx');
     }
 
     /**

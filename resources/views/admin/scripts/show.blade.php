@@ -1,90 +1,168 @@
 <x-utils.panelbase
     :x_ajax="$x_ajax"
-    title="Script wise Details"
-    indexUrl="{{route('client_scripts.show', $model->id)}}"
-    downloadUrl="{{route('client_scripts.show.download', $model->id)}}"
-    selectIdsUrl="{{route('client_scripts.show.selectIds', $model->id)}}"
+    title="Scriptwise Details"
+    indexUrl="{{route('scripts.show', $model->id)}}"
+    downloadUrl="{{route('scripts.show.download', $model->id)}}"
+    selectIdsUrl="{{route('scripts.show.selectIds', $model->id)}}"
     :items_count="$items_count"
     :items_ids="$items_ids"
     :total_results="$total_results"
     :current_page="$current_page"
-    :results="$client_scripts"
-    unique_str="clxone">
+    :results="$clients"
+    :results_json="$results_json"
+    :result_calcs="[]"
+    total_disp_cols="13"
+    unique_str="scrx"
+    :paginator="$paginator">
     <x-slot:body>
+        <input type="hidden" value="{{$results_json}}" id="results_json">
         <div class="flex flex-row space-x-4" >
         <div class="font-bold border border-base-300 rounded-md p-4">
-            <h1><span class="inline-block w-12">Client: </span><span class="text-warning">{{$model->client_code}}, {{$model->name}}</span></h1>
-            <h1><span class="inline-block w-12">AUM: </span><span class="text-warning">Rs. {{$model->total_aum}}</span></h1>
+            <h1><span class="inline-block mr-1">Symbol: </span><span class="inline-block mr-4 text-warning">{{$model->symbol}}</span><span class="inline-block mr-1">Company Name: </span><span class="inline-block mr-4 text-warning">{{$model->company_name}}</span></h1>
         </div>
-        <x-utils.clientsearch />
+        <x-utils.itemssearch
+            itemsName="scripts"
+            url="{{route('scripts.show', 0)}}"
+            searchUrl="{{route('scripts.list')}}"
+            routeName="scripts.show"
+            :searchDisplayKeys="['symbol', 'company_name']"
+            />
     </div>
     </x-slot>
     <x-slot:thead>
-        <th class="relative">
-            {{-- <div class="flex flex-row items-center" :class="compact ? 'w-32' : 'w-36'">
-                <x-utils.spotsort name="client_code" val="{{ $sort['client_code'] ?? 'none' }}" />
-                <div class="relative flex-grow ml-2">
-                    Client
-                    <x-utils.spotsearch textval="{{ $params['client_code'] ?? '' }}" textname="client_code"
-                        label="Search client" />
-                </div>
-            </div> --}}
+        <th class="relative text-center">
             Sl. No.
         </th>
-        <th class="relative w-52">DOP
-            {{-- <div class="flex flex-row items-center">
-                <x-utils.spotsort name="symbol" val="{{ $sort['symbol'] ?? 'symbol' }}" />
-                <div class="relative flex-grow ml-2">
-                    Script
-                    <x-utils.spotsearch textval="{{ $params['symbol'] ?? '' }}" textname="symbol"
-                        label="Search script" />
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center w-44">
+                <x-utils.spotsort name="client_code" val="{{ $sort['client_code'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2 text-left">
+                    Client Code
+                    <x-utils.spotsearch textval="{{ $params['client_code'] ?? '' }}" textname="client_code"
+                        label="Search client code" />
                 </div>
-            </div> --}}
+            </div>
         </th>
-        <th>Symbol</th>
-        <th>PA %</th>
-        <th>Category</th>
-        <th>Sector</th>
-        <th>Qty</th>
-        <th>Avg. Buy Rate</th>
-        <th>Amount Invested</th>
-        <th>CMP</th>
-        <th>Cur Value</th>
-        <th>Overall Gain</th>
-        <th>% Change</th>
-        <th>Today's Gain</th>
-        <th>Day High</th>
-        <th>Day Low</th>
-        <th>Impact</th>
-        <th>No. of days</th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="qty" val="{{ $sort['qty'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Qty
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="buy_avg_price" val="{{ $sort['buy_avg_price'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Avg Buy Rate
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="buy_val" val="{{ $sort['buy_val'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Avg Buy Rate
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="cmp" val="{{ $sort['cmp'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    CMP
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="cur_val" val="{{ $sort['cur_val'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Cur Value
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="pnl" val="{{ $sort['pnl'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    PNL
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="pnl_pc" val="{{ $sort['pnl_pc'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    PNL %
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="nof_days" val="{{ $sort['nof_days'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    No of days
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="impact" val="{{ $sort['impact'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Impact %
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="pa" val="{{ $sort['pa'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Allocation %
+                </div>
+            </div>
+        </th>
     </x-slot>
 
     <x-slot:rows>
-        @foreach ($client_scripts as $result)
+        {{-- @foreach ($clients as $result) --}}
+        <template x-for="(result, index) in results">
             <tr>
                 {{-- @if ($selectionEnabled) --}}
-                <td><input type="checkbox" value="{{ $result->id }}" x-model="selectedIds"
+                <td><input type="checkbox" :value="result.id" x-model="selectedIds"
                         class="checkbox checkbox-primary checkbox-xs"></td>
-                <td>{{$loop->index}}</td>
+                <td x-text="itemsCount * (currentPage - 1) + index + 1"></td>
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}
-                <td>{{ $result->symbol }}</td>
-                <td>{{ $result->pa }}</td>
-                <td>{{ $result->category }}</td>
-                <td>{{ $result->sector }}</td>
-                <td>{{ $result->qty }}</td>
-                <td>{{ $result->buy_avg_price }}</td>
-                <td>{{ $result->amt_invested }}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td class="text-center" >
+                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
+                        class="link no-underline hover:underline" href="" x-text="result.code"></a>
+                </td>
+                <td class="text-center" x-text="result.qty"></td>
+                <td class="text-right" x-text="formatted(result.buy_avg_price)"></td>
+                <td class="text-right" x-text="formatted(result.buy_val)"></td>
+                <td class="flex flex-row items-baseline justify-end" :class="result.cmp < result.buy_avg_price ? 'text-error' : 'text-accent'">
+                    <x-display.icon x-show="result.cmp >= result.buy_avg_price" icon="icons.up-arrow"/>
+                    <x-display.icon x-show="result.cmp < result.buy_avg_price" icon="icons.down-arrow"/>
+                    <span x-text="formatted(result.cmp)"></span>
+                </td>
+                <td class="text-right" x-text="formatted(result.cur_val)"></td>
+                <td class="flex flex-row items-baseline justify-end" :class="result.pnl < 0 ? 'text-error' : 'text-accent'">
+                    {{-- <x-display.icon x-show="result.pnl >= 0" icon="icons.up-arrow"/>
+                    <x-display.icon x-show="result.pnl < 0" icon="icons.down-arrow"/> --}}
+                    <span x-text="formatted(result.pnl)"></span>
+                </td>
+                <td class="text-right" x-text="formatted(result.pnl_pc, 2)"></td>
+                <td class="text-center" x-text="result.nof_days"></td>
+                <td class="flex flex-row items-baseline justify-end" :class="result.impact < 0 ? 'text-error' : 'text-accent'">
+                    {{-- <x-display.icon x-show="result.impact >= 0" icon="icons.up-arrow"/>
+                    <x-display.icon x-show="result.impact < 0" icon="icons.down-arrow"/> --}}
+                    <span x-text="formatted(result.impact, 2)"></span>
+                </td>
+                <td class="text-right" x-text="formatted(result.pa, 2)"></td>
             </tr>
-        @endforeach
+        </template>
+        {{-- @endforeach --}}
     </x-slot>
 </x-utils.panelbase>

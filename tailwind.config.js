@@ -75,7 +75,21 @@ module.exports = {
 
     daisyui: {
         themes: [
-            'light',
+            // 'light',
+            {
+                light: {
+                    ...require("daisyui/src/colors/themes")["[data-theme=light]"],
+                    "primary": "#6419E6",
+                    "secondary": "#D926A9",
+                    "accent": "#0d9488",
+                    "neutral": "#1f2937",
+                    "base-100": "#FFFFFF",
+                    "info": "#38bdf8",
+                    "success": "#36D399",
+                    "warning": "#FBBD23",
+                    "error": "#f87171",
+                },
+            },
             {
                 'newdark': {
                     'primary': '#570df8',

@@ -26,6 +26,7 @@ return new class extends Migration
             $table->double('total_aum', 12, 2)->default(0);
             $table->double('other_funds', 12, 2)->default(0);
             $table->double('brokerage', 12, 2)->default(0);
+            $table->double('realised_pnl', 12, 2)->default(0);
             $table->string('pfo_type', 20)->nullable();
             $table->string('category', 20)->nullable();
             $table->string('type', 20)->nullable();

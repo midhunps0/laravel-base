@@ -8,6 +8,6 @@ class DashboardController extends SmartController
 {
     public function dashboard()
     {
-        return $this->getView('admin.dashboard');
+        return $this->buildResponse('admin.dashboard');
     }
 }

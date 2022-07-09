@@ -1,110 +1,107 @@
 <?php
 namespace App\Services;
 
+use App\Models\User;
 use App\Models\Client;
-use App\Models\Script;
 use Illuminate\Support\Facades\DB;
 use App\Contracts\ModelViewConnector;
+use App\Models\Script;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Database\Query\Builder;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 class ScriptService implements ModelViewConnector
 {
     use IsModelViewConnector;
 
-    private $scriptsSelects;
     public function __construct()
     {
         $this->query = Script::query()->userAccessControlled();
         $this->itemQuery = Script::query();
-        $this->scriptsSelects = [
+        $this->relationSelects = [
             'c.id as id',
-            'c.name as client_name',
-            's.symbol',
+            'c.client_code as code',
+            's.symbol as symbol',
+            's.cmp as cmp',
             'cs.dp_qty as qty',
             'cs.buy_avg_price as buy_avg_price',
-            DB::raw('cs.buy_avg_price * cs.dp_qty as avg_buy_value'),
+            'c.total_aum as aum',
+            DB::raw('cs.buy_avg_price * cs.dp_qty as buy_val'),
+            DB::raw('cs.dp_qty * s.cmp as cur_val'),
+            DB::raw('(s.cmp - cs.buy_avg_price) * cs.dp_qty as pnl'),
             DB::raw('cs.buy_avg_price * cs.dp_qty * 100 / c.total_aum as pa'),
+            DB::raw('(s.cmp - cs.buy_avg_price) / cs.buy_avg_price * 100 as pnl_pc'),
+            DB::raw('DATEDIFF(CURDATE(), cs.entry_date) as nof_days'),
+            DB::raw('(s.cmp - cs.buy_avg_price) * cs.dp_qty / c.total_aum * 100 as impact'),
+            DB::raw('cs.buy_avg_price * cs.dp_qty / c.total_aum * 100 as pa'),
         ];
+        $this->selIdsKey = 'c.id';
     }
 
-    public function getShowData(
-        int $id,
-        int $itemsCount = 10,
-        ?int $page = 1,
-        array $searches = [],
-        array $sorts = [],
-        array $filters = [],
-        string $selectedIds = '',
-        $relationsResultsName = 'results'
-    ) {
-        $script = $this->itemQuery->find($id);
+    protected function getRelationQuery(int $id = null)
+    {
         $query = DB::table('scripts', 's')
             ->join('clients_scripts as cs', 's.id', '=', 'cs.script_id')
             ->join('clients as c', 'c.id', '=', 'cs.client_id')
-            ->where('s.id', $script->id);
-        $queryData = $this->getRelationQueryAndParams(
-            $query,
-            $searches,
-            $sorts,
-            $filters,
-            $selectedIds
-        );
-// dd($queryData['query']->toSql());
-        $scripts = $queryData['query']->paginate(
-            $itemsCount,
-            $this->scriptsSelects,
-            'page',
-            $page
-        );
+            ->join('users as u', 'c.rm_id', '=', 'u.id')
+            ->where('s.id', $id);
 
-        // dd($scripts);
-        $itemIds = $scripts->pluck('id')->toArray();
-        $data = $scripts->toArray();
-        return [
-            'model' => $script,
-            $relationsResultsName => $scripts,
-            'params' => $queryData['searchParams'],
-            'sort' => $queryData['sortParams'],
-            'filter' => $queryData['filterData'],
-            'items_count' => $itemsCount,
-            'items_ids' => implode(',',$itemIds),
-            'total_results' => $data['total'],
-            'current_page' => $data['current_page']
-        ];
-    }
-
-    public function getRelationQueryAndParams(
-        Builder $query,
-        array $searches,
-        array $sorts,
-        array $filters,
-        string $selectedIds = ''): array
-    {
-        $filterData = $this->getFilterParams($query, $filters);
-        $searchParams = $this->getSearchParams($query, $searches);
-        $sortParams = $this->getSortParams($query, $sorts);
-
-        if (strlen(trim($selectedIds)) > 0) {
-            $ids = explode('|', $selectedIds);
-            $query->whereIn('id', $ids);
+        $user = $user ?? auth()->user();
+        if ($user->hasRole('Dealer')) {
+            $query->whereIn('c.rm_id', [$user->id]);
+        } else if ($user->hasRole('Team Leader')) {
+            $dealers =  array_values(User::where('teamleader_id', $user->id)->pluck('id')->toArray());
+            $dealers[] = $user->id;
+            $query->whereIn('c.rm_id', $dealers);
         }
 
-        return [
-            'query' => $query,
-            'searchParams' => $searchParams,
-            'sortParams' => $sortParams,
-            'filterData' => $filterData
-        ];
+        return $query;
     }
 
     public function getList($search)
     {
-        $clients = Client::where('client_code', 'like', $search.'%')
-            ->orWhere('name', 'like', '%'.$search.'%')->select(['id', 'client_code as code', 'name'])->limit(15)->get();
+        $scripts = Script::where('symbol', 'like', $search.'%')
+            ->orWhere('company_name', 'like', '%'.$search.'%')
+            ->orWhere('isin_code', 'like', '%'.$search)
+            ->select(['id', 'isin_code as code', 'symbol', 'company_name'])
+            ->limit(15)->get();
         return [
-            'clients' => $clients
+            'scripts' => $scripts
         ];
+    }
+
+    protected function accessCheck($item): bool
+    {
+        return true;
+    }
+
+    public function formatRelationResults(mixed $results): array
+    {
+        $formatted = [];
+// dd($results[0]['cmp']);
+        foreach ($results as $result) {
+            $row = [];
+            if (is_array($result)) {
+                $row = $result;
+            } else {
+                $row['id'] = $result->id;
+                $row['code'] = $result->code;
+                $row['qty'] = $result->qty;
+                $row['buy_avg_price'] = $result->buy_avg_price;
+                $row['buy_val'] = $result->buy_val;
+                $row['cmp'] = $result->cmp;
+                $row['cur_val'] = $result->cur_val;
+                $row['pnl'] = $result->pnl;
+                $row['pnl_pc'] = $result->pnl_pc;
+                $row['nof_days'] = $result->nof_days;
+                $row['impact'] = $result->impact;
+                $row['pa'] = $result->pa;
+            }
+
+            $formatted[] = $row;
+        }
+
+        return $formatted;
     }
 
     private function getFilterParams($query, $filters) {
