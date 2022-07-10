@@ -1,4 +1,4 @@
-@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'paginator', 'columns' => []])
+@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'paginator', 'columns' => [], 'orderBaseUrl' => ''])
 <x-dashboard-base :ajax="$x_ajax">
     <div x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative">
 
@@ -71,17 +71,33 @@
                 currentPage: {{ $current_page }},
                 downloadUrl: '{{ $downloadUrl }}',
                 results: null,
-                order_bors: 'Sell',
-                order_qty: 0,
-                order_price: 0,
-                order_slippage: 0,
-                order_base_url: '',
-                order_url: '',
-                exportOrder() {
-                    alert(this.order_bors+' '+
-                    this.order_qty+' '+
-                    this.order_price+' '+
-                    this.order_slippage+' ');
+                order_base_url: '{{ $orderBaseUrl }}',
+                order: {
+                    bors: 'Sell',
+                    qty: 0,
+                    price: 0.00,
+                    slippage: 0.01,
+                    get url() {
+                        console.log(this.qty);
+                        console.log(this.price);
+                        console.log(this.slippage);
+                        return '{{ $orderBaseUrl }}'
+                        + '?bors=' + this.bors
+                        + '&qty=' + this.qty
+                        + '&price=' + this.price
+                        + '&slippage=' + this.slippage;
+                    },
+                    get enabled() {
+                        return this.qty.length != 0 && this.price.length != 0
+                            && this.slippage.length != 0
+                            && this.slippage >= 0.01 && this.slippage <= 2;
+                    },
+                    reset() {
+                        this.bors = 'Sell';
+                        this.qty = 0;
+                        this.price = 0.00;
+                        this.slippage = 0.01;
+                    }
                 },
                 paginatorPage: null,
                 paginator: {
@@ -422,7 +438,14 @@
                         allSelected = false;
                     }
                     setDownloadUrl();
-                });
+                    $watch('order', (ord) => {
+                        order.url = order_base_url + '?' +
+                            'bors=' + ord.bors + '&' +
+                            'qty=' + ord.qty + '&' +
+                            'price=' + ord.price + '&' +
+                            'slippage=' + ord.slippage;
+                        })
+                    });
 
                 $nextTick(() => {
                     setDownloadUrl();
@@ -562,35 +585,40 @@
                                 This order will be generated for <span class="font-bold text-warning text-lg" x-text="getOrderItemsCount()"></span> items.
                             </h6>
                         </div>
-                        <form action="#" class="w-full border border-warning rounded-md">
+                        <div class="w-full border border-warning rounded-md">
                             <div class="flex flex-row justify-between w-full mx-auto p-4 m-4 space-x-2">
                                 <div class="w-1/4">
                                     <label for="bors">Action</label><br/>
-                                    <select x-model="order_bors" id="bors" class="select select-sm py-0 w-full">
+                                    <select x-model="order.bors" id="bors" class="select select-sm py-0 w-full">
                                         <option value="Buy">Buy</option>
                                         <option value="Sell">Sell</option>
                                     </select>
                                 </div>
                                 <div class="w-1/4">
                                     <label for="order_qty">Quantity</label><br/>
-                                    <input x-model="order_qty" id="order_qty" type="number" class="input input-sm w-full">
+                                    <input x-model="order.qty" id="order_qty" type="number" class="input input-sm w-full" oninput="if (this.value.length != 0) {var val = Math.floor(this.value); this.value = null; this.value = val;}">
                                 </div>
                                 <div class="w-1/4">
                                     <label for="order_price">Price</label><br/>
-                                    <input x-model="order_price" id="order_price" type="text" class="input input-sm w-full">
+                                    <input x-model="order.price" type="number" min="0.00" step="0.01" id="order_price" type="text" class="input input-sm w-full">
                                 </div>
                                 <div class="w-1/4">
                                     <label for="order_slippage">Slippage</label><br/>
-                                    <input x-model="order_slippage" id="order_slippage" type="text" class="input input-sm w-full">
+                                    <input x-model="order.slippage" type="number" min="0.00" max="2.00" step="0.01" id="order_slippage" type="text" class="input input-sm w-full" :class="order.slippage < 0.01 || order.slippage > 2 ? 'text-error border border-error' : ''">
+                                    <label class="label">
+                                        <span class="label-text-alt" :class="order.slippage < 0.01 ? 'text-error' : ''">Min: 0.01</span>
+                                        <span class="label-text-alt" :class="order.slippage > 2 ? 'text-error' : ''">Max: 2.00</span>
+                                    </label>
                                 </div>
                             </div>
-                            <div class="my-4 px-1 text-center">
-                                <button @click.prevent.stop="exportOrder()"
-                                    class="btn btn-sm btn-success py-0 border border-base-100 flex felx-row items-center justify-center mx-auto">
+                            <div class="my-4 px-1 text-center w-full flex flex-row justify-between space-x-4">
+                                <button @click.prevent.stop="order.reset();" class="btn btn-sm text-base-content">Reset</button>
+                                <a :href="order.url"
+                                    class="btn btn-sm btn-success py-0 border border-base-100 flex felx-row items-center justify-center mx-auto" download :disabled="!order.enabled">
                                     <x-display.icon icon="icons.info" height="h-4" width="w-4" />&nbsp;Generate Order
-                                </button>
+                                </a>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
                 @endif

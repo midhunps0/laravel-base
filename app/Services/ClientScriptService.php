@@ -184,6 +184,15 @@ class ClientScriptService implements ModelViewConnector
         return $formatted;
     }
 
+    public function downloadOrder(
+        $searches,
+        $sorts,
+        $filters,
+        $advParams,
+        $selectedIds
+    ) {
+        return [];
+    }
     private function getFilterParams($query, $filters) {
         return [];
     }

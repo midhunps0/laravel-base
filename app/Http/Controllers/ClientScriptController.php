@@ -92,35 +92,35 @@ class ClientScriptController extends SmartController
     //     ]);
     // }
 
-    // public function showDownload($id, ClientScriptService $ClientScriptService)
-    // {
-    //     $clients = $ClientScriptService->processShowDownload(
-    //         $id,
-    //         $this->request->input('search', []),
-    //         $this->request->input('sort', []),
-    //         $this->request->input('filter', []),
-    //         $this->request->input('adv_search', []),
-    //         $this->request->input('selected_ids', '')
-    //     );
-    //     $colsFormat = [
-    //         'symbol',
-    //         'entry_date',
-    //         'pa',
-    //         'category',
-    //         'sector',
-    //         'qty',
-    //         'buy_avg_price',
-    //         'amt_invested',
-    //         'cmp',
-    //         'cur_value',
-    //         'overall_gain',
-    //         'pc_change',
-    //         'todays_gain',
-    //         'day_high',
-    //         'day_low',
-    //         'impact',
-    //         'nof_days'
-    //     ];
-    //     return Excel::download(new DefaultArrayExports($clients, $colsFormat), 'clients.xlsx');
-    // }
+    public function downloadOrder($id, ClientScriptService $ClientScriptService)
+    {
+        $order = $ClientScriptService->downloadOrder(
+            $id,
+            $this->request->input('search', []),
+            $this->request->input('sort', []),
+            $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
+            $this->request->input('selected_ids', '')
+        );
+        $colsFormat = [
+            'symbol',
+            'entry_date',
+            'pa',
+            'category',
+            'sector',
+            'qty',
+            'buy_avg_price',
+            'amt_invested',
+            'cmp',
+            'cur_value',
+            'overall_gain',
+            'pc_change',
+            'todays_gain',
+            'day_high',
+            'day_low',
+            'impact',
+            'nof_days'
+        ];
+        return Excel::download(new DefaultArrayExports($order, $colsFormat), 'order.xlsx');
+    }
 }

@@ -55,5 +55,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('clientsripts/select-ids', [ClientController::class, 'queryIds'])->name('clientscripts.selectIds');
     Route::get('clientsripts/download', [ClientController::class, 'download'])
         ->name('clientscripts.download');
+    Route::get('clientsripts/download-order', [ClientController::class, 'downloadOrder'])
+        ->name('clientscripts.order.download');
     Route::resource('clientscripts', ClientScriptController::class)->only('index');
 });

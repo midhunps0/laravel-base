@@ -23,7 +23,8 @@
     :paginator="$paginator"
     :columns="[
         'client_code', 'name', 'symbol', 'aum', 'allocated_aum', 'client_cur_value', 'client_pnl', 'client_pnl_pc', 'realised_pnl', 'liquidbees', 'cash', 'cash_pc', 'returns', 'returns_pc', 'qty', 'buy_avg_price', 'cmp', 'ldc', 'day_high', 'day_low', 'pnl', 'pnl_pc', 'nof_days', 'impact', 'industry', 'sector', 'dealer'
-    ]">
+    ]"
+    orderBaseUrl="{{route('clientscripts.order.download')}}">
     {{-- {{dd($clientscripts->links())}} --}}
     <x-slot:thead>
         <input type="hidden" value="{{$results_json}}" id="results_json">
