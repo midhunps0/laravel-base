@@ -22,7 +22,7 @@ class ClientController extends SmartController
             $this->request->input('selected_ids', ''),
             'clients'
         );
-    // dd($data);
+
         return $this->buildResponse('admin.clients.index', $data);
     }
 
@@ -116,9 +116,10 @@ class ClientController extends SmartController
         ]);
     }
 
-    public function queryShowIds(ClientService $clientService)
+    public function queryShowIds($id, ClientService $clientService)
     {
         $ids = $clientService->getShowIdsForParams(
+            $id,
             $this->request->input('search', []),
             $this->request->input('sort', []),
             $this->request->input('filter', []),

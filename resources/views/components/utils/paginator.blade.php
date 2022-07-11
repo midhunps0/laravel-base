@@ -63,7 +63,7 @@
     }
 }"
 @setpagination.window="setPaginator($event.detail.paginator);">
-    <nav x-show="currentPage < lastPage" role="navigation" aria-label="{{ __('Pagination Navigation') }}"
+    <nav x-show="totalItems / itemsPerPage > 1" role="navigation" aria-label="{{ __('Pagination Navigation') }}"
         class="flex items-center justify-between">
         <div class="flex justify-between flex-1 sm:hidden">
             <span x-show="isFirstPage()"
@@ -91,7 +91,7 @@
 
         </div>
 
-        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between flex-wrap">
             <div>
                 <p class="text-sm text-base-content leading-5">
                     {!! __('Showing') !!}

@@ -9,6 +9,7 @@ use App\Http\Controllers\ScriptController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClientScriptController;
 use App\Http\Controllers\Auth\Custom\LoginController;
+use App\Http\Controllers\LiveUpdateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,11 +52,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('import/trade-backup', [ImportController::class, 'tradeBackupForm'])->name('get.import.trade_backup');
     Route::post('import/trade-backup', [ImportController::class, 'tradeBackupImport'])->name('post.import.trade_backup');
 
-    Route::get('clientsripts/get-list', [ClientController::class, 'list'])->name('clientsripts.list');
-    Route::get('clientsripts/select-ids', [ClientController::class, 'queryIds'])->name('clientscripts.selectIds');
-    Route::get('clientsripts/download', [ClientController::class, 'download'])
+    Route::get('clientsripts/get-list', [ClientScriptController::class, 'list'])->name('clientsripts.list');
+    Route::get('clientsripts/verify-order', [ClientScriptController::class, 'verifySellOrder'])->name('clientsripts.sellorder.verify');
+    Route::get('clientsripts/select-ids', [ClientScriptController::class, 'queryIds'])->name('clientscripts.selectIds');
+    Route::get('clientsripts/download', [ClientScriptController::class, 'download'])
         ->name('clientscripts.download');
-    Route::get('clientsripts/download-order', [ClientController::class, 'downloadOrder'])
+    Route::get('clientsripts/download-order', [ClientScriptController::class, 'downloadOrder'])
         ->name('clientscripts.order.download');
     Route::resource('clientscripts', ClientScriptController::class)->only('index');
+
+    Route::get('live-update', [LiveUpdateController::class, 'liveUpdate']);
 });

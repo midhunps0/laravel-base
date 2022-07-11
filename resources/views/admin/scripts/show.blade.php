@@ -16,6 +16,7 @@
     :paginator="$paginator">
     <x-slot:body>
         <input type="hidden" value="{{$results_json}}" id="results_json">
+        <input type="hidden" value="{{$items_ids}}" id="itemIds">
         <div class="flex flex-row space-x-4" >
         <div class="font-bold border border-base-300 rounded-md p-4">
             <h1><span class="inline-block mr-1">Symbol: </span><span class="inline-block mr-4 text-warning">{{$model->symbol}}</span><span class="inline-block mr-1">Company Name: </span><span class="inline-block mr-4 text-warning">{{$model->company_name}}</span></h1>
@@ -33,7 +34,7 @@
         <th class="relative text-center">
             Sl. No.
         </th>
-        <th class="text-center border-l-2 border-base-100">
+        <th class="text-center border-l-2 border-base-100 sticky !left-6">
             <div class="flex flex-row items-center w-44">
                 <x-utils.spotsort name="client_code" val="{{ $sort['client_code'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2 text-left">
@@ -135,7 +136,7 @@
                 <td x-text="itemsCount * (currentPage - 1) + index + 1"></td>
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}
-                <td class="text-center" >
+                <td class="text-center sticky !left-6" >
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.code"></a>
                 </td>
@@ -145,7 +146,7 @@
                 <td class="flex flex-row items-baseline justify-end" :class="result.cmp < result.buy_avg_price ? 'text-error' : 'text-accent'">
                     <x-display.icon x-show="result.cmp >= result.buy_avg_price" icon="icons.up-arrow"/>
                     <x-display.icon x-show="result.cmp < result.buy_avg_price" icon="icons.down-arrow"/>
-                    <span x-text="formatted(result.cmp)"></span>
+                    <span x-text="formatted(result.cmp, 2)"></span>
                 </td>
                 <td class="text-right" x-text="formatted(result.cur_val)"></td>
                 <td class="flex flex-row items-baseline justify-end" :class="result.pnl < 0 ? 'text-error' : 'text-accent'">

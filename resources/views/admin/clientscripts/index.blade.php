@@ -24,10 +24,12 @@
     :columns="[
         'client_code', 'name', 'symbol', 'aum', 'allocated_aum', 'client_cur_value', 'client_pnl', 'client_pnl_pc', 'realised_pnl', 'liquidbees', 'cash', 'cash_pc', 'returns', 'returns_pc', 'qty', 'buy_avg_price', 'cmp', 'ldc', 'day_high', 'day_low', 'pnl', 'pnl_pc', 'nof_days', 'impact', 'industry', 'sector', 'dealer'
     ]"
-    orderBaseUrl="{{route('clientscripts.order.download')}}">
+    orderBaseUrl="{{route('clientscripts.order.download')}}"
+    orderVerifyUrl="{{route('clientsripts.sellorder.verify')}}">
     {{-- {{dd($clientscripts->links())}} --}}
     <x-slot:thead>
         <input type="hidden" value="{{$results_json}}" id="results_json">
+        <input type="hidden" value="{{$items_ids}}" id="itemIds">
         {{-- <div>{{dd($paginator)}}</div> --}}
         <th class="sticky !left-6 w-44">
             <div class="flex flex-row items-center w-36">
@@ -259,7 +261,7 @@
         <template x-for="result in results">
             <tr>
                 {{-- @if ($selectionEnabled) --}}
-                <td><input type="checkbox" :value="result.id" x-model="selectedIds"
+                <td><input type="checkbox" :value="result.uxid" x-model="selectedIds"
                         class="checkbox checkbox-primary checkbox-xs sticky"></td>
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}

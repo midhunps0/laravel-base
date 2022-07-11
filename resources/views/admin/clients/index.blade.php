@@ -26,7 +26,8 @@
     :paginator="$paginator">
     <x-slot:thead>
         <input type="hidden" value="{{$results_json}}" id="results_json">
-        <th class="relative w-44">
+        <input type="hidden" value="{{$items_ids}}" id="itemIds">
+        <th class="sticky !left-6 w-44">
             <div class="flex flex-row items-center w-36">
                 <x-utils.spotsort name="client_code" val="{{ $sort['client_code'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
@@ -36,7 +37,7 @@
                 </div>
             </div>
         </th>
-        <th class="relative w-72 border-l-2 border-base-100">
+        <th class="w-72 border-l-2 border-base-100 sticky !left-40 z-20">
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="name" val="{{ $sort['name'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
@@ -154,11 +155,11 @@
                         class="checkbox checkbox-primary checkbox-xs"></td>
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}
-                <td>
+                <td class="sticky !left-6">
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.client_code"></a>
                 </td>
-                <td>
+                <td class="sticky !left-40">
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.name"></a>
                 </td>

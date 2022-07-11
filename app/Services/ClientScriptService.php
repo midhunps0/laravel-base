@@ -4,9 +4,10 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Client;
 // use App\Models\Script;
+use App\Helpers\AppHelper;
 use Illuminate\Support\Facades\DB;
 use App\Contracts\ModelViewConnector;
-use App\Helpers\AppHelper;
+use Illuminate\Contracts\Database\Query\Builder;
 
 // use Hamcrest\Arrays\IsArray;
 // use Illuminate\Database\Eloquent\Model;
@@ -64,6 +65,7 @@ class ClientScriptService implements ModelViewConnector
             'cst.cur_value as client_cur_value',
             's.id as sid',
             's.symbol as symbol',
+            's.nse_code as nse_code',
             's.tracked as tracked',
             's.cmp as cmp',
             's.last_day_closing as ldc',
@@ -89,6 +91,7 @@ class ClientScriptService implements ModelViewConnector
             DB::raw('(c.realised_pnl + cst.cur_value - c.total_aum) /c.total_aum * 100 as returns_pc'),
             DB::raw('cst.cur_value - c.total_aum as client_pnl'),
             DB::raw('(cst.cur_value - c.total_aum) / c.total_aum * 100 as client_pnl_pc'),
+            DB::raw('IF(s.id IS NULL, CONCAT(c.id, "::", "0"), CONCAT(c.id, "::", s.id)) as uxid')
         ];
 
         $this->searchesMap = [
@@ -102,6 +105,7 @@ class ClientScriptService implements ModelViewConnector
             'client_cur_value' => 'cst.cur_value',
             'sid' => 's.id',
             'symbol' => 's.symbol',
+            'nse_code' => 's.nse_code',
             'tracked' => 's.tracked',
             'cmp' => 's.cmp',
             'ldc' => 's.last_day_closing',
@@ -116,7 +120,37 @@ class ClientScriptService implements ModelViewConnector
             'liquidbees' => 'lbq.liquidbees',
         ];
 
-        $this->selIdsKey = 'c.id';
+        $this->selIdsKey = 'uxid';
+        $this->relSelIdsKey = 'c.id';
+    }
+
+    public function verifySellOrder(
+        array $searches,
+        array $sorts,
+        array $filters,
+        array $advSearch,
+        string | null $selectedIds,)
+    {
+        $queryData = $this->getQueryAndParams(
+            $searches,
+            $sorts,
+            $filters,
+            $advSearch,
+            $selectedIds
+        );
+
+        DB::statement("SET SQL_MODE=''");
+        $results = $queryData['query']->select($this->selects)->get();
+        DB::statement("SET SQL_MODE='only_full_group_by'");
+
+        $valid = true;
+        foreach ($results as $result) {
+            if ($result->sid == null) {
+                $valid = false;
+                break;
+            }
+        }
+        return $valid;
     }
 
     protected function applyGroupings($query) {
@@ -131,6 +165,36 @@ class ClientScriptService implements ModelViewConnector
                 }
             );
         }
+    }
+
+    public function getIdsForParams(
+        array $searches,
+        array $sorts,
+        array $filters,
+        array $advSearch,
+    ): array {
+        $queryData = $this->getQueryAndParams(
+            $searches,
+            $sorts,
+            $filters,
+            $advSearch
+        );
+
+        DB::statement("SET SQL_MODE=''");
+        $results = $queryData['query']->select($this->selects)->get()->pluck('uxid')->toArray();
+        DB::statement("SET SQL_MODE='only_full_group_by'");
+
+        // $ids = [];
+        // foreach ($results as $result) {
+        //     $ids[] = $result->id.'::'.$result->sid;
+        // }
+
+        return $results;
+    }
+
+    private function getItemIds($results) {
+        $ids = $results->pluck('uxid')->toArray();
+        return json_encode($ids);
     }
 
     protected function getRelationQuery(int $id = null)
@@ -184,14 +248,53 @@ class ClientScriptService implements ModelViewConnector
         return $formatted;
     }
 
+    private function querySelectedIds(Builder $query, string $idKey, array $ids): void
+    {
+        $idStr = '|'.implode('|', $ids);
+        $query->where(DB::raw('INSTR("'.$idStr.'", CONCAT(c.id, "::", s.id))'), '>', 0);
+        // DB::raw('IF(s.id IS NULL, CONCAT(c.id, "::", "0"), CONCAT(c.id, "::", s.id)) as uxid')
+    }
+
     public function downloadOrder(
-        $searches,
-        $sorts,
-        $filters,
-        $advParams,
-        $selectedIds
+        array $searches,
+        array $sorts,
+        array $filters,
+        array $advSearch,
+        string | null $selectedIds,
+        int $qty,
+        float $price,
+        float $slippage
     ) {
-        return [];
+        $queryData = $this->getQueryAndParams(
+            $searches,
+            $sorts,
+            $filters,
+            $advSearch,
+            $selectedIds,
+        );
+
+        DB::statement("SET SQL_MODE=''");
+        $results = $queryData['query']->select($this->selects)->get();
+        DB::statement("SET SQL_MODE='only_full_group_by'");
+
+        $export = [];
+        foreach ($results as $result) {
+            $row = [
+                'exchange_code' => 'NSE',
+                'buyorsell' => 'S',
+                'product' => 'SellFromDP',
+                'order_type' => 'L',
+                'discount_qty' => '0',
+                'trigger_price' => '0'
+            ];
+            $row['script_name'] = $result->symbol.' EQ| '.$result->nse_code;
+            $row['qty'] = $qty.'';
+            $row['lot'] = $qty.'';
+            $row['price'] = $result->cmp * (100 - $slippage) / 100;
+            $row['client_code'] = $result->client_code;
+            $export[] = $row;
+        }
+        return $export;
     }
     private function getFilterParams($query, $filters) {
         return [];

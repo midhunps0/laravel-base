@@ -22,6 +22,7 @@
     :paginator="$paginator">
     <x-slot:body>
         <input type="hidden" value="{{$results_json}}" id="results_json">
+        <input type="hidden" value="{{$items_ids}}" id="itemIds">
         <div class="flex flex-row space-x-4" >
         <div class="font-bold border border-base-300 rounded-md p-4">
             <h1><span class="inline-block mr-1">Code: </span><span class="inline-block mr-4 text-warning">{{$model->client_code}}</span><span class="inline-block mr-1">Name: </span><span class="inline-block mr-4 text-warning">{{$model->name}}</span><span class="inline-block mr-1">AUM: </span><span class="inline-block mr-4 text-warning">{{$model->total_aum}}</span></h1>
@@ -36,10 +37,10 @@
     </div>
     </x-slot>
     <x-slot:thead>
-        <th class="relative">
+        <th class="sticky !left-6">
             Sl. No.
         </th>
-        <th class="text-center border-l-2 border-base-100">
+        <th class="text-center border-l-2 border-base-100 sticky !left-12">
             <div class="flex flex-row items-center w-48">
                 <x-utils.spotsort name="symbol" val="{{ $sort['symbol'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
@@ -176,10 +177,10 @@
                 {{-- @if ($selectionEnabled) --}}
                 <td><input type="checkbox" :value="result.id" x-model="selectedIds"
                         class="checkbox checkbox-primary checkbox-xs"></td>
-                <td x-text="itemsCount * (currentPage - 1) + index + 1"></td>
+                <td class="sticky !left-6" x-text="itemsCount * (currentPage - 1) + index + 1"></td>
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}
-                <td >
+                <td class="sticky !left-12">
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('scripts.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.symbol"></a>
                 </td>
@@ -193,12 +194,12 @@
                 <td>
                     <div class="flex flex-row items-baseline justify-end"
                     :class="{'text-error' : result.cmp < result.buy_avg_price, 'text-accent' : result.cmp > result.buy_avg_price}">
-                        <span x-text="formatted(result.cmp)"></span>
+                        <span x-text="formatted(result.cmp, 2)"></span>
                         <x-display.icon x-show="result.cmp > result.buy_avg_price" icon="icons.up-arrow"/>
                         <x-display.icon x-show="result.cmp < result.buy_avg_price" icon="icons.down-arrow"/>
                     </div>
                 </td>
-                <td class="text-right" x-text="formatted(result.cur_value)"
+                <td class="text-right" x-text="formatted(result.cur_value, 2)"
                 :class="{'text-error' : result.cur_value < result.amt_invested, 'text-accent' : result.cur_value > result.amt_invested}"></td>
                 <td class="text-right" :class="{'text-error' : result.overall_gain < 0, 'text-accent' : result.overall_gain > 0}" x-text="formatted(result.overall_gain)"></td>
                 <td class="text-right" :class="{'text-error' : result.pc_change < 0, 'text-accent' : result.pc_change > 0}" x-text="formatted(result.pc_change, 2)"></td>

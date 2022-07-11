@@ -13,9 +13,12 @@ trait IsModelViewConnector{
     protected $query;
     protected $itemQuery;
     protected $relationQuery;
+    protected $idKey = 'id';
+    protected $relIdKey = 'id';
     protected $selects = '*';
     protected $relationSelects;
     protected $selIdsKey = 'id';
+    protected $relSelIdsKey = 'id';
     protected $searchesMap = [];
     protected $relSearchesMap = [];
 
@@ -45,8 +48,8 @@ trait IsModelViewConnector{
             $page
         );
         DB::statement("SET SQL_MODE='only_full_group_by'");
-// dd($results);
-        $itemIds = $results->pluck('id')->toArray();
+
+        // $itemIds = $results->pluck('id')->toArray();
         $data = $results->toArray();
 
         $paginator = $this->getPaginatorArray($results);
@@ -57,12 +60,17 @@ trait IsModelViewConnector{
             'sort' => $queryData['sortParams'],
             'filter' => $queryData['filterData'],
             'items_count' => $itemsCount,
-            'items_ids' => implode(',', $itemIds),
+            'items_ids' => $this->getItemIds($results),
             'total_results' => $data['total'],
             'current_page' => $data['current_page'],
             'paginator' => json_encode($paginator),
             'route' => Request::route()->getName()
         ];
+    }
+
+    private function getItemIds($results) {
+        $ids = $results->pluck($this->idKey)->toArray();
+        return json_encode($ids);
     }
 
     public function processDownload(
@@ -99,7 +107,10 @@ trait IsModelViewConnector{
             $advSearch
         );
 
-        $results = $queryData['query']->get()->pluck('id');
+        DB::statement("SET SQL_MODE=''");
+
+        $results = $queryData['query']->select($this->selects)->get()->pluck($this->idKey)->unique()->toArray();
+        DB::statement("SET SQL_MODE='only_full_group_by'");
         return $results;
     }
 
@@ -117,9 +128,10 @@ trait IsModelViewConnector{
 
         $this->extraConditions($this->query);
 
-        if (strlen(trim($selectedIds)) > 0) {
+        if (isset($selectedIds) && strlen(trim($selectedIds)) > 0) {
             $ids = explode('|', $selectedIds);
-            $this->query->whereIn('c.id', $ids);
+            // $this->query->whereIn('c.id', $ids);
+            $this->querySelectedIds($this->query, $this->selIdsKey, $ids);
         }
 
         return [
@@ -162,20 +174,21 @@ trait IsModelViewConnector{
     }
 
     public function getShowIdsForParams(
+        int $id,
         array $searches,
         array $sorts,
         array $filters,
         array $advSearch
     ): array {
         $queryData = $this->getRelationQueryAndParams(
-            $this->relationQuery,
+            $this->getRelationQuery($id),
             $searches,
             $sorts,
             $filters,
             $advSearch
         );
 
-        $results = $queryData['query']->get()->pluck('id');
+        $results = $queryData['query']->select($this->relationSelects)->get()->pluck($this->relIdKey)->toArray();
         return $results;
     }
 
@@ -213,7 +226,7 @@ trait IsModelViewConnector{
         );
         DB::statement("SET SQL_MODE='only_full_group_by'");
 
-        $itemIds = $relatedResults->pluck('id')->toArray();
+        // $itemIds = $relatedResults->pluck('id')->toArray();
         $data = $relatedResults->toArray();
 
         $paginator = $paginator = $this->getPaginatorArray($relatedResults);
@@ -226,7 +239,7 @@ trait IsModelViewConnector{
             'sort' => $queryData['sortParams'],
             'filter' => $queryData['filterData'],
             'items_count' => $itemsCount,
-            'items_ids' => implode(',',$itemIds),
+            'items_ids' => $this->getItemIds($relatedResults),
             'total_results' => $data['total'],
             'current_page' => $data['current_page'],
             'paginator' => json_encode($paginator),
@@ -240,8 +253,7 @@ trait IsModelViewConnector{
         array $sorts,
         array $filters,
         array $advSearch,
-        string $selectedIds = '',
-        string $selIdsKey = 'id'): array
+        string $selectedIds = ''): array
     {
         $filterData = $this->getFilterParams($query, $filters);
         $searchParams = $this->getSearchParams($query, $searches, 'relation');
@@ -252,7 +264,7 @@ trait IsModelViewConnector{
 
         if (strlen(trim($selectedIds)) > 0) {
             $ids = explode('|', $selectedIds);
-            $query->whereIn($selIdsKey, $ids);
+            $this->querySelectedIds($query, $this->relSelIdsKey, $ids);
         }
 
         return [
@@ -263,6 +275,10 @@ trait IsModelViewConnector{
         ];
     }
 
+    private function querySelectedIds(Builder $query, string $idKey, array $ids): void
+    {
+        $query->whereIn($idKey, $ids);
+    }
     abstract protected function getRelationQuery(int $id = null);
 
     abstract protected function accessCheck(Model $item): bool;

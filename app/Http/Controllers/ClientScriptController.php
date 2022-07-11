@@ -92,35 +92,62 @@ class ClientScriptController extends SmartController
     //     ]);
     // }
 
-    public function downloadOrder($id, ClientScriptService $ClientScriptService)
+    public function verifySellOrder(ClientScriptService $clientScriptService)
     {
-        $order = $ClientScriptService->downloadOrder(
-            $id,
+        $valid = $clientScriptService->verifySellOrder(
             $this->request->input('search', []),
             $this->request->input('sort', []),
             $this->request->input('filter', []),
             $this->request->input('adv_search', []),
-            $this->request->input('selected_ids', '')
+            $this->request->input('selected_ids', ''));
+
+            return response()->json([
+                'success' => $valid,
+                'message' => $valid ? 'The list validated successfully. You can now generate the order.' : 'List validation failed. Some items don\'t have a symbol.'
+            ]);
+    }
+
+    public function downloadOrder(ClientScriptService $ClientScriptService)
+    {
+        $order = $ClientScriptService->downloadOrder(
+            $this->request->input('search', []),
+            $this->request->input('sort', []),
+            $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
+            $this->request->input('selected_ids', ''),
+            $this->request->input('qty'),
+            $this->request->input('price'),
+            $this->request->input('slippage'),
         );
+
         $colsFormat = [
-            'symbol',
-            'entry_date',
-            'pa',
-            'category',
-            'sector',
+            'exchange_code',
+            'buyorsell',
+            'product',
+            'script_name',
             'qty',
-            'buy_avg_price',
-            'amt_invested',
-            'cmp',
-            'cur_value',
-            'overall_gain',
-            'pc_change',
-            'todays_gain',
-            'day_high',
-            'day_low',
-            'impact',
-            'nof_days'
+            'lot',
+            'order_type',
+            'price',
+            'client_code',
+            'discount_qty',
+            'trigger_price',
         ];
-        return Excel::download(new DefaultArrayExports($order, $colsFormat), 'order.xlsx');
+
+        $colsTitles = [
+            'ExchangeCode',
+            'BuyOrSell',
+            'Product',
+            'ScripName',
+            'Qty',
+            'Lot',
+            'OrderType',
+            'Price',
+            'ClientCode',
+            'DiscQty',
+            'TriggerPrice',
+        ];
+
+        return Excel::download(new DefaultArrayExports($order, $colsFormat, $colsTitles), 'sellorder.csv');
     }
 }

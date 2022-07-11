@@ -119,7 +119,7 @@ class ClientService implements ModelViewConnector
             'day_high' => 's.day_high',
             'day_low' => 's.day_low'
         ];
-
+        $this->idKey = 'id';
         $this->selIdsKey = 's.id';
     }
 

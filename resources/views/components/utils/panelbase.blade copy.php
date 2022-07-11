@@ -1,4 +1,4 @@
-@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'paginator', 'columns' => [], 'orderBaseUrl' => '', 'orderVerifyUrl' => ''])
+@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'paginator', 'columns' => [], 'orderBaseUrl' => ''])
 <x-dashboard-base :ajax="$x_ajax">
     <div x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative">
 
@@ -17,13 +17,13 @@
                         <button @click.prevent.stop="showAdvSearch = true;"
                             class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center"
                             :class="noconditions || 'bg-accent text-base-200'">
-                            <x-display.icon icon="icons.doc_search" height="h-5" width="w-5" />&nbsp;Adv Search
+                            <x-display.icon icon="icons.settings" height="h-5" width="w-5" />
                         </button>
                     </div>
                     <div>
                         <button @click.prevent.stop="showOrderForm = true;"
                             class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center">
-                            <x-display.icon icon="icons.play" height="h-5" width="w-5" />&nbsp;Sell Order
+                            <x-display.icon icon="icons.play" height="h-5" width="w-5" />&nbsp;Create Order
                         </button>
                     </div>
                 @endif
@@ -55,15 +55,15 @@
             </div>
         </div>
 
-        <div class="rounded-md relative">
+        <div class="overflow-x-scroll scroll-m-1 rounded-md">
             <form x-data="{
                 url: '{{ $indexUrl }}',
                 params: {},
                 sort: {},
                 filters: {},
                 itemsCount: {{ $items_count }},
-                itemIds: [],
-                selectedIds: [],//$persist([]).as('{{ $unique_str }}ids'),
+                itemIds: [{{ $items_ids }}],
+                selectedIds: $persist([]).as('{{ $unique_str }}ids'),
                 pageSelected: false,
                 allSelected: false,
                 pages: [],
@@ -71,25 +71,21 @@
                 currentPage: {{ $current_page }},
                 downloadUrl: '{{ $downloadUrl }}',
                 results: null,
-                orderBaseUrl: '{{ $orderBaseUrl }}',
-                orderVerifyUrl: '{{ $orderVerifyUrl }}',
+                order_base_url: '{{ $orderBaseUrl }}',
                 order: {
                     bors: 'Sell',
                     qty: 0,
                     price: 0.00,
                     slippage: 0.01,
-                    listVerified: false,
-                    listInvalid: false,
-                    processing: false,
-                    message: '',
-                    selIdsUrlStr: '',
                     get url() {
+                        console.log(this.qty);
+                        console.log(this.price);
+                        console.log(this.slippage);
                         return '{{ $orderBaseUrl }}'
                         + '?bors=' + this.bors
                         + '&qty=' + this.qty
                         + '&price=' + this.price
-                        + '&slippage=' + this.slippage
-                        + this.selIdsUrlStr;
+                        + '&slippage=' + this.slippage;
                     },
                     get enabled() {
                         return this.qty.length != 0 && this.price.length != 0
@@ -101,10 +97,6 @@
                         this.qty = 0;
                         this.price = 0.00;
                         this.slippage = 0.01;
-                        this.listVerified = false;
-                        this.listInvalid = false;
-                        this.processing = false;
-                        this.message = '';
                     }
                 },
                 paginatorPage: null,
@@ -145,33 +137,6 @@
                 advFields: {
                      none: {key: 'none', text: 'Select A Field', type: 'none'},
                     {{ $adv_fields }}
-                },
-                verifyOrderList() {
-                    let allParams = this.paramsExceptSelection();
-                    allParams.selected_ids = this.selectedIds.join('|');
-                    this.order.processing = true;
-                    axios.get(
-                        this.orderVerifyUrl, {
-                            headers: {
-                                'X-ACCEPT-MODE': 'only-json'
-                            },
-                            params: allParams
-                        }
-                    ).then((r) => {
-                        console.log(r);
-                        console.log(r.data);
-                        if(r.data.success) {
-                            this.order.listVerified = true;
-                            this.order.selIdsUrlStr = '&selected_ids=' + this.selectedIds.join('|');
-                        } else {
-                            this.order.listInvalid = true;
-                        }
-                        this.order.message = r.data.message;
-                        this.order.processing = false;
-                    }).catch((e) => {
-                        this.order.message = 'Unexpected error. It may be due to invalid list. Please modify the list and try again.';
-                        this.order.processing = false;
-                    });
                 },
                 advQueryParams() {
                     if ((this.conditions.length == 1 && this.conditions[0].field == 'none')) {
@@ -313,15 +278,12 @@
                             params: allParams
                         }
                     ).then((r) => {
-                        console.log('results updated');
                         this.results = JSON.parse(r.data.results_json);
                         this.totalResults = r.data.total_results;
                         this.currentPage = r.data.current_page;
                         $dispatch('setpagination', {paginator: JSON.parse(r.data.paginator)});
+                        console.log('r: '+r.data.route);
                         $dispatch('routechange', {route: r.data.route});
-                        let temp = this.selectedIds;
-                        this.selectedIds = [];
-                        $nextTick(() => {this.selectedIds = temp;});
                     });
                 },
                 fetchResults(param) {
@@ -457,8 +419,6 @@
                     }
                 },
                 getPaginatedPage(page) {
-                    console.log('selIds');
-                    console.log(this.selectedIds);
                     this.paginatorPage = page;
                     this.triggerFetch();
                 },
@@ -481,65 +441,57 @@
                     }
 
                     setDownloadUrl();
-                    {{-- $watch('order', (ord) => {
-                        order.url = orderBaseUrl + '?' +
+                    $watch('order', (ord) => {
+                        order.url = order_base_url + '?' +
                             'bors=' + ord.bors + '&' +
                             'qty=' + ord.qty + '&' +
                             'price=' + ord.price + '&' +
                             'slippage=' + ord.slippage;
-                        }) --}}
+                        })
                     });
-                    itemIds = JSON.parse(document.getElementById('itemIds').value);
+
                 $nextTick(() => {
 
-                    {{-- console.log('itemIds');
-                    console.log(itemIds); --}}
+                    console.log('itemIds');
+                    console.log(itemIds);
 
                     setDownloadUrl();
                     results = JSON.parse(document.getElementById('results_json').value);
                     results = setResults(results);
                     $dispatch('setpagination', {paginator: JSON.parse('{{$paginator}}')});
+                });" action="#">
+                <table class="table min-w-200 w-full border-2 border-base-200 rounded-md"
+                    :class="compact ? 'table-mini' : 'table-compact'">
 
-                    setInterval(() => {
-                        triggerFetch();
-                    }, 3000);
-                });"
-                action="#"
-                class="max-w-full">
-                <div x-show="selectedIds.length > 0" x-transition class="max-w-full">
-                    <div colspan="{{ $total_disp_cols }}" class="text-center bg-warning text-base-200 p-2 rounded-sm">
-                        <span x-text="selectedIds.length" class="font-bold"></span>
-                        &nbsp;<span class="font-bold">item<span x-show="selectedIds.length > 1">s</span>
-                            selected.</span>
-                        &nbsp;<button @click.prevent.stop="$dispatch('selectpage')" class="btn btn-xs"
-                            :disabled="pageSelected">Select Page</button>
-                        &nbsp;<button @click.prevent.stop="$dispatch('selectall')" class="btn btn-xs">Select All
-                            {{ $total_results }} items</button>
-                        &nbsp;<button @click.prevent.stop="$dispatch('cancelselection')"
-                            class="btn btn-xs">Cancel All</button>
-                        </div>
-                </div>
-                <div class="overflow-x-scroll scroll-m-1 relative max-w-full p-0 m-0 rounded-md">
-                    <table class="table min-w-200 w-full border-2 border-base-200 rounded-md"
-                        :class="compact ? 'table-mini' : 'table-compact'">
-
-                        <thead>
-                            <tr>
-                                @if ($selectionEnabled)
-                                    <th class="w-7">
-                                        <input type="checkbox" x-model="pageSelected" @change="$dispatch('pageselect')"
-                                            class="checkbox checkbox-xs"
-                                            :class="!allSelected ? 'checkbox-primary' : 'checkbox-secondary'">
-                                    </th>
-                                @endif
-                                {{ $thead }}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{ $rows }}
-                        </tbody>
-                    </table>
-                </div>
+                    <thead>
+                        <tr>
+                            @if ($selectionEnabled)
+                                <th class="w-7">
+                                    <input type="checkbox" x-model="pageSelected" @change="$dispatch('pageselect')"
+                                        class="checkbox checkbox-xs"
+                                        :class="!allSelected ? 'checkbox-primary' : 'checkbox-secondary'">
+                                </th>
+                            @endif
+                            {{ $thead }}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr x-show="selectedIds.length > 0" x-transition>
+                            <td colspan="{{ $total_disp_cols }}" class="text-center bg-warning text-base-200">
+                                <span x-text="selectedIds.length" class="font-bold"></span>
+                                &nbsp;<span class="font-bold">item<span x-show="selectedIds.length > 1">s</span>
+                                    selected.</span>
+                                &nbsp;<button @click.prevent.stop="$dispatch('selectpage')" class="btn btn-xs"
+                                    :disabled="pageSelected">Select Page</button>
+                                &nbsp;<button @click.prevent.stop="$dispatch('selectall')" class="btn btn-xs">Select All
+                                    {{ $total_results }} items</button>
+                                &nbsp;<button @click.prevent.stop="$dispatch('cancelselection')"
+                                    class="btn btn-xs">Cancel All</button>
+                            </td>
+                        </tr>
+                        {{ $rows }}
+                    </tbody>
+                </table>
                 @if ($enableAdvSearch)
                 <div x-show="showAdvSearch" x-transition
                     class="absolute top-0 left-0 z-30 w-full flex flex-row justify-center p-16 items-start bg-base-100 bg-opacity-60 min-h-full">
@@ -550,7 +502,7 @@
                             <x-display.icon icon="icons.close" height="h-7" width="w-7" />
                         </button>
                         <div class="w-full flex flex-row justify-center">
-                            <h3 class="text-lg font-bold mb-4">Advanced Search</h3>
+                            <h3 class="text-lg font-bold mb-4">Advanced Query</h3>
                         </div>
                         <div class="w-full flex flex-row justify-center mb-2">
                             <div
@@ -611,7 +563,8 @@
                             <div class="flex-1 flex-grow px-1">
                                 <button @click.prevent.stop="runQuery"
                                     class="btn btn-sm btn-success p-0 w-full border border-base-100 flex felx-row items-center justify-center">
-                                    <x-display.icon icon="icons.go_right" height="h-4" width="w-4" />&nbsp;Get Items List
+                                    <x-display.icon icon="icons.info" height="h-4" width="w-4" />&nbsp;Fetch
+                                    Results
                                 </button>
                             </div>
                             <div class="w-10 px-2 flex flex-row items-center">
@@ -632,14 +585,14 @@
                             <x-display.icon icon="icons.close" height="h-7" width="w-7" />
                         </button>
                         <div class="w-full flex flex-row justify-center">
-                            <h3 class="text-lg font-bold mb-4">Create Sell Order</h3>
+                            <h3 class="text-lg font-bold mb-4">Create Order</h3>
                         </div>
                         <div class="w-full justify-center items-center rounded-md">
                             <h6 class="text-sm p-4">
                                 This order will be generated for <span class="font-bold text-warning text-lg" x-text="getOrderItemsCount()"></span> items.
                             </h6>
                         </div>
-                        <div class="w-full border border-base-content border-opacity-30 rounded-md">
+                        <div class="w-full border border-warning rounded-md">
                             <div class="flex flex-row justify-between w-full mx-auto p-4 m-4 space-x-2">
                                 <div class="w-1/4">
                                     <label for="bors">Action</label><br/>
@@ -666,19 +619,11 @@
                                 </div>
                             </div>
                             <div class="my-4 px-1 text-center w-full flex flex-row justify-between space-x-4">
-                                <button @click.prevent.stop="order.reset();" :disabled="order.processing" class="btn btn-sm text-base-content"><x-display.icon icon="icons.refresh" height="h-4" width="w-4" />&nbsp;Reset</button>
-                                <button @click.prevent.stop="verifyOrderList()" x-show="!order.listVerified" :disabled="order.processing"
-                                    class="btn btn-sm btn-warning py-0 border border-base-100 flex felx-row items-center justify-center mx-auto" download :disabled="!order.enabled">
-                                    <x-display.icon icon="icons.doc_tick" height="h-4" width="w-4" />&nbsp;Verify Items List
-                                </button>
-                                <a x-show="order.listVerified" :href="order.url" :disabled="order.processing"
+                                <button @click.prevent.stop="order.reset();" class="btn btn-sm text-base-content">Reset</button>
+                                <a :href="order.url"
                                     class="btn btn-sm btn-success py-0 border border-base-100 flex felx-row items-center justify-center mx-auto" download :disabled="!order.enabled">
-                                    <x-display.icon icon="icons.doc_tick" height="h-4" width="w-4" />&nbsp;Generate Order
+                                    <x-display.icon icon="icons.info" height="h-4" width="w-4" />&nbsp;Generate Order
                                 </a>
-                            </div>
-                            <div x-show="order.listVerified" class="p-3 m-3 border rounded-md"
-                                :class="order.listInvalid ? 'border-error text-error' : 'border-success text-success'">
-                                <span x-text="order.message"></span>
                             </div>
                         </div>
                     </div>
