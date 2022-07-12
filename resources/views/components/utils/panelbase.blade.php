@@ -1,6 +1,6 @@
 @props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'paginator', 'columns' => [], 'orderBaseUrl' => '', 'orderVerifyUrl' => ''])
 <x-dashboard-base :ajax="$x_ajax">
-    <div x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative">
+    <div x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative" :id="$id('panel-base')">
 
         @if (isset($body))
             <h3 class="text-xl font-bold">{{ $title }}</h3>
@@ -15,6 +15,14 @@
                 @if ($enableAdvSearch)
                     <div>
                         <button @click.prevent.stop="showAdvSearch = true;"
+                            @keydown.window="console.log($event);
+                            if($event.altKey && $event.keyCode == 65) {
+                                showAdvSearch = true;
+                            }
+                            if($event.altKey && $event.shiftKey && $event.keyCode == 65) {
+                                showAdvSearch = false;
+                            }
+                            "
                             class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center"
                             :class="noconditions || 'bg-accent text-base-200'">
                             <x-display.icon icon="icons.doc_search" height="h-5" width="w-5" />&nbsp;Adv Search
@@ -22,6 +30,14 @@
                     </div>
                     <div>
                         <button @click.prevent.stop="showOrderForm = true;"
+                        @keydown.window="console.log($event);
+                        if($event.altKey && $event.keyCode == 83) {
+                            showOrderForm = true;
+                        }
+                        if($event.altKey && $event.shiftKey && $event.keyCode == 83) {
+                            showOrderForm = false;
+                        }
+                        "
                             class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center">
                             <x-display.icon icon="icons.play" height="h-5" width="w-5" />&nbsp;Sell Order
                         </button>

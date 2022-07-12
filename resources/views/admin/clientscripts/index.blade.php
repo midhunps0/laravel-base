@@ -31,7 +31,7 @@
         <input type="hidden" value="{{$results_json}}" id="results_json">
         <input type="hidden" value="{{$items_ids}}" id="itemIds">
         {{-- <div>{{dd($paginator)}}</div> --}}
-        <th class="sticky !left-6 w-44">
+        <th class="sticky !left-6 w-36">
             <div class="flex flex-row items-center w-36">
                 <x-utils.spotsort name="client_code" val="{{ $sort['client_code'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
@@ -41,8 +41,8 @@
                 </div>
             </div>
         </th>
-        <th class="sticky z-20 !left-6 w-72 border-l-2 border-base-100">
-            <div class="flex flex-row items-center w-36">
+        <th class="sticky z-20 !left-6 w-52 border-l-2 border-base-100">
+            <div class="flex flex-row items-center min-w-72">
                 <x-utils.spotsort name="name" val="{{ $sort['name'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     Cl. Name
@@ -51,7 +51,7 @@
                 </div>
             </div>
         </th>
-        <th class="sticky z-30 !left-44 w-72 border-l-2 border-base-100">
+        <th class="sticky z-30 !left-44 w-52 border-l-2 border-base-100">
             <div class="flex flex-row items-center w-32">
                 <x-utils.spotsort name="symbol" val="{{ $sort['symbol'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
@@ -74,6 +74,14 @@
                 <x-utils.spotsort name="allocated_aum" val="{{ $sort['allocated_aum'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     Alctd AUM
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="pa" val="{{ $sort['pa'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Allocation %
                 </div>
             </div>
         </th>
@@ -269,7 +277,7 @@
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.client_code"></a>
                 </td>
-                <td class="sticky z-20 !left-6">
+                <td class="sticky z-20 !left-6 w-44">
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.name"></a>
                 </td>
@@ -279,6 +287,7 @@
                 </td>
                 <td class="text-right" x-text="formatted(result.aum)"></td>
                 <td class="text-right" x-text="formatted(result.allocated_aum)"></td>
+                <td class="text-right" x-text="formatted(result.pa)"></td>
                 <td>
                     <div class="flex flex-row items-baseline justify-end"
                         :class="{'text-error' : result.client_cur_value < result.allocated_aum, 'text-accent' : result.client_cur_value > result.allocated_aum}">

@@ -36,6 +36,25 @@ class ScriptService implements ModelViewConnector
             DB::raw('cs.buy_avg_price * cs.dp_qty / c.total_aum * 100 as pa'),
         ];
         $this->selIdsKey = 'c.id';
+
+        $this->relSortsMap = [
+            'id' => ['name' => 'c.id', 'type' => 'integer'],
+            'code' => ['name' => 'c.client_code', 'type' => 'string'],
+            'symbol' => ['name' => 's.symbol', 'type' => 'string'],
+            'cmp' => ['name' => 's.cmp', 'type' => 'float'],
+            'qty' => ['name' => 'cs.dp_qty', 'type' => 'integer'],
+            'buy_avg_price' => ['name' => 'cs.buy_avg_price', 'type' => 'float'],
+            'aum' => ['name' => 'c.total_aum', 'type' => 'float'],
+            'buy_val' => ['name' => 'buy_val', 'type' => 'float'],
+            'cur_val' => ['name' => 'cur_val', 'type' => 'float'],
+            'pnl' => ['name' => 'pnl', 'type' => 'float'],
+            'pa' => ['name' => 'pa', 'type' => 'float'],
+            'pnl_pc' => ['name' => 'pnl_pc', 'type' => 'float'],
+            'nof_days' => ['name' => 'nof_days', 'type' => 'integer'],
+            'impact' => ['name' => 'impact', 'type' => 'float'],
+        ];
+
+        $this->relUniqueSortKey = 'c.id';
     }
 
     protected function getRelationQuery(int $id = null)

@@ -119,8 +119,37 @@ class ClientService implements ModelViewConnector
             'day_high' => 's.day_high',
             'day_low' => 's.day_low'
         ];
+
+        $this->sortsMap = [
+            'dealer' => ['name' => 'u.name', 'type' => 'string'],
+            'name' => ['name' => 'c.name', 'type' => 'string'],
+            'aum' => ['name' => 'c.total_aum', 'type' => 'float'],
+            'cmp' => ['name' => 's.cmp', 'type' => 'float'],
+            'dp_qty' => ['name' => 'cs.dp_qty', 'type' => 'integer'],
+            'buy_avg_price' => ['name' => 'cs.buy_avg_price', 'type' => 'float'],
+            'realised_pnl' => ['name' => 'c.realised_pnl', 'type' => 'float'],
+            'cur_value' => ['name' => 'cst.cur_value', 'type' => 'float'],
+            'allocated_aum' => ['name' => 'cst.allocated_aum', 'type' => 'float'],
+            'liquidbees' => ['name' => 'lbq.liquidbees', 'type' => 'float'],
+        ];
+
+        $this->relSortsMap = [
+            'aum' => ['name' => 'c.total_aum', 'type' => 'float'],
+            'entry_date' => ['name' => 'cs.entry_date', 'type' => 'string'],
+            'symbol' => ['name' => 's.symbol', 'type' => 'string'],
+            'category' => ['name' => 's.industry', 'type' => 'string'],
+            'sector' => ['name' => 's.mvg_sector', 'type' => 'string'],
+            'cmp' => ['name' => 's.cmp', 'type' => 'float'],
+            'dp_qty' => ['name' => 'cs.dp_qty', 'type' => 'integer'],
+            'buy_avg_price', ['name' => 'cs.buy_avg_price', 'type' => 'float'],
+            'day_high' => ['name' => 's.day_high', 'type' => 'float'],
+            'day_low' => ['name' => 's.day_low', 'type' => 'float'],
+        ];
+
         $this->idKey = 'id';
         $this->selIdsKey = 's.id';
+        $this->uniqueSortKey = 'c.id';
+        $this->relUniqueSortKey = 's.id';
     }
 
     protected function applyGroupings($query) {

@@ -64,6 +64,7 @@ class ClientScriptService implements ModelViewConnector
             'c.realised_pnl as realised_pnl',
             'cst.cur_value as client_cur_value',
             's.id as sid',
+            // DB::raw('IF (s.id IS NOT NULL, s.id, \'0\') as sid'),
             's.symbol as symbol',
             's.nse_code as nse_code',
             's.tracked as tracked',
@@ -122,33 +123,33 @@ class ClientScriptService implements ModelViewConnector
 
         $this->sortsMap = [
 
-            'id' => 'c.id',
-            'rm_id' => 'c.rm_id',
-            'name' => 'c.name',
-            'client_code' => 'c.client_code',
-            'dealer' => 'u.name',
-            'aum' => 'c.total_aum',
-            'realised_pnl' => 'c.realised_pnl',
-            'client_cur_value' => 'cst.cur_value',
-            'sid' => 's.id',
-            'symbol' => 's.symbol',
-            'nse_code' => 's.nse_code',
-            'tracked' => 's.tracked',
-            'cmp' => 's.cmp',
-            'ldc' => 's.last_day_closing',
-            'day_high' => 's.day_high',
-            'day_low' => 's.day_low',
-            'industry' => 's.industry',
-            'sector' => 's.mvg_sector',
-            'qty' => 'cst.dp_qty',
-            'buy_avg_price' => 'cst.buy_avg_price',
-            'buy_avg_price' => 'cst.buy_avg_price',
-            'allocated_aum' => 'cst.allocated_aum',
-            'liquidbees' => 'lbq.liquidbees',
+            'id' => ['name' => 'c.id', 'type' => 'integer'],
+            'rm_id' => ['name' => 'c.rm_id', 'type' => 'integer'],
+            'name' => ['name' => 'c.name', 'type' => 'string'],
+            'client_code' => ['name' => 'c.client_code', 'type' => 'string'],
+            'dealer' => ['name' => 'u.name', 'type' => 'string'],
+            'aum' => ['name' => 'c.total_aum', 'type' => 'float'],
+            'realised_pnl' => ['name' => 'c.realised_pnl', 'type' => 'float'],
+            'client_cur_value' => ['name' => 'cst.cur_value', 'type' => 'float'],
+            'sid' => ['name' => 's.id', 'type' => 'integer'],
+            'symbol' => ['name' => 's.symbol', 'type' => 'string'],
+            'nse_code' => ['name' => 's.nse_code', 'type' => 'string'],
+            'tracked' => ['name' => 's.tracked', 'type' => 'boolean'],
+            'cmp' => ['name' => 's.cmp', 'type' => 'float'],
+            'ldc' => ['name' => 's.last_day_closing', 'type' => 'float'],
+            'day_high' => ['name' => 's.day_high', 'type' => 'float'],
+            'day_low' => ['name' => 's.day_low', 'type' => 'string'],
+            'industry' => ['name' => 's.industry', 'type' => 'string'],
+            'sector' => ['name' => 's.mvg_sector', 'type' => 'string'],
+            'qty' => ['name' => 'cst.dp_qty', 'type' => 'integer'],
+            'buy_avg_price' => ['name' => 'buy_avg_price', 'type' => 'float'],
+            'allocated_aum' => ['name' => 'allocated_aum', 'type' => 'float'],
+            'liquidbees' => ['name' => 'lbq.liquidbees', 'type' => 'float'],
         ];
 
         $this->selIdsKey = 'uxid';
         $this->relSelIdsKey = 'c.id';
+        $this->uniqueSortKey = 'uxid';
     }
 
     public function verifySellOrder(
@@ -324,20 +325,20 @@ class ClientScriptService implements ModelViewConnector
         return $export;
     }
 
-    private function getSortParams($query, array $sorts, string $sortType = 'index'): array
-    {
-        $map = $sortType == 'index' ? $this->sortsMap : $this->relSortssMap;
-        $sortParams = [];
-        foreach ($sorts as $sort) {
-            $data = explode('::', $sort);
-            $key = $map[$data[0]] ?? $data[0];
-            // $query->orderBy($key, $data[1]);
-            $query->orderByRaw('CONCAT('.$key.',\'::\',uxid) '.$data[1]);
-            // $sortParams[$data[0]] = $data[1];
-        }
-        // dd($sortParams);
-        return $sortParams;
-    }
+    // private function getSortParams($query, array $sorts, string $sortType = 'index'): array
+    // {
+    //     $map = $sortType == 'index' ? $this->sortsMap : $this->relSortssMap;
+    //     $sortParams = [];
+    //     foreach ($sorts as $sort) {
+    //         $data = explode('::', $sort);
+    //         $key = $map[$data[0]] ?? $data[0];
+    //         // $query->orderBy($key, $data[1]);
+    //         $query->orderByRaw('CONCAT('.$key.',\'::\',uxid) '.$data[1]);
+    //         // $sortParams[$data[0]] = $data[1];
+    //     }
+    //     // dd($sortParams);
+    //     return $sortParams;
+    // }
 
     private function getFilterParams($query, $filters) {
         return [];

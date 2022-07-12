@@ -38,7 +38,7 @@
             </div>
         </th>
         <th class="w-72 border-l-2 border-base-100 sticky !left-40 z-20">
-            <div class="flex flex-row items-center">
+            <div class="flex flex-row items-center min-w-72">
                 <x-utils.spotsort name="name" val="{{ $sort['name'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     Name

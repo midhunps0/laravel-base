@@ -23,6 +23,8 @@ trait IsModelViewConnector{
     protected $relSearchesMap = [];
     protected $sortsMap = [];
     protected $relSortsMap = [];
+    protected $uniqueSortKey = null;
+    protected $relUniqueSortKey = null;
 
     public function index(
         int $itemsCount,
@@ -43,6 +45,7 @@ trait IsModelViewConnector{
         );
 
         DB::statement("SET SQL_MODE=''");
+
         $results = $queryData['query']->paginate(
             $itemsCount,
             $this->selects,
@@ -260,7 +263,7 @@ trait IsModelViewConnector{
         $filterData = $this->getFilterParams($query, $filters);
         $searchParams = $this->getSearchParams($query, $searches, 'relation');
         $sortParams = $this->getSortParams($query, $sorts);
-        $advParams = $this->getAdvParams($query, $sorts, 'relation');
+        $this->getAdvParams($query, $advSearch, 'relation');
 
         $this->extraRelationConditions($query);
 
@@ -346,11 +349,33 @@ trait IsModelViewConnector{
     private function getSortParams($query, array $sorts, string $sortType = 'index'): array
     {
         $map = $sortType == 'index' ? $this->sortsMap : $this->relSortssMap;
+        $usortkey = $sortType == 'index' ? $this->uniqueSortKey : $this->relUniqueSortKey;
+
         $sortParams = [];
         foreach ($sorts as $sort) {
             $data = explode('::', $sort);
             $key = $map[$data[0]] ?? $data[0];
-            $query->orderBy($key, $data[1]);
+            // $query->orderBy($key, $data[1]);
+            if (isset($usortkey) && isset($map[$data[0]])) {
+                $type = $key['type'];
+                $kname = $key['name'];
+                switch ($type) {
+                    case 'string';
+                        $query->orderByRaw('CONCAT('.$kname.',\'::\','.$usortkey.') '.$data[1]);
+                        break;
+                    case 'integer';
+                        $query->orderByRaw('CONCAT(LPAD(ROUND('.$kname.',0),20,\'00\'),\'::\','.$usortkey.') '.$data[1]);
+                        break;
+                    case 'float';
+                        $query->orderByRaw('CONCAT( LPAD(ROUND('.$kname.',0) * 100,20,\'00\') ,\'::\','.$usortkey.') '.$data[1]);
+                        break;
+                    case 'default':
+                        $query->orderByRaw('CONCAT('.$kname.'\'::\','.$usortkey.') '.$data[1]);
+                        break;
+                }
+            } else {
+                $query->orderBy($data[0], $data[1]);
+            }
             // $sortParams[$data[0]] = $data[1];
         }
         // dd($sortParams);
