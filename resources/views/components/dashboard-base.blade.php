@@ -15,6 +15,10 @@
                         {{$slot}}
                 </div>
             </template>
+            <div x-data="{showform: false}"
+                @passwordform.window="showform = true;" x-show="showform" class="fixed top-0 left-0 z-50 h-screen w-screen">
+                <x-utils.password-form />
+            </div>
         </div>
     </x-app-layout>
 @endif

@@ -21,6 +21,8 @@ trait IsModelViewConnector{
     protected $relSelIdsKey = 'id';
     protected $searchesMap = [];
     protected $relSearchesMap = [];
+    protected $sortsMap = [];
+    protected $relSortsMap = [];
 
     public function index(
         int $itemsCount,
@@ -341,14 +343,17 @@ trait IsModelViewConnector{
         return $searchParams;
     }
 
-    private function getSortParams($query, array $sorts): array
+    private function getSortParams($query, array $sorts, string $sortType = 'index'): array
     {
+        $map = $sortType == 'index' ? $this->sortsMap : $this->relSortssMap;
         $sortParams = [];
         foreach ($sorts as $sort) {
             $data = explode('::', $sort);
-            $query->orderBy($data[0], $data[1]);
-            $sortParams[$data[0]] = $data[1];
+            $key = $map[$data[0]] ?? $data[0];
+            $query->orderBy($key, $data[1]);
+            // $sortParams[$data[0]] = $data[1];
         }
+        // dd($sortParams);
         return $sortParams;
     }
 

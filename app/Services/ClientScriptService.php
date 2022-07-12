@@ -91,10 +91,37 @@ class ClientScriptService implements ModelViewConnector
             DB::raw('(c.realised_pnl + cst.cur_value - c.total_aum) /c.total_aum * 100 as returns_pc'),
             DB::raw('cst.cur_value - c.total_aum as client_pnl'),
             DB::raw('(cst.cur_value - c.total_aum) / c.total_aum * 100 as client_pnl_pc'),
-            DB::raw('IF(s.id IS NULL, CONCAT(c.id, "::", "0"), CONCAT(c.id, "::", s.id)) as uxid')
+            DB::raw('IF(s.id IS NULL, CONCAT(c.id, "::", "0"), CONCAT(c.id, "::", s.id)) as uxid'),
         ];
 
         $this->searchesMap = [
+            'id' => 'c.id',
+            'rm_id' => 'c.rm_id',
+            'name' => 'c.name',
+            'client_code' => 'c.client_code',
+            'dealer' => 'u.name',
+            'aum' => 'c.total_aum',
+            'realised_pnl' => 'c.realised_pnl',
+            'client_cur_value' => 'cst.cur_value',
+            'sid' => 's.id',
+            'symbol' => 's.symbol',
+            'nse_code' => 's.nse_code',
+            'tracked' => 's.tracked',
+            'cmp' => 's.cmp',
+            'ldc' => 's.last_day_closing',
+            'day_high' => 's.day_high',
+            'day_low' => 's.day_low',
+            'industry' => 's.industry',
+            'sector' => 's.mvg_sector',
+            'qty' => 'cst.dp_qty',
+            'buy_avg_price' => 'cst.buy_avg_price',
+            'buy_avg_price' => 'cst.buy_avg_price',
+            'allocated_aum' => 'cst.allocated_aum',
+            'liquidbees' => 'lbq.liquidbees',
+        ];
+
+        $this->sortsMap = [
+
             'id' => 'c.id',
             'rm_id' => 'c.rm_id',
             'name' => 'c.name',
@@ -296,6 +323,22 @@ class ClientScriptService implements ModelViewConnector
         }
         return $export;
     }
+
+    private function getSortParams($query, array $sorts, string $sortType = 'index'): array
+    {
+        $map = $sortType == 'index' ? $this->sortsMap : $this->relSortssMap;
+        $sortParams = [];
+        foreach ($sorts as $sort) {
+            $data = explode('::', $sort);
+            $key = $map[$data[0]] ?? $data[0];
+            // $query->orderBy($key, $data[1]);
+            $query->orderByRaw('CONCAT('.$key.',\'::\',uxid) '.$data[1]);
+            // $sortParams[$data[0]] = $data[1];
+        }
+        // dd($sortParams);
+        return $sortParams;
+    }
+
     private function getFilterParams($query, $filters) {
         return [];
     }

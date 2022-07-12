@@ -57,6 +57,8 @@
 
         <div class="rounded-md relative">
             <form x-data="{
+                {{$results_name}}liveUpdate: false,
+                {{$results_name}}timer: null,
                 url: '{{ $indexUrl }}',
                 params: {},
                 sort: {},
@@ -474,7 +476,13 @@
                 @cancelselection="cancelSelection();"
                 @pageselect="processPageSelect();"
                 @paginator.window="getPaginatedPage($event.detail.page);"
-                x-init="$watch('selectedIds', (ids) => {
+                @linkaction.window="
+                clearInterval({{$results_name}}timer);
+                {{$results_name}}timer = null;
+                {{$results_name}}liveUpdate = false;
+                "
+                x-init="
+                    $watch('selectedIds', (ids) => {
                     if (ids.length < itemIds.length) {
                         pageSelected = false;
                         allSelected = false;
@@ -491,18 +499,57 @@
                     });
                     itemIds = JSON.parse(document.getElementById('itemIds').value);
                 $nextTick(() => {
+                    url = '{{ $indexUrl }}';
+                    params = {};
+                    sort = {};
+                    filters = {};
+                    itemsCount = {{ $items_count }};
+                    itemIds = [];
+                    selectedIds = [];//$persist([]).as('{{ $unique_str }}ids');
+                    pageSelected = false;
+                    allSelected = false;
+                    pages = [];
+                    totalResults = {{ $total_results }};
+                    currentPage = {{ $current_page }};
+                    downloadUrl = '{{ $downloadUrl }}';
+                    results = null;
+                    orderBaseUrl = '{{ $orderBaseUrl }}';
+                    orderVerifyUrl = '{{ $orderVerifyUrl }}';
 
-                    {{-- console.log('itemIds');
-                    console.log(itemIds); --}}
+                    order.bors = 'Sell';
+                    order.qty = 0;
+                    order.price = 0.00;
+                    order.slippage = 0.01;
+                    order.listVerified = false;
+                    order.listInvalid = false;
+                    order.processing = false;
+                    order.message = '';
+                    order.selIdsUrlStr = '';
+
+                    paginatorPage = null;
+                    conditions = [{
+                        field: 'none',
+                        type: '',
+                        operation: 'none',
+                        value: 0
+                    }];
 
                     setDownloadUrl();
                     results = JSON.parse(document.getElementById('results_json').value);
                     results = setResults(results);
                     $dispatch('setpagination', {paginator: JSON.parse('{{$paginator}}')});
 
-                    setInterval(() => {
-                        triggerFetch();
-                    }, 3000);
+                    clearInterval({{$results_name}}timer);
+                    {{$results_name}}timer = null;
+                    {{$results_name}}liveUpdate = false;
+                    setTimeout(() => {
+                        {{$results_name}}liveUpdate = true;
+                        {{$results_name}}timer = setInterval(() => {
+                            if ({{$results_name}}liveUpdate) {
+                                triggerFetch();
+                            }
+                        }, 3000);
+                    }, 3100);
                 });"
                 action="#"
                 class="max-w-full">

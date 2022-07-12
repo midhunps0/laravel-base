@@ -1,6 +1,7 @@
 <x-utils.panelbase
     :x_ajax="$x_ajax"
     title="Client wise Details"
+    results_name="clientscripts"
     indexUrl="{{route('clients.show', $model->id)}}"
     downloadUrl="{{route('clients.show.download', $model->id)}}"
     selectIdsUrl="{{route('clients.show.selectIds', $model->id)}}"
