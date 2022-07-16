@@ -16,11 +16,15 @@ trait IsModelViewConnector{
     protected $idKey = 'id';
     protected $relIdKey = 'id';
     protected $selects = '*';
-    protected $relationSelects;
+    protected $relationSelects = '*';
+    protected $agrSelects = '*';
+    protected $relAgrSelects = '*';
     protected $selIdsKey = 'id';
     protected $relSelIdsKey = 'id';
     protected $searchesMap = [];
     protected $relSearchesMap = [];
+    protected $advSearchesMap = [];
+    protected $relAdvSearchesMap = [];
     protected $sortsMap = [];
     protected $relSortsMap = [];
     protected $uniqueSortKey = null;
@@ -45,15 +49,16 @@ trait IsModelViewConnector{
         );
 
         DB::statement("SET SQL_MODE=''");
-
+// dd($queryData['query']->select($this->selects)->toSql());
         $results = $queryData['query']->paginate(
             $itemsCount,
             $this->selects,
             'page',
             $page
         );
+        $aggregates = $queryData['query']->select($this->agrSelects)->get()->first();
         DB::statement("SET SQL_MODE='only_full_group_by'");
-
+// dd($results->toArray());
         // $itemIds = $results->pluck('id')->toArray();
         $data = $results->toArray();
 
@@ -61,6 +66,7 @@ trait IsModelViewConnector{
         return [
             $resultsName => $results,
             'results_json' => json_encode($this->formatIndexResults($results->toArray()['data'])),
+            'aggregates' => json_encode($aggregates),
             'params' => $queryData['searchParams'],
             'sort' => $queryData['sortParams'],
             'filter' => $queryData['filterData'],
@@ -94,8 +100,10 @@ trait IsModelViewConnector{
         );
 
         DB::statement("SET SQL_MODE=''");
-        $results = $queryData['query']->get();
+        $results = $queryData['query']->select($this->selects)->get();
         DB::statement("SET SQL_MODE='only_full_group_by'");
+
+        // dd($this->formatIndexResults($results));
         return $this->formatIndexResults($results);
     }
 
@@ -221,7 +229,7 @@ trait IsModelViewConnector{
             $advSearch,
             $selectedIds
         );
-
+        // dd($queryData['query']->select($this->relationSelects)->toSql());
         DB::statement("SET SQL_MODE=''");
         $relatedResults = $queryData['query']->paginate(
             $itemsCount,
@@ -229,6 +237,7 @@ trait IsModelViewConnector{
             'page',
             $page
         );
+        $aggregates = $queryData['query']->select($this->relAgrSelects)->get()->first();
         DB::statement("SET SQL_MODE='only_full_group_by'");
 
         // $itemIds = $relatedResults->pluck('id')->toArray();
@@ -240,6 +249,7 @@ trait IsModelViewConnector{
             'model' => $item,
             $relationsResultsName => $relatedResults,
             'results_json' => json_encode($this->formatRelationResults($data['data'])),
+            'aggregates' => json_encode($aggregates),
             'params' => $queryData['searchParams'],
             'sort' => $queryData['sortParams'],
             'filter' => $queryData['filterData'],
@@ -313,6 +323,9 @@ trait IsModelViewConnector{
                 $v = '%'.$val;
                 break;
         }
+        if (in_array($op, ['gt', 'lt', 'gte', 'lte','eq', 'neq'])) {
+            $v = floatval($v);
+        }
         return [
             'op' => $ops[$op],
             'val' => $v
@@ -321,13 +334,16 @@ trait IsModelViewConnector{
 
     private function getAdvParams($query, array $advSearches, string $searchType = 'index'): array
     {
-        $map = $searchType == 'index' ? $this->searchesMap : $this->relSearchesMap;
+        $map = $searchType == 'index' ? $this->advSearchesMap : $this->relAdvSearchesMap;
+
         $searchParams = [];
         foreach ($advSearches as $search) {
             $data = explode('::', $search);
             $key = $map[$data[0]] ?? $data[0];
             $op = $this->getSearchOperator($data[1], $data[2]);
-            $query->where($key, $op['op'], $op['val']);
+            // dd($key, $op);
+            // $query->having($key, $op['op'], $op['val']);
+            $query->whereRaw($key.' '.$op['op'].' \''.$op['val'].'\'');
             $searchParams[$data[0]] = $data[1];
         }
         return $searchParams;
@@ -424,7 +440,31 @@ trait IsModelViewConnector{
 
     protected function formatIndexResults(array $results): array
     {
-        return $results;
+        $formatted = [];
+        foreach ($results as $result) {
+            if(is_array($result)) {
+                $formatted[] = $result;
+            } else {
+                $formatted['id'] = $result->id;
+                $formatted['rm_id'] = $result->rm_id;
+                $formatted['name'] = $result->name;
+                $formatted['client_code'] = $result->client_code;
+                $formatted['dealer'] = $result->dealer;
+                $formatted['aum'] = $result->aum;
+                $formatted['realised_pnl'] = $result->realised_pnl;
+                $formatted['cur_value'] = $result->cur_value;
+                $formatted['pnl'] = $result->pnl;
+                $formatted['pnl_pc'] = $result->pnl_pc;
+                $formatted['allocated_aum'] = $result->allocated_aum;
+                $formatted['pa'] = $result->pa;
+                $formatted['liquidbees'] = $result->liquidbees;
+                $formatted['cash'] = $result->cash;
+                $formatted['cash_pc'] = $result->cash_pc;
+                $formatted['returns'] = $result->returns;
+                $formatted['returns_pc'] = $result->returns_pc;
+            }
+        }
+        return $formatted;
     }
 
     protected function formatRelationResults(array $results): array

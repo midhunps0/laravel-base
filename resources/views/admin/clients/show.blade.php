@@ -11,19 +11,19 @@
     :current_page="$current_page"
     :results="$scripts"
     :results_json="$results_json"
-    :result_calcs="[
-        {{-- 'result.buy_val = (result.qty * result.buy_avg_price);',
-        'result.cur_val = (result.cmp * result.qty);',
-        'result.gain = (result.cur_val - result.buy_val);',
-        'result.pc_change = (result.gain / result.buy_val * 100);', --}}
-        {{-- 'result.pc_change = (result.gain / result.buy_amt * 100);' --}}
-    ]"
     total_disp_cols="19"
     unique_str="clxone"
-    :paginator="$paginator">
+    adv_fields="
+        pc_change: {key: 'pc_change', text: '% Change', type: 'numeric'},
+        pa: {key: 'pa', text: 'Allocation %', type: 'numeric'},
+        sector: {key: 'sector', text: 'Sector', type: 'string'},
+        nof_days: {key: 'nof_days', text: 'No. of Days', type: 'numeric'},
+    "
+    :paginator="$paginator"
+    :enableAdvSearch="true"
+    :soPriceField="false"
+    orderBaseUrl="{{route('clients.order.download', $model->id)}}">
     <x-slot:body>
-        <input type="hidden" value="{{$results_json}}" id="results_json">
-        <input type="hidden" value="{{$items_ids}}" id="itemIds">
         <div class="flex flex-row space-x-4" >
         <div class="font-bold border border-base-300 rounded-md p-4">
             <h1><span class="inline-block mr-1">Code: </span><span class="inline-block mr-4 text-warning">{{$model->client_code}}</span><span class="inline-block mr-1">Name: </span><span class="inline-block mr-4 text-warning">{{$model->name}}</span><span class="inline-block mr-1">AUM: </span><span class="inline-block mr-4 text-warning">{{$model->total_aum}}</span></h1>
@@ -36,6 +36,31 @@
             :searchDisplayKeys="['code', 'name']"
             />
     </div>
+    </x-slot><x-slot:inputFields>
+        <input type="hidden" value="{{$aggregates}}" id="aggregates">
+        <input type="hidden" value="{{$results_json}}" id="results_json">
+        <input type="hidden" value="{{$items_ids}}" id="itemIds">
+    </x-slot>
+    <x-slot:aggregateCols>
+        <th colspan="3">
+            Aggregates:
+        </th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_pa, 2)"></span></th>
+        <th></th>
+        <th></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_amt_invested)"></span></th>
+        <th></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_cur_value)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_overall_gain)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_pc_change, 2)"></span></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
     </x-slot>
     <x-slot:thead>
         <th class="sticky !left-6">
@@ -52,7 +77,6 @@
             </div>
         </th>
         <th class="relative w-52 border-l-2 border-base-100">DOP</th>
-        <th class="text-center border-l-2 border-base-100">PA %</th>
         <th class="text-center border-l-2 border-base-100">
             <div class="flex flex-row items-center w-48">
                 <x-utils.spotsort name="industry" val="{{ $sort['industry'] ?? 'none' }}" />
@@ -73,6 +97,7 @@
                 </div>
             </div>
         </th>
+        <th class="text-center border-l-2 border-base-100">PA %</th>
         <th class="text-center border-l-2 border-base-100">
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="qty" val="{{ $sort['qty'] ?? 'none' }}" />
@@ -186,9 +211,9 @@
                         class="link no-underline hover:underline" href="" x-text="result.symbol"></a>
                 </td>
                 <td x-text="result.entry_date"></td>
-                <td x-text="formatted(result.pa)"></td>
                 <td x-text="result.category"></td>
                 <td x-text="result.sector"></td>
+                <td class="text-right" x-text="formatted(result.pa, 2)"></td>
                 <td x-text="result.qty"></td>
                 <td x-text="formatted(result.buy_avg_price)"></td>
                 <td x-text="formatted(result.amt_invested)"></td>

@@ -24,9 +24,31 @@
         aum: {key: 'aum', text: 'AUM', type: 'numeric'},
     "
     :paginator="$paginator">
-    <x-slot:thead>
+    <x-slot:inputFields>
+        <input type="hidden" value="{{$aggregates}}" id="aggregates">
         <input type="hidden" value="{{$results_json}}" id="results_json">
         <input type="hidden" value="{{$items_ids}}" id="itemIds">
+    </x-slot>
+    <x-slot:aggregateCols>
+        <th colspan="2">
+            Aggregates:
+        </th>
+        <th class="sticky !left-40 z-20"></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_aum)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_allocated_aum)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_pa, 2)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_cur_value)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_pnl)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_pnl_pc, 2)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_realised_pnl)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_liquidbees)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_cash)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_cash_pc, 2)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_returns)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_returns_pc, 2)"></span></th>
+        <th></th>
+    </x-slot>
+    <x-slot:thead>
         <th class="sticky !left-6 w-44">
             <div class="flex flex-row items-center w-36">
                 <x-utils.spotsort name="client_code" val="{{ $sort['client_code'] ?? 'none' }}" />
@@ -60,6 +82,14 @@
                 <x-utils.spotsort name="allocated_aum" val="{{ $sort['allocated_aum'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     Alctd AUM
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="pa" val="{{ $sort['pa'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    PA
                 </div>
             </div>
         </th>
@@ -165,6 +195,7 @@
                 </td>
                 <td class="text-right" x-text="formatted(result.aum)"></td>
                 <td class="text-right" x-text="formatted(result.allocated_aum)"></td>
+                <td class="text-right" x-text="formatted(result.pa, 2)"></td>
                 <td>
                     <div class="flex flex-row items-baseline justify-end"
                         :class="{'text-error' : result.cur_value < result.allocated_aum, 'text-accent' : result.cur_value > result.allocated_aum}">

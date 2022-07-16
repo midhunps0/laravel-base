@@ -1,6 +1,7 @@
 <x-utils.panelbase
     :x_ajax="$x_ajax"
     title="Clients With Their Scripts"
+    results_name="clientscripts"
     indexUrl="{{route('clientscripts.index')}}"
     downloadUrl="{{route('clientscripts.download')}}"
     selectIdsUrl="{{route('clientscripts.selectIds')}}"
@@ -9,15 +10,17 @@
     :total_results="$total_results"
     :current_page="$current_page"
     :results="$clientscripts"
-    results_name="clientscripts"
     :results_json="$results_json"
     total_disp_cols="24"
     unique_str="clnscrx"
     adv_fields="
         client_code: {key: 'client_code', text: 'Client Code', type: 'string'},
-        name: {key: 'name', text: 'Client Name', type: 'string'},
-        allocated_aum: {key: 'allocated_aum', text: 'ALCTD AUM', type: 'numeric'},
-        aum: {key: 'aum', text: 'AUM', type: 'numeric'},
+        symbol: {key: 'symbol', text: 'Symbol', type: 'string'},
+        client_pnl_pc: {key: 'client_pnl_pc', text: 'CL. PNL %', type: 'numeric'},
+        pnl_pc: {key: 'pnl_pc', text: 'SCR. PNL %', type: 'numeric'},
+        pa: {key: 'pa', text: 'Perc. Allocation', type: 'numeric'},
+        sector: {key: 'sector', text: 'Sector', type: 'string'},
+        nof_days: {key: 'nof_days', text: 'No. of Days', type: 'numeric'},
     "
     :enableAdvSearch="true"
     :paginator="$paginator"
@@ -25,7 +28,8 @@
         'client_code', 'name', 'symbol', 'aum', 'allocated_aum', 'client_cur_value', 'client_pnl', 'client_pnl_pc', 'realised_pnl', 'liquidbees', 'cash', 'cash_pc', 'returns', 'returns_pc', 'qty', 'buy_avg_price', 'cmp', 'ldc', 'day_high', 'day_low', 'pnl', 'pnl_pc', 'nof_days', 'impact', 'industry', 'sector', 'dealer'
     ]"
     orderBaseUrl="{{route('clientscripts.order.download')}}"
-    orderVerifyUrl="{{route('clientsripts.sellorder.verify')}}">
+    orderVerifyUrl="{{route('clientsripts.sellorder.verify')}}"
+    orderCheckUrl="{{route('clientsripts.sellorder.analyse')}}">
     {{-- {{dd($clientscripts->links())}} --}}
     <x-slot:thead>
         <input type="hidden" value="{{$results_json}}" id="results_json">
@@ -63,6 +67,14 @@
         </th>
         <th class="text-center border-l-2 border-base-100">
             <div class="flex flex-row items-center">
+                <x-utils.spotsort name="client_category" val="{{ $sort['client_category'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Cl. Category
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
                 <x-utils.spotsort name="aum" val="{{ $sort['aum'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     AUM
@@ -79,14 +91,6 @@
         </th>
         <th class="text-center border-l-2 border-base-100">
             <div class="flex flex-row items-center">
-                <x-utils.spotsort name="pa" val="{{ $sort['pa'] ?? 'none' }}" />
-                <div class="relative flex-grow ml-2">
-                    Allocation %
-                </div>
-            </div>
-        </th>
-        <th class="text-center border-l-2 border-base-100">
-            <div class="flex flex-row items-center">
                 <x-utils.spotsort name="client_cur_value" val="{{ $sort['client_cur_value'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     Cl. Cur Value
@@ -95,17 +99,17 @@
         </th>
         <th class="text-center border-l-2 border-base-100">
             <div class="flex flex-row items-center">
-                <x-utils.spotsort name="pnl" val="{{ $sort['pnl'] ?? 'none' }}" />
+                <x-utils.spotsort name="client_pnl" val="{{ $sort['client_pnl'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    PNL
+                    CL. PNL
                 </div>
             </div>
         </th>
         <th class="text-center border-l-2 border-base-100">
             <div class="flex flex-row items-center">
-                <x-utils.spotsort name="pnl_pc" val="{{ $sort['pnl_pc'] ?? 'none' }}" />
+                <x-utils.spotsort name="client_pnl_pc" val="{{ $sort['client_pnl_pc'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    PNL %
+                    CL. PNL %
                 </div>
             </div>
         </th>
@@ -209,7 +213,7 @@
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="pnl" val="{{ $sort['pnl'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    PNL
+                    SCR. PNL
                 </div>
             </div>
         </th>
@@ -217,7 +221,15 @@
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="pnl_pc" val="{{ $sort['pnl_pc'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    PNL %
+                    SCR. PNL %
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="pa" val="{{ $sort['pa'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Allocation %
                 </div>
             </div>
         </th>
@@ -285,9 +297,9 @@
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.symbol"></a>
                 </td>
+                <td class="text-right" x-text="result.client_category"></td>
                 <td class="text-right" x-text="formatted(result.aum)"></td>
                 <td class="text-right" x-text="formatted(result.allocated_aum)"></td>
-                <td class="text-right" x-text="formatted(result.pa)"></td>
                 <td>
                     <div class="flex flex-row items-baseline justify-end"
                         :class="{'text-error' : result.client_cur_value < result.allocated_aum, 'text-accent' : result.client_cur_value > result.allocated_aum}">
@@ -298,12 +310,12 @@
                 </td>
                 <td>
                     <div class="flex flex-row items-baseline justify-end"
-                    :class="{'text-error' : result.pnl < 0, 'text-accent' : result.pnl > 0}">
+                    :class="{'text-error' : result.client_pnl < 0, 'text-accent' : result.client_pnl > 0}">
                         <span x-text="formatted(result.client_pnl)"></span>
                     </div>
                 </td>
                 <td>
-                    <div class="flex flex-row items-baseline justify-end" :class="{'text-error' : result.pnl < 0, 'text-accent' : result.pnl > 0}">
+                    <div class="flex flex-row items-baseline justify-end" :class="{'text-error' : result.client_pnl_pc < 0, 'text-accent' : result.client_pnl_pc > 0}">
                         <span x-text="formatted(result.client_pnl_pc, 2)"></span>
                     </div>
                 </td>
@@ -336,7 +348,7 @@
                 <td class="text-right" x-text="formatted(result.day_high, 2)"></td>
                 <td class="text-right" x-text="formatted(result.day_low, 2)"></td>
                 <td>
-                    <div class="flex flex-row items-baseline justify-end" :class="{'text-error' : result.pnl < result.buy_val, 'text-accent' : result.pnl > result.buy_val}">
+                    <div class="flex flex-row items-baseline justify-end" :class="{'text-error' : result.pnl < 0, 'text-accent' : result.pnl > 0}">
                         <span x-text="formatted(result.pnl, 2)"></span>
                     </div>
                 </td>
@@ -345,6 +357,7 @@
                         <span x-text="formatted(result.pnl_pc, 2)"></span>
                     </div>
                 </td>
+                <td class="text-right" x-text="formatted(result.pa, 2)"></td>
                 <td class="text-right" x-text="result.nof_days"></td>
                 <td>
                     <div class="flex flex-row items-baseline justify-end" :class="{'text-error' : result.impact < 0, 'text-accent' : result.impact > 0}">

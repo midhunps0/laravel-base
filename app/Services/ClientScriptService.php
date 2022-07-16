@@ -48,8 +48,8 @@ class ClientScriptService implements ModelViewConnector
             ->groupBy('lbcs.client_id');
 
         $this->query = Client::from('clients as c')->userAccessControlled()
-            ->join('clients_scripts as clsc', 'c.id', '=', 'clsc.client_id', 'left')
-            ->join('scripts as s', 's.id', '=', 'clsc.script_id', 'left')
+            ->join('clients_scripts as clsc', 'c.id', '=', 'clsc.client_id', 'inner')
+            ->join('scripts as s', 's.id', '=', 'clsc.script_id', 'inner')
             ->joinSub($indexScriptQ, 'cst', 'c.id' , '=', 'cst.cid', 'left')
             ->joinSub($indexLBQ, 'lbq', 'c.id' , '=', 'lbq.lbcs_client_id', 'left')
             ->join('users as u', 'c.rm_id', '=', 'u.id', 'left');
@@ -59,6 +59,7 @@ class ClientScriptService implements ModelViewConnector
             'c.rm_id as rm_id',
             'c.name as name',
             'c.client_code as client_code',
+            'c.category as client_category',
             'u.name as dealer',
             'c.total_aum as aum',
             'c.realised_pnl as realised_pnl',
@@ -100,6 +101,7 @@ class ClientScriptService implements ModelViewConnector
             'rm_id' => 'c.rm_id',
             'name' => 'c.name',
             'client_code' => 'c.client_code',
+            'client_category' => 'c.category',
             'dealer' => 'u.name',
             'aum' => 'c.total_aum',
             'realised_pnl' => 'c.realised_pnl',
@@ -120,13 +122,32 @@ class ClientScriptService implements ModelViewConnector
             'allocated_aum' => 'cst.allocated_aum',
             'liquidbees' => 'lbq.liquidbees',
         ];
-
+        $this->advSearchesMap = array_merge(
+            $this->searchesMap,
+            [
+                'buy_val' => 'cst.buy_avg_price * cst.dp_qty',
+                'script_cur_value' => 'cst.dp_qty * s.cmp',
+                'pnl' => '(s.cmp - cst.buy_avg_price) * cst.dp_qty',
+                'pnl_pc' => '(s.cmp - cst.buy_avg_price) / cst.buy_avg_price * 100',
+                'pa' => 'cst.buy_avg_price * cst.dp_qty * 100 / c.total_aum',
+                'nof_days' => 'DATEDIFF(CURDATE(), cst.entry_date)',
+                'impact' => '(s.cmp - cst.buy_avg_price) * cst.dp_qty / c.total_aum * 100',
+                'cash' => 'c.total_aum - cst.allocated_aum',
+                'cash_pc' => '(c.total_aum - cst.allocated_aum) / c.total_aum * 100',
+                'returns' => 'c.realised_pnl + cst.cur_value - c.total_aum',
+                'returns_pc' => '(c.realised_pnl + cst.cur_value - c.total_aum) /c.total_aum * 100',
+                'client_pnl' => 'cst.cur_value - c.total_aum',
+                'client_pnl_pc' => '(cst.cur_value - c.total_aum) / c.total_aum * 100',
+                'uxid' => 'CONCAT(c.id, "::", s.id',
+            ]
+        );
         $this->sortsMap = [
 
             'id' => ['name' => 'c.id', 'type' => 'integer'],
             'rm_id' => ['name' => 'c.rm_id', 'type' => 'integer'],
             'name' => ['name' => 'c.name', 'type' => 'string'],
             'client_code' => ['name' => 'c.client_code', 'type' => 'string'],
+            'client_category' => ['name' => 'c.category', 'type' => 'string'],
             'dealer' => ['name' => 'u.name', 'type' => 'string'],
             'aum' => ['name' => 'c.total_aum', 'type' => 'float'],
             'realised_pnl' => ['name' => 'c.realised_pnl', 'type' => 'float'],
@@ -179,6 +200,47 @@ class ClientScriptService implements ModelViewConnector
             }
         }
         return $valid;
+    }
+    public function analyseSellOrder(
+        array $searches,
+        array $sorts,
+        array $filters,
+        array $advSearch,
+        string | null $selectedIds,)
+    {
+        $queryData = $this->getQueryAndParams(
+            $searches,
+            $sorts,
+            $filters,
+            $advSearch,
+            $selectedIds
+        );
+
+        DB::statement("SET SQL_MODE=''");
+        $results = $queryData['query']->select($this->selects)->get();
+        DB::statement("SET SQL_MODE='only_full_group_by'");
+
+        $unique = true;
+        $symbol = '';
+        $price = 0.00;
+        $first = $results->first();
+
+        foreach ($results as $result) {
+            if ($result->sid != $first->sid) {
+                $unique = false;
+                break;
+            }
+        }
+
+        if ($unique) {
+            $symbol = $first->symbol;
+            $price = $first->cmp;
+        }
+        return [
+            'unique' => $unique,
+            'symbol' => $symbol,
+            'price' => $price
+        ];
     }
 
     protected function applyGroupings($query) {
@@ -261,15 +323,15 @@ class ClientScriptService implements ModelViewConnector
     {
         $formatted = [];
         foreach ($results as $result) {
-            $aum = $result['total_aum'] ?? 0;
+            $aum = $result['aum'] ?? 0;
             $cv = $result['client_cur_value'];
             $al_aum = $result['allocated_aum'];
 
             $row = $result;
-            $row['total_aum'] = $aum;
+            $row['aum'] = $aum;
             $row['allocated_aum'] = $al_aum ?? 0;
             $row['client_cur_value'] = $cv ?? 0;
-            $row['client_pnl_pc'] = $aum > 0 ? $result['pnl_pc'] : 0;
+            $row['client_pnl_pc'] = $aum > 0 ? $result['client_pnl_pc'] : 0;
 
             $formatted[] = $row;
         }
@@ -278,8 +340,8 @@ class ClientScriptService implements ModelViewConnector
 
     private function querySelectedIds(Builder $query, string $idKey, array $ids): void
     {
-        $idStr = '|'.implode('|', $ids);
-        $query->where(DB::raw('INSTR("'.$idStr.'", CONCAT(c.id, "::", s.id))'), '>', 0);
+        $idStr = '|'.implode('|', $ids).'|';
+        $query->where(DB::raw('INSTR("'.$idStr.'", CONCAT("|", c.id, "::", s.id, "|"))'), '>', 0);
         // DB::raw('IF(s.id IS NULL, CONCAT(c.id, "::", "0"), CONCAT(c.id, "::", s.id)) as uxid')
     }
 
@@ -290,7 +352,7 @@ class ClientScriptService implements ModelViewConnector
         array $advSearch,
         string | null $selectedIds,
         int $qty,
-        float $price,
+        string | float $price,
         float $slippage
     ) {
         $queryData = $this->getQueryAndParams(
@@ -315,10 +377,11 @@ class ClientScriptService implements ModelViewConnector
                 'discount_qty' => '0',
                 'trigger_price' => '0'
             ];
+            $xprice = $price == 'null' ? $result->cmp : $price;
             $row['script_name'] = $result->symbol.' EQ| '.$result->nse_code;
             $row['qty'] = $qty.'';
             $row['lot'] = $qty.'';
-            $row['price'] = $result->cmp * (100 - $slippage) / 100;
+            $row['price'] = round($xprice * (100 - $slippage) / 100, 2) . '';
             $row['client_code'] = $result->client_code;
             $export[] = $row;
         }

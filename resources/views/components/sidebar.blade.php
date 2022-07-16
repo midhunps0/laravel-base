@@ -1,5 +1,5 @@
 <div x-data="{hidden: false}"
-    x-init="console.log('test');hidden = screen.width < 768;"
+    x-init="hidden = screen.width < 768;"
     @sidebarvisibility.window="hidden=$event.detail.hidden;"
     class="overflow-hidden fixed top-0 left-0 z-50 sm:relative bg-base-100 w-full sm:w-auto min-w-fit ransition-all"
     :class="!hidden || 'w-0'">
@@ -20,7 +20,7 @@
         <li><x-menu-item title="Client wise" route="clients.show" href="{{route('clients.show', 0)}}" icon="icons.user"/></li>
         <li><x-menu-item title="Script wise" route="scripts.show" href="{{route('scripts.show', 0)}}"
             icon="icons.list"/></li>
-        <li><x-menu-item title="Order Creation" route="clientscripts.index" href="{{route('clientscripts.index')}}" icon="icons.list"/></li>
+        {{-- <li><x-menu-item title="Sell Order" route="clientscripts.index" href="{{route('clientscripts.index')}}" icon="icons.list"/></li> --}}
         @if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Superadmin'))
         <li><x-menu-item title="Users" route="users.index" href="{{route('users.index')}}"
             icon="icons.lock"/></li>

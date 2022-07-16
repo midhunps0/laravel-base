@@ -12,7 +12,7 @@ class LiveUpdateController extends Controller
     {
         $ltps = $request->input('LTP', []);
         $ohlcs = $request->input('OHLC', []);
-        $scriptcode = "Scrip Code";
+        $scriptcode = "ScripCode";
         try {
             foreach ($ltps as $ltp) {
                 $script = Script::where('nse_code', $ltp->$scriptcode)->get()->first();

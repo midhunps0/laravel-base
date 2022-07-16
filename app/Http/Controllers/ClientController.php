@@ -13,7 +13,7 @@ class ClientController extends SmartController
     public function index(ClientService $clientService)
     {
         $data = $clientService->index(
-            $this->request->input('items_count', 10),
+            $this->request->input('items_count', 30),
             $this->request->input('page'),
             $this->request->input('search', []),
             $this->request->input('sort', []),
@@ -50,6 +50,7 @@ class ClientController extends SmartController
             $this->request->input('adv_search', []),
             $this->request->input('selected_ids', '')
         );
+        // dd($clients);
         $colsFormat = [
             'client_code',
             'name',
@@ -64,7 +65,7 @@ class ClientController extends SmartController
             'cash_pc',
             'returns',
             'returns_pc',
-            'rm'
+            'dealer'
         ];
         return Excel::download(new DefaultArrayExports($clients, $colsFormat), 'clients.xlsx');
     }
@@ -83,7 +84,7 @@ class ClientController extends SmartController
         try {
             $data = $clientService->getShowData(
                 $id,
-                $this->request->input('items_count', 10),
+                $this->request->input('items_count', 30),
                 $this->request->input('page'),
                 $this->request->input('search', []),
                 $this->request->input('sort', []),
@@ -161,6 +162,51 @@ class ClientController extends SmartController
             'impact',
             'nof_days'
         ];
-        return Excel::download(new DefaultArrayExports($clients, $colsFormat), 'clients.xlsx');
+        return Excel::download(new DefaultArrayExports($clients, $colsFormat), 'client_scripts.xlsx');
+    }
+
+    public function downloadOrder($id, ClientService $clientService)
+    {
+        $order = $clientService->downloadOrder(
+            $id,
+            $this->request->input('search', []),
+            $this->request->input('sort', []),
+            $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
+            $this->request->input('selected_ids', ''),
+            $this->request->input('qty'),
+            $this->request->input('price', null),
+            $this->request->input('slippage'),
+        );
+
+        $colsFormat = [
+            'exchange_code',
+            'buyorsell',
+            'product',
+            'script_name',
+            'qty',
+            'lot',
+            'order_type',
+            'price',
+            'client_code',
+            'discount_qty',
+            'trigger_price',
+        ];
+
+        $colsTitles = [
+            'ExchangeCode',
+            'BuyOrSell',
+            'Product',
+            'ScripName',
+            'Qty',
+            'Lot',
+            'OrderType',
+            'Price',
+            'ClientCode',
+            'DiscQty',
+            'TriggerPrice',
+        ];
+
+        return Excel::download(new DefaultArrayExports($order, $colsFormat, $colsTitles), 'clientsellorder.csv');
     }
 }

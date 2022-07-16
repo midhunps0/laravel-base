@@ -38,10 +38,10 @@
                             </button>
                         </x-slot>
                         <x-slot name="content">
-                            <button class="block w-full px-4 py-2 text-sm leading-5 text-base-content hover:bg-base-200 focus:outline-none focus:bg-base-200 transition duration-150 ease-in-out text-left"
+                            {{-- <button class="block w-full px-4 py-2 text-sm leading-5 text-base-content hover:bg-base-200 focus:outline-none focus:bg-base-200 transition duration-150 ease-in-out text-left"
                                     @click.prevent.stop="$dispatch('passwordform');">
                                 {{ __('Change Password') }}
-                            </button>
+                            </button> --}}
                             <!-- Authentication -->
                             <form method="POST" action="{{ route('logout') }}" class="p-0 m-0">
                                 @csrf

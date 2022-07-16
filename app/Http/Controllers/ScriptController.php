@@ -15,7 +15,7 @@ class ScriptController extends SmartController
     public function index(ScriptService $scriptService)
     {
         $data = $scriptService->index(
-            $this->request->input('items_count', 10),
+            $this->request->input('items_count', 30),
             $this->request->input('page'),
             $this->request->input('search', []),
             $this->request->input('sort', []),
@@ -69,7 +69,7 @@ class ScriptController extends SmartController
         }
         $data = $scriptService->getShowData(
             $id,
-            $this->request->input('items_count', 10),
+            $this->request->input('items_count', 30),
             $this->request->input('page'),
             $this->request->input('search', []),
             $this->request->input('sort', []),
@@ -91,9 +91,10 @@ class ScriptController extends SmartController
         ]);
     }
 
-    public function queryShowIds(ScriptService $scriptService)
+    public function queryShowIds($id, ScriptService $scriptService)
     {
         $ids = $scriptService->getShowIdsForParams(
+            $id,
             $this->request->input('search', []),
             $this->request->input('sort', []),
             $this->request->input('filter', []),
@@ -130,6 +131,51 @@ class ScriptController extends SmartController
             'pa'
         ];
         return Excel::download(new DefaultArrayExports($scripts, $colFormat), 'scripts.xlsx');
+    }
+
+    public function downloadOrder($id, ScriptService $ScriptService)
+    {
+        $order = $ScriptService->downloadOrder(
+            $id,
+            $this->request->input('search', []),
+            $this->request->input('sort', []),
+            $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
+            $this->request->input('selected_ids', ''),
+            $this->request->input('qty'),
+            $this->request->input('price'),
+            $this->request->input('slippage'),
+        );
+
+        $colsFormat = [
+            'exchange_code',
+            'buyorsell',
+            'product',
+            'script_name',
+            'qty',
+            'lot',
+            'order_type',
+            'price',
+            'client_code',
+            'discount_qty',
+            'trigger_price',
+        ];
+
+        $colsTitles = [
+            'ExchangeCode',
+            'BuyOrSell',
+            'Product',
+            'ScripName',
+            'Qty',
+            'Lot',
+            'OrderType',
+            'Price',
+            'ClientCode',
+            'DiscQty',
+            'TriggerPrice',
+        ];
+
+        return Excel::download(new DefaultArrayExports($order, $colsFormat, $colsTitles), 'sellorder.csv');
     }
 
     /**

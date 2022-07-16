@@ -11,13 +11,24 @@
     :current_page="$current_page"
     :results="$clients"
     :results_json="$results_json"
-    :result_calcs="[]"
     total_disp_cols="13"
     unique_str="scrx"
-    :paginator="$paginator">
+    adv_fields="
+        code: {key: 'code', text: 'Client Code', type: 'string'},
+        pnl_pc: {key: 'pnl_pc', text: 'PNL %', type: 'numeric'},
+        pa: {key: 'pa', text: 'Allocation %', type: 'numeric'},
+        nof_days: {key: 'nof_days', text: 'No. of Days', type: 'numeric'},
+    "
+    :enableAdvSearch="true"
+    :soPriceField="true"
+    :paginator="$paginator"
+    :columns="[
+        'client_code', 'cmp', 'pnl'
+    ]"
+    orderBaseUrl="{{route('scripts.order.download', $model->id)}}"
+    orderVerifyUrl="{{route('clientsripts.sellorder.verify')}}"
+    >
     <x-slot:body>
-        <input type="hidden" value="{{$results_json}}" id="results_json">
-        <input type="hidden" value="{{$items_ids}}" id="itemIds">
         <div class="flex flex-row space-x-4" >
         <div class="font-bold border border-base-300 rounded-md p-4">
             <h1><span class="inline-block mr-1">Symbol: </span><span class="inline-block mr-4 text-warning">{{$model->symbol}}</span><span class="inline-block mr-1">Company Name: </span><span class="inline-block mr-4 text-warning">{{$model->company_name}}</span></h1>
@@ -31,6 +42,27 @@
             />
     </div>
     </x-slot>
+    <x-slot:inputFields>
+        <input type="hidden" value="{{$aggregates}}" id="aggregates">
+        <input type="hidden" value="{{$results_json}}" id="results_json">
+        <input type="hidden" value="{{$items_ids}}" id="itemIds">
+    </x-slot>
+    <x-slot:aggregateCols>
+        <th colspan="3">
+            Aggregates:
+        </th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_buy_val)"></span></th>
+        <th></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_cur_val)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_pnl)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_pnl_pc)"></span></th>
+        <th></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_impact, 2)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_pa, 2)"></span></th>
+    </x-slot>
     <x-slot:thead>
         <th class="relative text-center">
             Sl. No.
@@ -42,6 +74,13 @@
                     Client Code
                     <x-utils.spotsearch textval="{{ $params['client_code'] ?? '' }}" textname="client_code"
                         label="Search client code" />
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center w-44">
+                <div class="relative flex-grow ml-2 text-left">
+                    Symbol
                 </div>
             </div>
         </th>
@@ -65,7 +104,7 @@
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="buy_val" val="{{ $sort['buy_val'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    Avg Buy Rate
+                    Avg Buy Value
                 </div>
             </div>
         </th>
@@ -137,11 +176,12 @@
                 <td x-text="itemsCount * (currentPage - 1) + index + 1"></td>
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}
-                <td class="text-center sticky !left-6" >
+                <td class="sticky !left-6" >
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.code"></a>
                 </td>
-                <td class="text-center" x-text="result.qty"></td>
+                <td x-text="result.symbol"></td>
+                <td class="text-right" x-text="result.qty"></td>
                 <td class="text-right" x-text="formatted(result.buy_avg_price)"></td>
                 <td class="text-right" x-text="formatted(result.buy_val)"></td>
                 <td class="flex flex-row items-baseline justify-end" :class="result.cmp < result.buy_avg_price ? 'text-error' : 'text-accent'">

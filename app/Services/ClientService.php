@@ -62,6 +62,7 @@ class ClientService implements ModelViewConnector
             DB::raw('(cst.cmp - cst.buy_avg_price) * cst.dp_qty as pnl'),
             DB::raw('(cst.cmp - cst.buy_avg_price) * cst.dp_qty / (cst.buy_avg_price * cst.dp_qty) * 100 as pnl_pc'),
             'cst.allocated_aum as allocated_aum',
+            DB::raw('cst.allocated_aum / c.total_aum * 100 as pa'),
             'lbq.liquidbees as liquidbees',
             DB::raw('c.total_aum - cst.allocated_aum as cash'),
             DB::raw('(c.total_aum - cst.allocated_aum) / c.total_aum * 100 as cash_pc'),
@@ -69,6 +70,20 @@ class ClientService implements ModelViewConnector
             DB::raw('(c.realised_pnl + cst.cur_value - c.total_aum) /c.total_aum * 100 as returns_pc'),
         ];
 
+        $this->agrSelects = array_merge($this->selects, [
+            DB::raw('SUM(c.total_aum) as agr_aum'),
+            DB::raw('SUM(cst.allocated_aum) as agr_allocated_aum'),
+            DB::raw('SUM(cst.allocated_aum) / SUM(c.total_aum) * 100 as agr_pa'),
+            DB::raw('SUM(c.realised_pnl) as agr_realised_pnl'),
+            DB::raw('SUM(cst.cur_value) as agr_cur_value'),
+            DB::raw('(SUM(cst.cur_value) - SUM(cst.allocated_aum)) as agr_pnl'),
+            DB::raw('(SUM(cst.cur_value) - SUM(cst.allocated_aum)) / SUM(cst.allocated_aum) * 100 as agr_pnl_pc'),
+            DB::raw('SUM(lbq.liquidbees) as agr_liquidbees'),
+            DB::raw('SUM(c.total_aum) - SUM(cst.allocated_aum) as agr_cash'),
+            DB::raw('(SUM(c.total_aum) - SUM(cst.allocated_aum)) / SUM(c.total_aum) as agr_cash_pc'),
+            DB::raw('SUM(c.realised_pnl + cst.cur_value - c.total_aum) as agr_returns'),
+            DB::raw('SUM(c.realised_pnl + cst.cur_value - c.total_aum) / SUM(c.total_aum) * 100 as agr_returns_pc'),
+        ]);
         $this->searchesMap = [
             'dealer' => 'u.name',
             'name' => 'c.name',
@@ -88,8 +103,10 @@ class ClientService implements ModelViewConnector
         $this->relationSelects = [
             's.id as id',
             'c.total_aum as aum',
+            'c.client_code as client_code',
             'cs.entry_date as entry_date',
             's.symbol as symbol',
+            's.nse_code as nse_code',
             's.industry as category',
             's.mvg_sector as sector',
             'cs.dp_qty as qty',
@@ -98,7 +115,7 @@ class ClientService implements ModelViewConnector
             's.cmp as cmp',
             DB::raw('s.cmp * cs.dp_qty as cur_value'),
             DB::raw('(s.cmp - cs.buy_avg_price) * cs.dp_qty as overall_gain'),
-            DB::raw('(s.cmp - cs.buy_avg_price) / cs.buy_avg_price * 100  as pc_change'),
+            DB::raw('(s.cmp - cs.buy_avg_price) / cs.buy_avg_price * 100 as pc_change'),
             's.last_day_closing as ldc',
             DB::raw('(s.cmp - s.last_day_closing) * cs.dp_qty as todays_gain'),
             's.day_high as day_high',
@@ -107,6 +124,15 @@ class ClientService implements ModelViewConnector
             DB::raw('DATEDIFF(CURDATE(), cs.entry_date) as nof_days'),
             DB::raw('cs.buy_avg_price * cs.dp_qty * 100 / c.total_aum as pa'),
         ];
+
+        $this->relAgrSelects = array_merge($this->relationSelects, [
+            DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) / SUM(c.total_aum) * 100 as agr_pa'),
+            DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) as agr_amt_invested'),
+            DB::raw('SUM(s.cmp * cs.dp_qty) as agr_cur_value'),
+            DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) as agr_overall_gain'),
+            DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) / SUM(cs.buy_avg_price * cs.dp_qty) * 100 as agr_pc_change'),
+        ]);
+
         $this->relSearchesMap = [
             'aum' => 'c.total_aum',
             'entry_date' => 'cs.entry_date',
@@ -146,8 +172,19 @@ class ClientService implements ModelViewConnector
             'day_low' => ['name' => 's.day_low', 'type' => 'float'],
         ];
 
+        $this->relAdvSearchesMap = array_merge(
+            $this->relSearchesMap,
+            [
+                'pc_change' => '(s.cmp - cs.buy_avg_price) / cs.buy_avg_price * 100',
+                'pa' => 'cs.buy_avg_price * cs.dp_qty * 100 / c.total_aum',
+                'sector' => 's.mvg_sector',
+                'nof_days' => 'DATEDIFF(CURDATE(), cs.entry_date)',
+            ]
+        );
+
         $this->idKey = 'id';
-        $this->selIdsKey = 's.id';
+        $this->selIdsKey = 'c.id';
+        $this->relSelIdsKey = 's.id';
         $this->uniqueSortKey = 'c.id';
         $this->relUniqueSortKey = 's.id';
     }
@@ -201,12 +238,22 @@ class ClientService implements ModelViewConnector
             $al_aum = $result['allocated_aum'];
 
             $row = $result;
-            $row['total_aum'] = $aum;
-            $row['allocated_aum'] = $al_aum ?? 0;
-            $row['cur_value'] = $cv ?? 0;
+            $row['total_aum'] = round($aum, 2);
+            $row['allocated_aum'] = round($al_aum, 2) ?? 0;
+            $row['cur_value'] = round($cv, 2) ?? 0;
+            $row['realised_pnl'] = round($result['realised_pnl'], 2);
+            $row['pnl'] = round($result['pnl'], 2);
+            $row['pnl_pc'] = round($result['pnl_pc'], 2);
+            $row['pa'] = round($result['pa'], 2);
+            $row['liquidbees'] = round($result['liquidbees'], 2);
+            $row['cash'] = round($result['cash'], 2);
+            $row['cash_pc'] = round($result['cash_pc'], 2);
+            $row['returns'] = round($result['returns'], 2);
+            $row['returns_pc'] = round($result['returns_pc'], 2);
 
             $formatted[] = $row;
         }
+        // dd($formatted);
         return $formatted;
     }
 
@@ -227,25 +274,25 @@ class ClientService implements ModelViewConnector
                 $sid = $result->id;
 
                 $row['id'] = $sid;
-                $row['aum'] = $aum;
+                $row['aum'] = round($aum, 2);
                 $row['entry_date'] = $result->entry_date;
                 $row['symbol'] = $result->symbol;
                 $row['category'] = $result->category;
                 $row['sector'] = $result->sector;
                 $row['qty'] = $result->qty;
-                $row['buy_avg_price'] = $result->buy_avg_price;
-                $row['amt_invested'] = $result['amt_invested'];
-                $row['cmp'] = $result->cmp;
-                $row['cur_value'] = $result->cur_value;
-                $row['ldc'] = $result->ldc;
-                $row['day_high'] = $result->day_high;
-                $row['day_low'] = $result->day_low;
+                $row['buy_avg_price'] = round($result->buy_avg_price, 2);
+                $row['amt_invested'] = round($result['amt_invested'], 2);
+                $row['cmp'] = round($result->cmp, 2);
+                $row['cur_value'] = round($result->cur_value, 2);
+                $row['ldc'] = round($result->ldc, 2);
+                $row['day_high'] = round($result->day_high, 2);
+                $row['day_low'] = round($result->day_low, 2);
                 $row['nof_days'] = $result->nof_days;
-                $row['pa'] = $result->pa;
-                $row['overall_gain'] = $result['overall_gain'];
-                $row['pc_change'] = $result['pc_change'];
-                $row['todays_gain'] = $result['todays_gain'];
-                $row['impact'] = $result['impact'];
+                $row['pa'] = round($result->pa, 2);
+                $row['overall_gain'] = round($result['overall_gain'], 2);
+                $row['pc_change'] = round($result['pc_change'], 2);
+                $row['todays_gain'] = round($result['todays_gain'], 2);
+                $row['impact'] = round($result['impact'], 2);
             }
 
 
@@ -258,6 +305,51 @@ class ClientService implements ModelViewConnector
             $formatted[] = $row;
         }
         return $formatted;
+    }
+
+    public function downloadOrder(
+        $id,
+        array $searches,
+        array $sorts,
+        array $filters,
+        array $advSearch,
+        string | null $selectedIds,
+        int $qty,
+        string | float $price,
+        float $slippage
+    ) {
+        $queryData = $this->getRelationQueryAndParams(
+            $this->getRelationQuery($id),
+            $searches,
+            $sorts,
+            $filters,
+            $advSearch,
+            $selectedIds,
+        );
+
+        DB::statement("SET SQL_MODE=''");
+        $results = $queryData['query']->select($this->relationSelects)->get();
+        DB::statement("SET SQL_MODE='only_full_group_by'");
+
+        $export = [];
+        foreach ($results as $result) {
+            $row = [
+                'exchange_code' => 'NSE',
+                'buyorsell' => 'S',
+                'product' => 'SellFromDP',
+                'order_type' => 'L',
+                'discount_qty' => '0',
+                'trigger_price' => '0'
+            ];
+
+            $row['script_name'] = $result->symbol.' EQ| '.$result->nse_code;
+            $row['qty'] = round(($result->qty * $qty /100)) . '';
+            $row['lot'] = round(($result->qty * $qty /100)) . '';
+            $row['price'] = round($result->cmp * (100 - $slippage) / 100, 2) . '';
+            $row['client_code'] = $result->client_code;
+            $export[] = $row;
+        }
+        return $export;
     }
 
     private function getFilterParams($query, $filters) {

@@ -5327,12 +5327,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         if (j < keys.length - 1) {
           thelink += '&';
         }
-
-        console.log('thelink: ' + thelink);
       }
 
-      console.log('link:');
-      console.log(thelink);
       return thelink;
     },
     fetchLink: function fetchLink(detail) {
@@ -5343,8 +5339,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var thelink = link;
 
       if (detail.params != null) {
-        thelink += "?" + this.getQueryString(params);
-        console.log(thelink); // let keys = Object.keys(params);
+        thelink += "?" + this.getQueryString(params); // let keys = Object.keys(params);
         // for (let j=0; j < keys.length; j++) {
         //     if (Array.isArray(params[keys[j]])) {
         //         for (let x = 0; x < params[keys[j]].length; x++) {
@@ -5360,8 +5355,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         //         thelink += '&';
         //     }
         // }
-        // console.log('link:');
-        // console.log(thelink);
       }
 
       if (this.$store.app.xpages != undefined && this.$store.app.xpages[thelink] != undefined) {
@@ -5447,7 +5440,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     // },
     resetPages: function resetPages() {
       this.$store.app.xpages = [];
-      console.log('pages reset');
     },
     formatted: function formatted(e) {
       var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;

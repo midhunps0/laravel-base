@@ -107,6 +107,22 @@ class ClientScriptController extends SmartController
             ]);
     }
 
+    public function analyseSellOrder(ClientScriptService $clientScriptService)
+    {
+        $analysis = $clientScriptService->analyseSellOrder(
+            $this->request->input('search', []),
+            $this->request->input('sort', []),
+            $this->request->input('filter', []),
+            $this->request->input('adv_search', []),
+            $this->request->input('selected_ids', ''));
+
+            return response()->json([
+                'uniqueSymbol' => $analysis['unique'],
+                'symbol' => $analysis['symbol'],
+                'price' => $analysis['price'],
+            ]);
+    }
+
     public function downloadOrder(ClientScriptService $ClientScriptService)
     {
         $order = $ClientScriptService->downloadOrder(

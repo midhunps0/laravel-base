@@ -1,10 +1,10 @@
-@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'paginator', 'columns' => [], 'orderBaseUrl' => '', 'orderVerifyUrl' => ''])
+@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'soPriceField' => 'false', 'paginator', 'columns' => [], 'orderBaseUrl' => '', 'orderVerifyUrl' => '', 'orderCheckUrl' => ''])
 <x-dashboard-base :ajax="$x_ajax">
-    <div x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative" :id="$id('panel-base')">
+    <div x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative h-full" :id="$id('panel-base')">
 
         @if (isset($body))
             <h3 class="text-xl font-bold">{{ $title }}</h3>
-            <div>{{ $body }}</div>
+            <div class="my-4">{{ $body }}</div>
         @endif
 
         <div class="flex flex-row flex-wrap justify-between items-center mb-4">
@@ -15,7 +15,7 @@
                 @if ($enableAdvSearch)
                     <div>
                         <button @click.prevent.stop="showAdvSearch = true;"
-                            @keydown.window="console.log($event);
+                            @keydown.window="
                             if($event.altKey && $event.keyCode == 65) {
                                 showAdvSearch = true;
                             }
@@ -29,8 +29,8 @@
                         </button>
                     </div>
                     <div>
-                        <button @click.prevent.stop="showOrderForm = true;"
-                        @keydown.window="console.log($event);
+                        <button @click.prevent.stop="$dispatch('showorderform');"
+                        @keydown.window="
                         if($event.altKey && $event.keyCode == 83) {
                             showOrderForm = true;
                         }
@@ -89,10 +89,12 @@
                 currentPage: {{ $current_page }},
                 downloadUrl: '{{ $downloadUrl }}',
                 results: null,
+                aggregates: null,
                 orderBaseUrl: '{{ $orderBaseUrl }}',
-                orderVerifyUrl: '{{ $orderVerifyUrl }}',
+                orderCheckUrl: '{{ $orderCheckUrl }}',
+                {{-- orderVerifyUrl: '{{ $orderVerifyUrl }}', --}}
                 order: {
-                    bors: 'Sell',
+                    //bors: 'Sell',
                     qty: 0,
                     price: 0.00,
                     slippage: 0.01,
@@ -101,6 +103,9 @@
                     processing: false,
                     message: '',
                     selIdsUrlStr: '',
+                    statChecked: false,
+                    uniqueSymbol: false,
+                    chosenSymbol: '',
                     get url() {
                         return '{{ $orderBaseUrl }}'
                         + '?bors=' + this.bors
@@ -112,10 +117,10 @@
                     get enabled() {
                         return this.qty.length != 0 && this.price.length != 0
                             && this.slippage.length != 0
-                            && this.slippage >= 0.01 && this.slippage <= 2;
+                            && this.slippage >= 0.01 && this.slippage <= 1;
                     },
                     reset() {
-                        this.bors = 'Sell';
+                        //this.bors = 'Sell';
                         this.qty = 0;
                         this.price = 0.00;
                         this.slippage = 0.01;
@@ -166,7 +171,9 @@
                 },
                 verifyOrderList() {
                     let allParams = this.paramsExceptSelection();
-                    allParams.selected_ids = this.selectedIds.join('|');
+                    if (this.selectedIds.length > 0) {
+                        allParams.selected_ids = this.selectedIds.join('|');
+                    }
                     this.order.processing = true;
                     axios.get(
                         this.orderVerifyUrl, {
@@ -176,11 +183,11 @@
                             params: allParams
                         }
                     ).then((r) => {
-                        console.log(r);
-                        console.log(r.data);
                         if(r.data.success) {
                             this.order.listVerified = true;
-                            this.order.selIdsUrlStr = '&selected_ids=' + this.selectedIds.join('|');
+                            if (this.selectedIds.length > 0) {
+                                this.order.selIdsUrlStr = '&selected_ids=' + this.selectedIds.join('|');
+                            }
                         } else {
                             this.order.listInvalid = true;
                         }
@@ -188,6 +195,40 @@
                         this.order.processing = false;
                     }).catch((e) => {
                         this.order.message = 'Unexpected error. It may be due to invalid list. Please modify the list and try again.';
+                        this.order.processing = false;
+                    });
+                },
+                orderSatusCheck() {
+                    let allParams = this.paramsExceptSelection();
+
+                    if (this.selectedIds.length > 0) {
+                        allParams.selected_ids = this.selectedIds.join('|');
+                    }
+                    this.order.processing = true;
+                    this.order.statChecked = false;
+
+                    axios.get(
+                        this.orderCheckUrl, {
+                            headers: {
+                                'X-ACCEPT-MODE': 'only-json'
+                            },
+                            params: allParams
+                        }
+                    ).then((r) => {
+                        if (this.selectedIds.length > 0) {
+                            this.order.selIdsUrlStr = '&selected_ids=' + this.selectedIds.join('|');
+                        }
+                        this.order.uniqueSymbol = r.data.uniqueSymbol;
+                        if (r.data.uniqueSymbol) {
+                            this.order.price = Math.round(r.data.price * 100)/100;
+                            this.order.chosenSymbol = r.data.symbol;
+                        } else {
+                            this.order.price = null;
+                        }
+                        this.order.processing = false;
+                        this.order.statChecked = true;
+                    }).catch((e) => {
+                        console.log(e);
                         this.order.processing = false;
                     });
                 },
@@ -200,18 +241,7 @@
                     });
                     return processed;
                 },
-                addContition() {
-                    this.conditions.push({
-                        field: 'none',
-                        type: '',
-                        operation: 'none',
-                        value: 0
-                    });
-                },
                 advSearchStatus() {
-                    showAdvSearch = false;
-                    console.log('conditions:');
-                    console.log(this.conditions);
                     if ((this.conditions.length == 1 && this.conditions[0].field == 'none')) {
                         noconditions = true;
                         this.triggerFetch();
@@ -256,7 +286,7 @@
                     } else {
                         noconditions = false;
                     }
-                    showAdvSearch = false;
+                    //showAdvSearch = false;
                     this.triggerFetch();
                     /*
                     let searchParams = this.advQueryParams();
@@ -320,7 +350,7 @@
 
                     return params;
                 },
-                triggerFetch() {
+                async triggerFetch() {
                     let allParams = this.paramsExceptSelection();
 
                     axios.get(
@@ -331,8 +361,8 @@
                             params: allParams
                         }
                     ).then((r) => {
-                        console.log('results updated');
                         this.results = JSON.parse(r.data.results_json);
+                        this.aggregates = JSON.parse(r.data.aggregates);
                         this.totalResults = r.data.total_results;
                         this.currentPage = r.data.current_page;
                         $dispatch('setpagination', {paginator: JSON.parse(r.data.paginator)});
@@ -356,7 +386,9 @@
                 },
                 doSort(detail) {
                     this.setSort(detail);
-                    this.triggerFetch();
+                    this.paginator.currentPage = 1;
+                    this.paginatorPage = 1;
+                    this.triggerFetch();;
                 },
                 setSort(detail) {
                     let keys = Object.keys(detail.data);
@@ -406,8 +438,6 @@
                     ajaxLoading = true;
                     axios.get('{{ $selectIdsUrl }}', { params: params }).then(
                         (r) => {
-                            console.log('ids');
-                            console.log(r.data.ids);
                             this.itemIds = r.data.ids;
                             this.selectedIds = r.data.ids;
                             this.pageSelected = true;
@@ -447,21 +477,11 @@
                     return results;
                 },
 
-                resetAdvSearch() {
-                    this.conditions = [{
-                        field: 'none',
-                        operation: 'none',
-                        value: 0
-                    }];
-                },
                 getFieldOperators(field) {
-                    console.log('field:');
-                    console.log(field);
                     let f = this.advFields.filter((f) => {
                         return f.key == field;
                     })[0];
-                    console.log('f');
-                    console.log(f);
+
                     if (f == null) {
                         return [];
                     }
@@ -475,13 +495,17 @@
                     }
                 },
                 getPaginatedPage(page) {
-                    console.log('selIds');
-                    console.log(this.selectedIds);
                     this.paginatorPage = page;
                     this.triggerFetch();
                 },
                 getOrderItemsCount() {
                     return this.selectedIds.length > 0 ? this.selectedIds.length : this.totalResults;
+                },
+                initiateOrderForm() {
+                    if (this.selectedIds.length > 0) {
+                        this.order.selIdsUrlStr = '&selected_ids=' + this.selectedIds.join('|');
+                    }
+                    showOrderForm = true;
                 }
             }" @spotsearch.window="fetchResults($event.detail)"
                 @setparam.window="setParam($event.detail)" @spotsort.window="doSort($event.detail)"
@@ -497,6 +521,8 @@
                 {{$results_name}}timer = null;
                 {{$results_name}}liveUpdate = false;
                 "
+                @advsearch.window="conditions = $event.detail.conditions; advSearchStatus(); runQuery();"
+                @showorderform.window="initiateOrderForm();"
                 x-init="
                     $watch('selectedIds', (ids) => {
                     if (ids.length < itemIds.length) {
@@ -513,15 +539,21 @@
                             'slippage=' + ord.slippage;
                         }) --}}
                     });
-                    itemIds = JSON.parse(document.getElementById('itemIds').value);
+                    //itemIds = JSON.parse(document.getElementById('itemIds').value);
+                    //itemIds = JSON.parse('{{$items_ids}}');
+
+                    aggregates = JSON.parse(document.getElementById('aggregates').value);
                 $nextTick(() => {
                     url = '{{ $indexUrl }}';
                     params = {};
                     sort = {};
                     filters = {};
                     itemsCount = {{ $items_count }};
-                    itemIds = [];
+                    {{-- itemIds = JSON.parse('{{$items_ids}}'); --}}
+                    itemIds = JSON.parse(document.getElementById('itemIds').value);
+                    {{-- itemIds = document.getElementById('itemIds').value.split(','); --}}
                     selectedIds = [];//$persist([]).as('{{ $unique_str }}ids');
+
                     pageSelected = false;
                     allSelected = false;
                     pages = [];
@@ -531,7 +563,6 @@
                     results = null;
                     orderBaseUrl = '{{ $orderBaseUrl }}';
                     orderVerifyUrl = '{{ $orderVerifyUrl }}';
-
                     order.bors = 'Sell';
                     order.qty = 0;
                     order.price = 0.00;
@@ -552,8 +583,9 @@
 
                     setDownloadUrl();
                     results = JSON.parse(document.getElementById('results_json').value);
-                    results = setResults(results);
-                    $dispatch('setpagination', {paginator: JSON.parse('{{$paginator}}')});
+                    {{-- results = setResults(results); --}}
+                    paginator = JSON.parse('{{$paginator}}');
+                    $dispatch('setpagination', {paginator: paginator});
 
                     clearInterval({{$results_name}}timer);
                     {{$results_name}}timer = null;
@@ -564,8 +596,8 @@
                             if ({{$results_name}}liveUpdate) {
                                 triggerFetch();
                             }
-                        }, 3000);
-                    }, 3100);
+                        }, 15000);
+                    }, 3000);
                 });"
                 action="#"
                 class="max-w-full">
@@ -576,12 +608,17 @@
                             selected.</span>
                         &nbsp;<button @click.prevent.stop="$dispatch('selectpage')" class="btn btn-xs"
                             :disabled="pageSelected">Select Page</button>
-                        &nbsp;<button @click.prevent.stop="$dispatch('selectall')" class="btn btn-xs">Select All
+                        &nbsp;<button @click.prevent.stop="$dispatch('selectall')" class="btn btn-xs" :disabled="allSelected">Select All
                             {{ $total_results }} items</button>
                         &nbsp;<button @click.prevent.stop="$dispatch('cancelselection')"
                             class="btn btn-xs">Cancel All</button>
                         </div>
                 </div>
+                @if (isset($inputFields))
+                <div>
+                    {{ $inputFields }}
+                </div>
+                @endif
                 <div class="overflow-x-scroll scroll-m-1 relative max-w-full p-0 m-0 rounded-md">
                     <table class="table min-w-200 w-full border-2 border-base-200 rounded-md"
                         :class="compact ? 'table-mini' : 'table-compact'">
@@ -590,13 +627,18 @@
                             <tr>
                                 @if ($selectionEnabled)
                                     <th class="w-7">
-                                        <input type="checkbox" x-model="pageSelected" @change="$dispatch('pageselect')"
+                                        <input type="checkbox" x-model="pageSelected" @change="$dispatch('pageselect');"
                                             class="checkbox checkbox-xs"
                                             :class="!allSelected ? 'checkbox-primary' : 'checkbox-secondary'">
                                     </th>
                                 @endif
                                 {{ $thead }}
                             </tr>
+                            @if (isset($aggregateCols))
+                            <tr class="text-warning font-bold">
+                                {{ $aggregateCols }}
+                            </tr>
+                            @endif
                         </thead>
                         <tbody>
                             {{ $rows }}
@@ -604,11 +646,35 @@
                     </table>
                 </div>
                 @if ($enableAdvSearch)
-                <div x-show="showAdvSearch" x-transition
-                    class="absolute top-0 left-0 z-30 w-full flex flex-row justify-center p-16 items-start bg-base-100 bg-opacity-60 min-h-full">
+                <div  x-data="{
+                    myconditions: [{
+                        field: 'none',
+                        type: '',
+                        operation: 'none',
+                        value: 0
+                    }],
+                    addContition() {
+                        this.myconditions.push({
+                            field: 'none',
+                            type: '',
+                            operation: 'none',
+                            value: 0
+                        });
+                    },
+                    resetAdvSearch() {
+                        this.myconditions = [{
+                            field: 'none',
+                            operation: 'none',
+                            value: 0
+                        }];
+
+                    },
+                }"
+                x-show="showAdvSearch" x-transition
+                class="absolute top-0 left-0 z-30 w-full flex flex-row justify-center p-16 items-start bg-base-100 bg-opacity-60 min-h-full">
                     <div
                         class="flex flex-col items-center px-4 py-6 rounded-md w-2/3 mx-auto bg-base-200 shadow-lg relative">
-                        <button @click.prevent.stop="advSearchStatus"
+                        <button @click.prevent.stop="showAdvSearch = false;advSearchStatus();"
                             class="w-8 h-8 p-1 bg-base-100 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center absolute top-2 right-2">
                             <x-display.icon icon="icons.close" height="h-7" width="w-7" />
                         </button>
@@ -628,12 +694,12 @@
                             <div class="w-10 px-2 flex flex-row space-x-2">
                             </div>
                         </div>
-                        <template x-for="(condition, index) in conditions">
+                        <template x-for="(condition, index) in myconditions" :key="'con'+index">
                             <div class="w-full flex flex-row justify-center my-2">
                                 <div class="w-full flex-1 mx-1">
                                     <select x-model="condition.field" :id="'advf' + index"
                                         class="select select-sm select-bordered py-0 w-full"
-                                        @change="document.getElementById('advop'+index).dispatchEvent(new Event('change', { 'bubbles': true }));">
+                                        @change.prevent.stop="document.getElementById('advop'+index).dispatchEvent(new Event('change', { 'bubbles': false }));">
                                         {{-- <option value="none">Select Field</option> --}}
                                         <template x-for="field in Object.values(advFields)">
                                             <option :value="field.key"></span><span x-text="field.text"></span>
@@ -656,8 +722,8 @@
                                         class="input input-sm input-bordered w-full">
                                 </div>
                                 <div class="w-10 px-2 flex flex-row items-center">
-                                    <button @click.prevent.stop="conditions.splice(index, 1);"
-                                        class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center disabled:bg-opacity-70" :disabled="conditions.length == 1">
+                                    <button @click.prevent.stop="myconditions.splice(index, 1);"
+                                        class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center disabled:bg-opacity-70" :disabled="myconditions.length == 1">
                                         <x-display.icon icon="icons.delete" height="h-5" width="w-5" />
                                     </button>
                                 </div>
@@ -672,13 +738,13 @@
                                 </button>
                             </div>
                             <div class="flex-1 flex-grow px-1">
-                                <button @click.prevent.stop="runQuery"
+                                <button @click.prevent.stop="showAdvSearch = false;$dispatch('advsearch', {conditions: JSON.parse(JSON.stringify(myconditions))})"
                                     class="btn btn-sm btn-success p-0 w-full border border-base-100 flex felx-row items-center justify-center">
                                     <x-display.icon icon="icons.go_right" height="h-4" width="w-4" />&nbsp;Get Items List
                                 </button>
                             </div>
                             <div class="w-10 px-2 flex flex-row items-center">
-                                <button @click.prevent.stop="resetAdvSearch"
+                                <button @click.prevent.stop="resetAdvSearch();$dispatch('advsearch', {conditions: JSON.parse(JSON.stringify(myconditions))});"
                                     class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center">
                                     <x-display.icon icon="icons.refresh" height="h-5" width="w-5" />
                                 </button>
@@ -699,50 +765,68 @@
                         </div>
                         <div class="w-full justify-center items-center rounded-md">
                             <h6 class="text-sm p-4">
-                                This order will be generated for <span class="font-bold text-warning text-lg" x-text="getOrderItemsCount()"></span> items.
+                                This order will be generated for <span class="font-bold text-warning text-lg" x-text="getOrderItemsCount()"></span> items.<br/>
+                                {{-- <span x-show="order.uniqueSymbol">
+                                    Only one script in your list. You can set the price at which to create sell order. The current market price is chosen by default.
+                                </span>
+                                <span x-show="!order.uniqueSymbol">
+                                    More than one script in your list. You cannot set the price at which to create the sell order. The current market price will be taken to generate the sell order.
+                                </span> --}}
+                            </h6>
+                            <h6 x-show="order.uniqueSymbol" class="text-sm p-4">
+                                Chosen Script: <span x-text="order.chosenSymbol" class="font-bold text-warning"></span>
                             </h6>
                         </div>
-                        <div class="w-full border border-base-content border-opacity-30 rounded-md">
+                        {{-- <div x-show="!order.statChecked" x-transition class="w-full border border-base-content border-opacity-30 rounded-md">
+                            <h6 class="w-full p-3 text-center animate-pulse">
+                                Analysing the list..
+                            </h6>
+                        </div> --}}
+                        <div x-transition class="w-full border border-base-content border-opacity-30 rounded-md">
                             <div class="flex flex-row justify-between w-full mx-auto p-4 m-4 space-x-2">
-                                <div class="w-1/4">
+                                {{-- <div class="w-1/4">
                                     <label for="bors">Action</label><br/>
                                     <select x-model="order.bors" id="bors" class="select select-sm py-0 w-full">
                                         <option value="Buy">Buy</option>
                                         <option value="Sell">Sell</option>
                                     </select>
+                                </div> --}}
+                                <div class="flex-1">
+                                    <label for="order_qty">Quantity %</label><br/>
+                                    <input x-model="order.qty" id="order_qty" type="number" min="0" class="input input-sm w-full" oninput="if (this.value < 0) {this.value = 0;} if (this.value.length != 0) {var val = Math.floor(this.value); this.value = null; this.value = val;}">
                                 </div>
-                                <div class="w-1/4">
-                                    <label for="order_qty">Quantity</label><br/>
-                                    <input x-model="order.qty" id="order_qty" type="number" class="input input-sm w-full" oninput="if (this.value.length != 0) {var val = Math.floor(this.value); this.value = null; this.value = val;}">
-                                </div>
-                                <div class="w-1/4">
+                                @if (isset($soPriceField) && $soPriceField)
+                                <div class="flex-1">
                                     <label for="order_price">Price</label><br/>
-                                    <input x-model="order.price" type="number" min="0.00" step="0.01" id="order_price" type="text" class="input input-sm w-full">
+                                    <input x-model="order.price" type="number" min="0.00" step="0.01" id="order_price" type="text" class="input input-sm w-full"
+                                    oninput="if(this.value < 0) {this.value = 0.00;}"
+                                    @showorderform.window="order.price=results[0].cmp;">
                                 </div>
-                                <div class="w-1/4">
+                                @endif
+                                <div class="flex-1">
                                     <label for="order_slippage">Slippage</label><br/>
-                                    <input x-model="order.slippage" type="number" min="0.00" max="2.00" step="0.01" id="order_slippage" type="text" class="input input-sm w-full" :class="order.slippage < 0.01 || order.slippage > 2 ? 'text-error border border-error' : ''">
+                                    <input x-model="order.slippage" type="number" min="0.00" max="2.00" step="0.01" id="order_slippage" type="text" class="input input-sm w-full" :class="order.slippage < 0.01 || order.slippage > 1 ? 'text-error border border-error' : ''" >
                                     <label class="label">
                                         <span class="label-text-alt" :class="order.slippage < 0.01 ? 'text-error' : ''">Min: 0.01</span>
-                                        <span class="label-text-alt" :class="order.slippage > 2 ? 'text-error' : ''">Max: 2.00</span>
+                                        <span class="label-text-alt" :class="order.slippage > 1 ? 'text-error' : ''">Max: 1.00</span>
                                     </label>
                                 </div>
                             </div>
                             <div class="my-4 px-1 text-center w-full flex flex-row justify-between space-x-4">
                                 <button @click.prevent.stop="order.reset();" :disabled="order.processing" class="btn btn-sm text-base-content"><x-display.icon icon="icons.refresh" height="h-4" width="w-4" />&nbsp;Reset</button>
-                                <button @click.prevent.stop="verifyOrderList()" x-show="!order.listVerified" :disabled="order.processing"
+                                {{-- <button @click.prevent.stop="verifyOrderList()" x-show="!order.listVerified" :disabled="order.processing"
                                     class="btn btn-sm btn-warning py-0 border border-base-100 flex felx-row items-center justify-center mx-auto" download :disabled="!order.enabled">
                                     <x-display.icon icon="icons.doc_tick" height="h-4" width="w-4" />&nbsp;Verify Items List
-                                </button>
-                                <a x-show="order.listVerified" :href="order.url" :disabled="order.processing"
-                                    class="btn btn-sm btn-success py-0 border border-base-100 flex felx-row items-center justify-center mx-auto" download :disabled="!order.enabled">
+                                </button> --}}
+                                <a :href="order.url"
+                                    class="btn btn-sm btn-success py-0 border border-base-100 flex felx-row items-center justify-center mx-auto" download :disabled="!order.enabled || order.processing">
                                     <x-display.icon icon="icons.doc_tick" height="h-4" width="w-4" />&nbsp;Generate Order
                                 </a>
                             </div>
-                            <div x-show="order.listVerified" class="p-3 m-3 border rounded-md"
+                            {{-- <div x-show="order.listVerified" class="p-3 m-3 border rounded-md"
                                 :class="order.listInvalid ? 'border-error text-error' : 'border-success text-success'">
                                 <span x-text="order.message"></span>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>

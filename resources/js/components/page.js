@@ -67,10 +67,7 @@ export default () => ({
                 if (j < (keys.length - 1)) {
                     thelink += '&';
                 }
-                console.log('thelink: '+thelink);
             }
-            console.log('link:');
-            console.log(thelink);
             return thelink;
     },
     fetchLink(detail) {
@@ -79,7 +76,6 @@ export default () => ({
         let thelink = link;
         if (detail.params != null) {
             thelink += "?" + this.getQueryString(params);
-            console.log(thelink);
             // let keys = Object.keys(params);
             // for (let j=0; j < keys.length; j++) {
             //     if (Array.isArray(params[keys[j]])) {
@@ -96,8 +92,6 @@ export default () => ({
             //         thelink += '&';
             //     }
             // }
-            // console.log('link:');
-            // console.log(thelink);
         }
         if (this.$store.app.xpages != undefined && this.$store.app.xpages[thelink] != undefined) {
             this.showPage = false;
@@ -169,7 +163,6 @@ export default () => ({
     // },
     resetPages() {
         this.$store.app.xpages = [];
-        console.log('pages reset');
     },
     formatted(e, n = 0) {
         return (e * 1).toFixed(n);

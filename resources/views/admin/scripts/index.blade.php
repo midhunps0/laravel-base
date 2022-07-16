@@ -9,7 +9,14 @@
     :total_results="$total_results"
     :current_page="$current_page"
     :results="$clients"
-    unique_str="clnx">
+    unique_str="clnx"
+    :enableAdvSearch="true"
+    :paginator="$paginator"
+    :columns="[
+        'client_code', 'cmp', 'pnl'
+    ]"
+    orderBaseUrl="{{route('clientscripts.order.download')}}"
+    orderVerifyUrl="{{route('clientsripts.sellorder.verify')}}">
     <x-slot:thead>
         <th class="relative w-44">
             <div class="flex flex-row items-center w-36">
