@@ -28,11 +28,12 @@ class ClientService implements ModelViewConnector
                 'cs.client_id as cid',
                 's.id as sid',
                 's.cmp as cmp',
+                's.tracked as tracked',
                 'cs.buy_avg_price as buy_avg_price',
                 'cs.dp_qty as dp_qty',
                 DB::raw(DB::raw('SUM(cs.dp_qty * cs.buy_avg_price)').' as allocated_aum'),
                 DB::raw(DB::raw('SUM(cs.dp_qty * s.cmp)').' as cur_value')
-            )->groupBy('cs.client_id');
+            )->where('s.tracked', 1)->groupBy('cs.client_id');
 
         $lbs = AppHelper::getLiquidbees();
 
@@ -57,8 +58,10 @@ class ClientService implements ModelViewConnector
             'c.client_code as client_code',
             'u.name as dealer',
             'c.total_aum as aum',
+            'c.category as category',
             'c.realised_pnl as realised_pnl',
             'cst.cur_value as cur_value',
+            'cst.tracked as tracked',
             DB::raw('(cst.cmp - cst.buy_avg_price) * cst.dp_qty as pnl'),
             DB::raw('(cst.cmp - cst.buy_avg_price) * cst.dp_qty / (cst.buy_avg_price * cst.dp_qty) * 100 as pnl_pc'),
             'cst.allocated_aum as allocated_aum',
@@ -107,8 +110,9 @@ class ClientService implements ModelViewConnector
             'cs.entry_date as entry_date',
             's.symbol as symbol',
             's.nse_code as nse_code',
-            's.industry as category',
-            's.mvg_sector as sector',
+            's.industry as industry',
+            's.tracked as tracked',
+            's.agio_indutry as sector',
             'cs.dp_qty as qty',
             'cs.buy_avg_price as buy_avg_price',
             DB::raw('cs.buy_avg_price * cs.dp_qty as amt_invested'),
@@ -137,8 +141,8 @@ class ClientService implements ModelViewConnector
             'aum' => 'c.total_aum',
             'entry_date' => 'cs.entry_date',
             'symbol' => 's.symbol',
-            'category' => 's.industry',
-            'sector' => 's.mvg_sector',
+            'industry' => 's.industry',
+            'sector' => 's.agio_indutry',
             'cmp' => 's.cmp',
             'dp_qty' => 'cs.dp_qty',
             'buy_avg_price', 'cs.buy_avg_price',
@@ -163,21 +167,23 @@ class ClientService implements ModelViewConnector
             'aum' => ['name' => 'c.total_aum', 'type' => 'float'],
             'entry_date' => ['name' => 'cs.entry_date', 'type' => 'string'],
             'symbol' => ['name' => 's.symbol', 'type' => 'string'],
-            'category' => ['name' => 's.industry', 'type' => 'string'],
-            'sector' => ['name' => 's.mvg_sector', 'type' => 'string'],
+            'industry' => ['name' => 's.industry', 'type' => 'string'],
+            'sector' => ['name' => 's.agio_indutry', 'type' => 'string'],
             'cmp' => ['name' => 's.cmp', 'type' => 'float'],
             'dp_qty' => ['name' => 'cs.dp_qty', 'type' => 'integer'],
             'buy_avg_price', ['name' => 'cs.buy_avg_price', 'type' => 'float'],
             'day_high' => ['name' => 's.day_high', 'type' => 'float'],
             'day_low' => ['name' => 's.day_low', 'type' => 'float'],
         ];
-
+        $this->relFiltersMap = [
+            'tracked' => ['name' => 's.tracked', 'type' => 'boolean']
+        ];
         $this->relAdvSearchesMap = array_merge(
             $this->relSearchesMap,
             [
                 'pc_change' => '(s.cmp - cs.buy_avg_price) / cs.buy_avg_price * 100',
                 'pa' => 'cs.buy_avg_price * cs.dp_qty * 100 / c.total_aum',
-                'sector' => 's.mvg_sector',
+                'sector' => 's.agio_indutry',
                 'nof_days' => 'DATEDIFF(CURDATE(), cs.entry_date)',
             ]
         );
@@ -277,7 +283,7 @@ class ClientService implements ModelViewConnector
                 $row['aum'] = round($aum, 2);
                 $row['entry_date'] = $result->entry_date;
                 $row['symbol'] = $result->symbol;
-                $row['category'] = $result->category;
+                $row['industry'] = $result->industry;
                 $row['sector'] = $result->sector;
                 $row['qty'] = $result->qty;
                 $row['buy_avg_price'] = round($result->buy_avg_price, 2);
@@ -352,9 +358,9 @@ class ClientService implements ModelViewConnector
         return $export;
     }
 
-    private function getFilterParams($query, $filters) {
-        return [];
-    }
+    // private function getFilterParams($query, $filters) {
+    //     return [];
+    // }
 }
 
 ?>

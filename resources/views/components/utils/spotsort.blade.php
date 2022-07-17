@@ -1,5 +1,5 @@
 @props(['name', 'val' => 'none', 'exclusive' => 'true'])
-<button x-data="{
+<button type="button" x-data="{
         spotsort: '{{$val ?? 'none'}}',
         options: ['none', 'asc', 'desc'],
         exclusive: {{$exclusive}},

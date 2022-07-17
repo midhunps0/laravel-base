@@ -61,6 +61,7 @@
         <th></th>
         <th></th>
         <th></th>
+        <th></th>
     </x-slot>
     <x-slot:thead>
         <th class="sticky !left-6">
@@ -81,9 +82,9 @@
             <div class="flex flex-row items-center w-48">
                 <x-utils.spotsort name="industry" val="{{ $sort['industry'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    Category
+                    Industry
                     <x-utils.spotsearch textval="{{ $params['industry'] ?? '' }}" textname="industry"
-                        label="Search category" />
+                        label="Search industry" />
                 </div>
             </div>
         </th>
@@ -194,6 +195,38 @@
                 </div>
             </div>
         </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <div class="relative flex-grow ml-2 flex flex-row items-center justify-between">
+                    {{-- <span>Tracked ?</span> --}}
+                    {{-- <x-utils.spotfilter
+                        :options="[
+                            ['key' => -1, 'text' => 'All', true],
+                            ['key' => 0, 'text' => 'Untracked'],
+                            ['key' => 1, 'text' => 'Tracked']
+                        ]"
+                        selectedoption=-1
+                        fieldname="tracked"
+                    /> --}}
+                    <select x-data="{
+                        'val': 1
+                        }"
+                        @change.stop.prevent="$dispatch('spotfilter', {data: {tracked: val}});"
+                        x-model="val" class="select select-bordered select-sm max-w-xs py-0 m-1"
+                        :class="val == -1 || 'text-accent'">
+                        @foreach ([
+                            ['key' => -1, 'text' => 'Tacked/Untracked'],
+                            ['key' => 0, 'text' => 'Untracked'],
+                            ['key' => 1, 'text' => 'Tracked', 'selected' => true]
+                        ] as $item)
+                            <option value="{{ $item['key'] }}">
+                                {{ $item['text'] }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </th>
     </x-slot>
 
     <x-slot:rows>
@@ -209,9 +242,10 @@
                 <td class="sticky !left-12">
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('scripts.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.symbol"></a>
+                        <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
                 </td>
                 <td x-text="result.entry_date"></td>
-                <td x-text="result.category"></td>
+                <td x-text="result.industry"></td>
                 <td x-text="result.sector"></td>
                 <td class="text-right" x-text="formatted(result.pa, 2)"></td>
                 <td x-text="result.qty"></td>
@@ -234,6 +268,7 @@
                 <td class="text-right" x-text="formatted(result.day_low)"></td>
                 <td class="text-right" :class="{'text-error' : result.impact < 0, 'text-accent' : result.impact > 0}" x-text="formatted(result.impact, 2)"></td>
                 <td class="text-center" x-text="result.nof_days"></td>
+                <td class="text-center" x-text="result.tracked ? 'Tracked' : 'Untracked'"></td>
             </tr>
         </template>
         {{-- @endforeach --}}

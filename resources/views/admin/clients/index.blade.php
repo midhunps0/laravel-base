@@ -34,6 +34,7 @@
             Aggregates:
         </th>
         <th class="sticky !left-40 z-20"></th>
+        <th></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_aum)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_allocated_aum)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_pa, 2)"></span></th>
@@ -66,6 +67,16 @@
                     Name
                     <x-utils.spotsearch textval="{{ $params['name'] ?? '' }}" textname="name"
                         label="Search name" />
+                </div>
+            </div>
+        </th>
+        <th class="border-l-2 border-base-100">
+            <div class="flex flex-row items-center min-w-72">
+                <x-utils.spotsort name="category" val="{{ $sort['category'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Category
+                    <x-utils.spotsearch textval="{{ $params['category'] ?? '' }}" textname="category"
+                        label="Search category" />
                 </div>
             </div>
         </th>
@@ -189,10 +200,12 @@
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.client_code"></a>
                 </td>
-                <td class="sticky !left-40">
+                <td class="sticky !left-40 z-20">
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.name"></a>
+                        <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
                 </td>
+                <td x-text="result.category"></td>
                 <td class="text-right" x-text="formatted(result.aum)"></td>
                 <td class="text-right" x-text="formatted(result.allocated_aum)"></td>
                 <td class="text-right" x-text="formatted(result.pa, 2)"></td>

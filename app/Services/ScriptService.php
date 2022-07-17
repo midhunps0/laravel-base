@@ -27,6 +27,7 @@ class ScriptService implements ModelViewConnector
             'cs.dp_qty as qty',
             'cs.buy_avg_price as buy_avg_price',
             'c.total_aum as aum',
+            'c.category as category',
             DB::raw('cs.buy_avg_price * cs.dp_qty as buy_val'),
             DB::raw('cs.dp_qty * s.cmp as cur_val'),
             DB::raw('(s.cmp - cs.buy_avg_price) * cs.dp_qty as pnl'),
@@ -58,6 +59,7 @@ class ScriptService implements ModelViewConnector
             'qty' => ['name' => 'cs.dp_qty', 'type' => 'integer'],
             'buy_avg_price' => ['name' => 'cs.buy_avg_price', 'type' => 'float'],
             'aum' => ['name' => 'c.total_aum', 'type' => 'float'],
+            'category' => ['name' => 'c.category', 'type' => 'string'],
             'buy_val' => ['name' => 'buy_val', 'type' => 'float'],
             'cur_val' => ['name' => 'cur_val', 'type' => 'float'],
             'pnl' => ['name' => 'pnl', 'type' => 'float'],
@@ -144,6 +146,7 @@ class ScriptService implements ModelViewConnector
                 $row['id'] = $result->id;
                 $row['code'] = $result->code;
                 $row['symbol'] = $result->symbol;
+                $row['category'] = $result->category;
                 $row['qty'] = $result->qty;
                 $row['buy_avg_price'] = round($result->buy_avg_price, 2);
                 $row['buy_val'] = round($result->buy_val, 2);

@@ -54,6 +54,7 @@
         <th></th>
         <th></th>
         <th></th>
+        <th></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_buy_val)"></span></th>
         <th></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_cur_val)"></span></th>
@@ -74,6 +75,14 @@
                     Client Code
                     <x-utils.spotsearch textval="{{ $params['client_code'] ?? '' }}" textname="client_code"
                         label="Search client code" />
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center w-44">
+                <x-utils.spotsort name="category" val="{{ $sort['category'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2 text-left">
+                    Client Category
                 </div>
             </div>
         </th>
@@ -179,7 +188,9 @@
                 <td class="sticky !left-6" >
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.code"></a>
+                        <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
                 </td>
+                <td x-text="result.category"></td>
                 <td x-text="result.symbol"></td>
                 <td class="text-right" x-text="result.qty"></td>
                 <td class="text-right" x-text="formatted(result.buy_avg_price)"></td>

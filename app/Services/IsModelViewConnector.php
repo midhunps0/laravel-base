@@ -27,6 +27,8 @@ trait IsModelViewConnector{
     protected $relAdvSearchesMap = [];
     protected $sortsMap = [];
     protected $relSortsMap = [];
+    protected $filtersMap = [];
+    protected $relFiltersMap = [];
     protected $uniqueSortKey = null;
     protected $relUniqueSortKey = null;
 
@@ -385,7 +387,7 @@ trait IsModelViewConnector{
                     case 'float';
                         $query->orderByRaw('CONCAT( LPAD(ROUND('.$kname.',0) * 100,20,\'00\') ,\'::\','.$usortkey.') '.$data[1]);
                         break;
-                    case 'default':
+                    default:
                         $query->orderByRaw('CONCAT('.$kname.'\'::\','.$usortkey.') '.$data[1]);
                         break;
                 }
@@ -398,18 +400,32 @@ trait IsModelViewConnector{
         return $sortParams;
     }
 
-    private function getFilterParams($query, array $filters): array
+    private function getFilterParams($query, array $filters, string $sortType = 'index'): array
     {
-        // $query->with('roles');
         $filterData = [];
+        $map = $sortType == 'index' ? $this->filtersMap : $this->relFiltersMap;
+
         foreach ($filters as $filter) {
             $data = explode('::', $filter);
-            // if ($data[0] == 'roles') {
-            //     $query->withRoles([$data[1]]);
-            // }
-            $filterData[$data[0]]['selected'] = $data[1];
+            $key = $map[$data[0]] ?? $data[0];
+            $filterData[$data[0]] = $data[1];
+            if (isset($map[$data[0]])) {
+                $type = $key['type'];
+                $kname = $key['name'];
+                switch ($type) {
+                    case 'string';
+                        $query->where($kname, 'like', $data[1]);
+                        break;
+                    default:
+                        $query->where($kname, $data[1]);
+                        break;
+                }
+            } else {
+                $query->where($data[0], $data[1]);
+            }
+
+            // $filterData[$data[0]]['selected'] = $data[1];
         }
-        // $filterData['roles']['options'] = Role::all();
 
         return $filterData;
     }

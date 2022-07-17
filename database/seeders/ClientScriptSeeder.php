@@ -38,6 +38,10 @@ class ClientScriptSeeder extends Seeder
                 info('Unmatched '.$param.': '.$item->$code);
                 continue;
             }
+            $escripts = $client->scripts()->pluck('id')->toArray();
+            if (in_array($script->id, $escripts)) {
+                continue;
+            }
             $client->scripts()->attach(
                 $script->id,
                 [

@@ -352,7 +352,6 @@
                 },
                 async triggerFetch() {
                     let allParams = this.paramsExceptSelection();
-
                     axios.get(
                         this.url, {
                             headers: {
@@ -367,9 +366,9 @@
                         this.currentPage = r.data.current_page;
                         $dispatch('setpagination', {paginator: JSON.parse(r.data.paginator)});
                         $dispatch('routechange', {route: r.data.route});
-                        let temp = this.selectedIds;
+                        let temp = JSON.parse(JSON.stringify(this.selectedIds));
                         this.selectedIds = [];
-                        $nextTick(() => {this.selectedIds = temp;});
+                        $nextTick(() => {this.selectedIds = JSON.parse(JSON.stringify(temp));});
                     });
                 },
                 fetchResults(param) {
@@ -406,7 +405,7 @@
                 },
                 setFilter(detail) {
                     let keys = Object.keys(detail.data);
-                    if (detail.data[keys[0]] != 0) {
+                    if (detail.data[keys[0]] >= 0) {
                         this.filters[keys[0]] = detail.data[keys[0]];
                     } else {
                         if (typeof(this.filters[keys[0]]) != 'undefined') {
@@ -606,11 +605,11 @@
                         <span x-text="selectedIds.length" class="font-bold"></span>
                         &nbsp;<span class="font-bold">item<span x-show="selectedIds.length > 1">s</span>
                             selected.</span>
-                        &nbsp;<button @click.prevent.stop="$dispatch('selectpage')" class="btn btn-xs"
+                        &nbsp;<button type="button" @click.prevent.stop="$dispatch('selectpage');" class="btn btn-xs"
                             :disabled="pageSelected">Select Page</button>
-                        &nbsp;<button @click.prevent.stop="$dispatch('selectall')" class="btn btn-xs" :disabled="allSelected">Select All
+                        &nbsp;<button type="button" @click.prevent.stop="$dispatch('selectall')" class="btn btn-xs" :disabled="allSelected">Select All
                             {{ $total_results }} items</button>
-                        &nbsp;<button @click.prevent.stop="$dispatch('cancelselection')"
+                        &nbsp;<button type="button" @click.prevent.stop="$dispatch('cancelselection')"
                             class="btn btn-xs">Cancel All</button>
                         </div>
                 </div>
@@ -724,7 +723,7 @@
                                 <div class="w-10 px-2 flex flex-row items-center">
                                     <button @click.prevent.stop="myconditions.splice(index, 1);"
                                         class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center disabled:bg-opacity-70" :disabled="myconditions.length == 1">
-                                        <x-display.icon icon="icons.delete" height="h-5" width="w-5" />
+                                        <x-display.icon icon="icons.close" height="h-5" width="w-5" />
                                     </button>
                                 </div>
                             </div>
@@ -746,7 +745,7 @@
                             <div class="w-10 px-2 flex flex-row items-center">
                                 <button @click.prevent.stop="resetAdvSearch();$dispatch('advsearch', {conditions: JSON.parse(JSON.stringify(myconditions))});"
                                     class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center">
-                                    <x-display.icon icon="icons.refresh" height="h-5" width="w-5" />
+                                    <x-display.icon icon="icons.delete" height="h-5" width="w-5" />
                                 </button>
                             </div>
                         </div>
