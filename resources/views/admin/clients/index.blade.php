@@ -10,12 +10,13 @@
     :current_page="$current_page"
     :results="$clients"
     results_name="clients"
+    unique_str="clnx"
     :results_json="$results_json"
+    :paginator="$paginator"
     :result_calcs="[
 
     ]"
     total_disp_cols="15"
-    unique_str="clnx"
     adv_fields="
         none: {key: 'none', text: 'Select A Field', type: 'none'},
         client_code: {key: 'client_code', text: 'Client Code', type: 'string'},
@@ -23,7 +24,7 @@
         allocated_aum: {key: 'allocated_aum', text: 'ALCTD AUM', type: 'numeric'},
         aum: {key: 'aum', text: 'AUM', type: 'numeric'},
     "
-    :paginator="$paginator">
+    id="clients_index">
     <x-slot:inputFields>
         <input type="hidden" value="{{$aggregates}}" id="aggregates">
         <input type="hidden" value="{{$results_json}}" id="results_json">

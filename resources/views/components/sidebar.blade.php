@@ -17,9 +17,10 @@
     </div>
     <ul>
         <li><x-menu-item title="Clients Overview" route="clients.index" href="{{route('clients.index')}}" icon="icons.users"/></li>
+        <li><x-menu-item title="Holdings Overview" route="scripts.index" href="{{route('scripts.index')}}" icon="icons.list"/></li>
         <li><x-menu-item title="Client wise" route="clients.show" href="{{route('clients.show', 0)}}" icon="icons.user"/></li>
         <li><x-menu-item title="Script wise" route="scripts.show" href="{{route('scripts.show', 0)}}"
-            icon="icons.list"/></li>
+            icon="icons.clipboard"/></li>
         {{-- <li><x-menu-item title="Sell Order" route="clientscripts.index" href="{{route('clientscripts.index')}}" icon="icons.list"/></li> --}}
         @if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Superadmin'))
         <li><x-menu-item title="Users" route="users.index" href="{{route('users.index')}}"

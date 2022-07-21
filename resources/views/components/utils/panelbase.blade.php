@@ -1,6 +1,6 @@
-@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'soPriceField' => 'false', 'paginator', 'columns' => [], 'orderBaseUrl' => '', 'orderVerifyUrl' => '', 'orderCheckUrl' => ''])
+@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'soPriceField' => 'false', 'paginator', 'columns' => [], 'orderBaseUrl' => '', 'orderVerifyUrl' => '', 'orderCheckUrl' => '', 'id' => ''])
 <x-dashboard-base :ajax="$x_ajax">
-    <div x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative h-full" :id="$id('panel-base')">
+    <div id="{{$id}}" x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative h-full" :id="$id('panel-base')">
 
         @if (isset($body))
             <h3 class="text-xl font-bold">{{ $title }}</h3>
@@ -73,25 +73,23 @@
 
         <div class="rounded-md relative">
             <form x-data="{
-                {{$results_name}}liveUpdate: false,
-                {{$results_name}}timer: null,
-                url: '{{ $indexUrl }}',
+                //url: '{{ $indexUrl }}',
+                itemsCount: {{ $items_count }},
+                totalResults: {{ $total_results }},
+                currentPage: {{ $current_page }},
+                downloadUrl: '{{ $downloadUrl }}',
+                orderBaseUrl: '{{ $orderBaseUrl }}',
+                orderCheckUrl: '{{ $orderCheckUrl }}',
                 params: {},
                 sort: {},
                 filters: {},
-                itemsCount: {{ $items_count }},
                 itemIds: [],
                 selectedIds: [],//$persist([]).as('{{ $unique_str }}ids'),
                 pageSelected: false,
                 allSelected: false,
                 pages: [],
-                totalResults: {{ $total_results }},
-                currentPage: {{ $current_page }},
-                downloadUrl: '{{ $downloadUrl }}',
                 results: null,
                 aggregates: null,
-                orderBaseUrl: '{{ $orderBaseUrl }}',
-                orderCheckUrl: '{{ $orderCheckUrl }}',
                 {{-- orderVerifyUrl: '{{ $orderVerifyUrl }}', --}}
                 order: {
                     //bors: 'Sell',
@@ -353,7 +351,8 @@
                 async triggerFetch() {
                     let allParams = this.paramsExceptSelection();
                     axios.get(
-                        this.url, {
+                        //this.url, {
+                        url, {
                             headers: {
                                 'X-ACCEPT-MODE': 'only-json'
                             },
@@ -516,9 +515,14 @@
                 @pageselect="processPageSelect();"
                 @paginator.window="getPaginatedPage($event.detail.page);"
                 @linkaction.window="
-                clearInterval({{$results_name}}timer);
-                {{$results_name}}timer = null;
-                {{$results_name}}liveUpdate = false;
+                console.log('timer ids ->: ');
+                console.log(timers);
+                timers.forEach((t) => {
+                    clearInterval(t);
+                });
+                timers = [];
+                console.log('timer cleared');
+                console.log(timers);
                 "
                 @advsearch.window="conditions = $event.detail.conditions; advSearchStatus(); runQuery();"
                 @showorderform.window="initiateOrderForm();"
@@ -529,6 +533,13 @@
                         allSelected = false;
                     }
 
+                    url = '{{ $indexUrl }}';
+                    totalResults = {{ $total_results }};
+                    itemsCount = {{ $items_count }};
+                    currentPage = {{ $current_page }};
+                    downloadUrl = '{{ $downloadUrl }}';
+                    orderBaseUrl = '{{ $orderBaseUrl }}';
+                    orderCheckUrl = '{{ $orderCheckUrl }}';
                     setDownloadUrl();
                     {{-- $watch('order', (ord) => {
                         order.url = orderBaseUrl + '?' +
@@ -542,62 +553,78 @@
                     //itemIds = JSON.parse('{{$items_ids}}');
 
                     aggregates = JSON.parse(document.getElementById('aggregates').value);
-                $nextTick(() => {
-                    url = '{{ $indexUrl }}';
-                    params = {};
-                    sort = {};
-                    filters = {};
-                    itemsCount = {{ $items_count }};
-                    {{-- itemIds = JSON.parse('{{$items_ids}}'); --}}
-                    itemIds = JSON.parse(document.getElementById('itemIds').value);
-                    {{-- itemIds = document.getElementById('itemIds').value.split(','); --}}
-                    selectedIds = [];//$persist([]).as('{{ $unique_str }}ids');
 
-                    pageSelected = false;
-                    allSelected = false;
-                    pages = [];
-                    totalResults = {{ $total_results }};
-                    currentPage = {{ $current_page }};
-                    downloadUrl = '{{ $downloadUrl }}';
-                    results = null;
-                    orderBaseUrl = '{{ $orderBaseUrl }}';
-                    orderVerifyUrl = '{{ $orderVerifyUrl }}';
-                    order.bors = 'Sell';
-                    order.qty = 0;
-                    order.price = 0.00;
-                    order.slippage = 0.01;
-                    order.listVerified = false;
-                    order.listInvalid = false;
-                    order.processing = false;
-                    order.message = '';
-                    order.selIdsUrlStr = '';
+                    {{-- if (timer != undefined && timer != null) {
+                        clearInterval(timer);
+                        timer = null;
+                        delete timer;
+                    } --}}
+                    $nextTick(() => {
+                        url = '{{ $indexUrl }}';
+                        params = {};
+                        sort = {};
+                        filters = {};
+                        itemsCount = {{ $items_count }};
+                        {{-- itemIds = JSON.parse('{{$items_ids}}'); --}}
+                        itemIds = JSON.parse(document.getElementById('itemIds').value);
+                        {{-- itemIds = document.getElementById('itemIds').value.split(','); --}}
+                        selectedIds = [];//$persist([]).as('{{ $unique_str }}ids');
 
-                    paginatorPage = null;
-                    conditions = [{
-                        field: 'none',
-                        type: '',
-                        operation: 'none',
-                        value: 0
-                    }];
+                        pageSelected = false;
+                        allSelected = false;
+                        pages = [];
+                        totalResults = {{ $total_results }};
+                        currentPage = {{ $current_page }};
+                        downloadUrl = '{{ $downloadUrl }}';
+                        results = null;
+                        orderBaseUrl = '{{ $orderBaseUrl }}';
+                        orderVerifyUrl = '{{ $orderVerifyUrl }}';
+                        order.bors = 'Sell';
+                        order.qty = 0;
+                        order.price = 0.00;
+                        order.slippage = 0.01;
+                        order.listVerified = false;
+                        order.listInvalid = false;
+                        order.processing = false;
+                        order.message = '';
+                        order.selIdsUrlStr = '';
 
-                    setDownloadUrl();
-                    results = JSON.parse(document.getElementById('results_json').value);
-                    {{-- results = setResults(results); --}}
-                    paginator = JSON.parse('{{$paginator}}');
-                    $dispatch('setpagination', {paginator: paginator});
+                        paginatorPage = null;
+                        conditions = [{
+                            field: 'none',
+                            type: '',
+                            operation: 'none',
+                            value: 0
+                        }];
 
-                    clearInterval({{$results_name}}timer);
-                    {{$results_name}}timer = null;
-                    {{$results_name}}liveUpdate = false;
-                    setTimeout(() => {
-                        {{$results_name}}liveUpdate = true;
-                        {{$results_name}}timer = setInterval(() => {
-                            if ({{$results_name}}liveUpdate) {
-                                triggerFetch();
-                            }
-                        }, 15000);
-                    }, 3000);
-                });"
+                        setDownloadUrl();
+                        results = JSON.parse(document.getElementById('results_json').value);
+                        {{-- results = setResults(results); --}}
+                        paginator = JSON.parse('{{$paginator}}');
+                        $dispatch('setpagination', {paginator: paginator});
+
+
+                        timers.forEach((t) => {
+                            clearInterval(t);
+                        });
+                        timers = [];
+
+                        liveUpdate = false;
+                        {{-- setTimeout(() => { --}}
+                            liveUpdate = true;
+                            timer = setInterval(() => {
+                                if (liveUpdate) {
+                                    triggerFetch();
+                                }
+                            }, 4000);
+                            console.log('new timer id: '+timer);
+                            timers.push(timer);
+                            console.log('timers:');
+                            console.log(timers);
+                        {{-- }, 2000); --}}
+
+                    });
+                "
                 action="#"
                 class="max-w-full">
                 <div x-show="selectedIds.length > 0" x-transition class="max-w-full">

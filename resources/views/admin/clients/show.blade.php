@@ -22,7 +22,8 @@
     :paginator="$paginator"
     :enableAdvSearch="true"
     :soPriceField="false"
-    orderBaseUrl="{{route('clients.order.download', $model->id)}}">
+    orderBaseUrl="{{route('clients.order.download', $model->id)}}"
+    id="clients_show">
     <x-slot:body>
         <div class="flex flex-row space-x-4" >
         <div class="font-bold border border-base-300 rounded-md p-4">

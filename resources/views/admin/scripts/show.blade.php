@@ -27,6 +27,7 @@
     ]"
     orderBaseUrl="{{route('scripts.order.download', $model->id)}}"
     orderVerifyUrl="{{route('clientsripts.sellorder.verify')}}"
+    id="scripts_show"
     >
     <x-slot:body>
         <div class="flex flex-row space-x-4" >

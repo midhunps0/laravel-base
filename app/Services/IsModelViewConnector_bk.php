@@ -45,14 +45,6 @@ trait IsModelViewConnector{
 
         $this->preIndexExtra();
 
-        $agrQuery = $this->getQueryAndParams(
-            $searches,
-            [],
-            $filters,
-            $advSearch,
-            $selectedIds
-        );
-
         $queryData = $this->getQueryAndParams(
             $searches,
             $sorts,
@@ -71,7 +63,7 @@ trait IsModelViewConnector{
         );
 
         // dd($agrQuery['query']->select($this->agrSelects)->toSql());
-        $aggregates = $agrQuery['query']->select($this->agrSelects)->get()->first();
+        $aggregates = $queryData['query']->select($this->agrSelects)->get()->first();
 
         DB::statement("SET SQL_MODE='only_full_group_by'");
 // dd($results->toArray());
@@ -150,22 +142,21 @@ trait IsModelViewConnector{
         array $advSearch = [],
         string $selectedIds = ''
     ): array {
-        $query = $this->getQuery();
-        $filterData = $this->getFilterParams($query, $filters);
-        $searchParams = $this->getSearchParams($query, $searches);
-        $sortParams = $this->getSortParams($query, $sorts);
-        $advParams = $this->getAdvParams($query, $advSearch);
+        $filterData = $this->getFilterParams($this->query, $filters);
+        $searchParams = $this->getSearchParams($this->query, $searches);
+        $sortParams = $this->getSortParams($this->query, $sorts);
+        $advParams = $this->getAdvParams($this->query, $advSearch);
 
-        $this->extraConditions($query);
+        $this->extraConditions($this->query);
 
         if (isset($selectedIds) && strlen(trim($selectedIds)) > 0) {
             $ids = explode('|', $selectedIds);
             // $this->query->whereIn('c.id', $ids);
-            $this->querySelectedIds($query, $this->selIdsKey, $ids);
+            $this->querySelectedIds($this->query, $this->selIdsKey, $ids);
         }
 
         return [
-            'query' => $query,
+            'query' => $this->query,
             'searchParams' => $searchParams,
             'sortParams' => $sortParams,
             'filterData' => $filterData,

@@ -142,6 +142,8 @@ export default () => ({
                     this.$store.app.xpages[thelink] = r.data;
                     history.pushState({href: thelink}, '', thelink);
                     this.$store.app.pageloading = false;
+                    // clearInterval(timer);
+                    // timer = null;
                     this.$dispatch('pagechanged', {currentpath: link, currentroute: detail.route});
                 }
             ).catch(

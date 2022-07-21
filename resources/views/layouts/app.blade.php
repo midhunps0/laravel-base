@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html x-data="{theme: $persist('newdark'), href: '', currentpath: '{{url()->current()}}', currentroute: '{{ Route::currentRouteName() }}'}" @themechange.window="theme = $event.detail.darktheme ? 'newdark' : 'light';" lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+<html x-data="{theme: $persist('newdark'), href: '', currentpath: '{{url()->current()}}', currentroute: '{{ Route::currentRouteName() }}', timer: null, liveUpdate: false, url: '', timers: []}"
+@themechange.window="theme = $event.detail.darktheme ? 'newdark' : 'light';" lang="{{ str_replace('_', '-', app()->getLocale()) }}"
 x-init="window.landingUrl = '{{\Request::getRequestUri()}}'"
 @pagechanged.window="console.log('pcanged');console.log($event.detail);
 currentpath=$event.detail.currentpath;

@@ -13,24 +13,44 @@ class LiveUpdateController extends Controller
         $ltps = $request->input('LTP', []);
         $ohlcs = $request->input('OHLC', []);
         $scriptcode = "ScripCode";
+        info('LTPs count: ' . count($ltps));
+        info('OHLCs count: ' . count($ohlcs));
         try {
             foreach ($ltps as $ltp) {
-                $script = Script::where('nse_code', $ltp->$scriptcode)->get()->first();
+                switch($ltp['Exchange']) {
+                    case 'NSE':
+                        $script = Script::where('nse_code', $ltp[$scriptcode])->get()->first();
+                        break;
+                    case 'BSE':
+                        $script = Script::where('bse_code', $ltp[$scriptcode])->get()->first();
+                        break;
+                    default:
+                        break;
+                }
                 if (!isset($script)) {
                     continue;
                 }
-                $script->cmp = $ltp->LTP_Rate;
+                $script->cmp = $ltp['LTP_Rate'];
                 $script->save();
             }
 
             foreach ($ohlcs as $ohlc) {
-                $script = Script::where('nse_code', $ohlc->$scriptcode)->get()->first();
+                switch($ohlc['Exchange']) {
+                    case 'NSE':
+                        $script = Script::where('nse_code', $ohlc[$scriptcode])->get()->first();
+                        break;
+                    case 'BSE':
+                        $script = Script::where('bse_code', $ohlc[$scriptcode])->get()->first();
+                        break;
+                    default:
+                        break;
+                }
                 if (!isset($script)) {
                     continue;
                 }
-                $script->day_high = $ohlc->High;
-                $script->day_low = $ohlc->Low;
-                $script->last_day_closing = $ohlc->PrevDayClose;
+                $script->day_high = $ohlc['High'];
+                $script->day_low = $ohlc['Low'];
+                $script->last_day_closing = $ohlc['PrevDayClose'];
                 $script->save();
             }
 

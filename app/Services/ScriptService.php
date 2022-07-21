@@ -14,9 +14,59 @@ class ScriptService implements ModelViewConnector
 {
     use IsModelViewConnector;
 
+    private $pa;
+
     public function __construct()
     {
-        $this->query = Script::query()->userAccessControlled();
+        $sum = Client::from('clients', 'c')->userAccessControlled()
+            ->join('clients_scripts as cs', 'c.id', '=', 'cs.client_id')
+            ->join('scripts as s', 's.id', '=', 'cs.script_id')
+            ->where('s.tracked', 1)
+            ->select(
+            DB::raw('SUM(buy_avg_price * cs.dp_qty) as amt_invested'),
+        )->get()->first();
+        $tot_aum = $sum->amt_invested;
+
+        $this->selects = [
+            'u.name as dealer',
+            'u.id as dealer_id',
+            'qcs.dop as dop',
+            's.bse_code as bse_code',
+            's.symbol as symbol',
+            DB::raw('qcs.amt_invested / '.$tot_aum.' * 100 as pa'),
+            's.agio_indutry as sector',
+            'qcs.qty as tot_qty',
+            DB::raw('ROUND(qcs.abv, 2) as abv'),
+            DB::raw('ROUND(qcs.amt_invested, 2) as amt_invested'),
+            's.cmp as cmp',
+            DB::raw('ROUND(s.cmp * qcs.qty, 2) as cur_value'),
+            DB::raw('ROUND((s.cmp - qcs.abv) * qcs.qty, 2) as overall_gain'),
+            DB::raw('ROUND((s.cmp - qcs.abv) / qcs.abv * 100, 2) as gain_pc'),
+            DB::raw('ROUND((s.cmp - s.last_day_closing) * qcs.qty, 2) as todays_gain'),
+            's.day_high as day_high',
+            's.day_low as day_low',
+            // DB::raw('ROUND((s.cmp - qcs.abv) * qcs.qty / '.$tot_aum.' * 100), 2) as impact')
+        ];
+
+        $this->sortsMap = [
+            'dealer' => ['name' => 'dealer', 'type' => 'string'],
+            'dop' => ['name' => 'qcs.dop', 'type' => 'integer'],
+            'bse_code' => ['name' => 's.bse_code', 'type' => 'string'],
+            'symbol' => ['name' => 's.symbol', 'type' => 'string'],
+            'pa' => ['name' => 'qcs.amt_invested / '.$tot_aum.' * 100', 'type' => 'integer'],
+            'sector' => ['name' => 's.agio_indutry', 'type' => 'string'],
+            'tot_qty' => ['name' => 'qcs.qty', 'type' => 'integer'],
+            //'abv' => ['name' => 'DB::raw('ROUND(qcs.abv, 2)', 'type' => 'integer']
+            //'amt_invested' => ['name' => 'DB::raw('ROUND(qcs.amt_invested, 2)', 'type' => 'integer']
+            'cmp' => ['name' => 's.cmp', 'type' => 'integer'],
+            // 'cur_value' => ['name' => 'DB::raw('ROUND(s.cmp * qcs.qty, 2)', 'type' => 'integer']
+            // 'overall_gain' => ['name' => 'DB::raw('ROUND((s.cmp - qcs.abv) * qcs.qty, 2)', 'type' => 'integer']
+            // 'gain_pc' => ['name' => 'DB::raw('ROUND((s.cmp - qcs.abv) / qcs.abv * 100, 2)', 'type' => 'integer']
+            // 'todays_gain' => ['name' => 'DB::raw('ROUND((s.cmp - s.last_day_closing) * qcs.qty, 2)', 'type' => 'integer']
+            'day_high' => ['name' => 's.day_high', 'type' => 'integer'],
+            'day_low' => ['name' => 's.day_low', 'type' => 'integer']
+        ];
+
         $this->itemQuery = Script::query();
         $this->relationSelects = [
             'c.id as id',
@@ -49,7 +99,7 @@ class ScriptService implements ModelViewConnector
                 DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) / SUM(c.total_aum) * 100 as agr_pa'),
             ]);
 
-        $this->selIdsKey = 'c.id';
+        $this->selIdsKey = 's.id';
 
         $this->relSortsMap = [
             'id' => ['name' => 'c.id', 'type' => 'integer'],
@@ -97,6 +147,25 @@ class ScriptService implements ModelViewConnector
         $this->relSelIdsKey = 'c.id';
     }
 
+    private function getQuery(): Builder
+    {
+       $qcs = Client::from('clients', 'c')->userAccessControlled()->join('clients_scripts as cs', 'c.id', '=', 'cs.client_id')->select(
+            'c.rm_id as rm_id',
+            'cs.script_id as script_id',
+            DB::raw('SUM(cs.dp_qty) as qty'),
+            DB::raw('SUM(buy_avg_price * cs.dp_qty) as amt_invested'),
+            DB::raw('SUM(buy_avg_price * cs.dp_qty) / SUM(cs.dp_qty) as abv'),
+            'c.id as client_id',
+            DB::raw('MIN(cs.entry_date) as dop')
+        )->groupBy('cs.script_id');
+
+
+        $query = Script::from('scripts', 's')->joinSub($qcs, 'qcs', 'qcs.script_id', 's.id')
+            ->join('users as u', 'u.id', '=', 'qcs.rm_id')->where('s.tracked', 1);
+
+        return $query;
+
+    }
     protected function getRelationQuery(int $id = null)
     {
         $query = DB::table('scripts', 's')
@@ -134,6 +203,15 @@ class ScriptService implements ModelViewConnector
         return true;
     }
 
+    public function formatIndexResults(mixed $results): array
+    {
+        $formatted = [];
+        foreach ($results as $result) {
+            $row = $result;
+            $formatted[] = $row;
+        }
+        return $formatted;
+    }
     public function formatRelationResults(mixed $results): array
     {
         $formatted = [];
@@ -208,6 +286,11 @@ class ScriptService implements ModelViewConnector
             $export[] = $row;
         }
         return $export;
+    }
+
+    protected function preIndexExtra(): void
+    {
+        $this->pa = 0;
     }
 
     private function getFilterParams($query, $filters) {

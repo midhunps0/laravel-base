@@ -7,6 +7,7 @@ use App\Models\Client;
 use Illuminate\Support\Facades\DB;
 use App\Contracts\ModelViewConnector;
 use App\Helpers\AppHelper;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 
 // use Hamcrest\Arrays\IsArray;
 // use Illuminate\Database\Eloquent\Model;
@@ -20,38 +21,7 @@ class ClientService implements ModelViewConnector
 
     public function __construct()
     {
-        /******* Index query *******/
-
-        $indexScriptQ = DB::table('clients_scripts as cs')
-            ->join('scripts as s', 's.id', '=', 'cs.script_id')
-            ->select(
-                'cs.client_id as cid',
-                's.id as sid',
-                's.cmp as cmp',
-                's.tracked as tracked',
-                'cs.buy_avg_price as buy_avg_price',
-                'cs.dp_qty as dp_qty',
-                DB::raw(DB::raw('SUM(cs.dp_qty * cs.buy_avg_price)').' as allocated_aum'),
-                DB::raw(DB::raw('SUM(cs.dp_qty * s.cmp)').' as cur_value')
-            )->where('s.tracked', 1)->groupBy('cs.client_id');
-
-        $lbs = AppHelper::getLiquidbees();
-
-        $indexLBQ = DB::table('clients_scripts as lbcs')
-            ->select(
-                'lbcs.client_id as lbcs_client_id',
-                'lbcs.script_id as lbcs_script_id',
-                DB::raw(DB::raw('SUM(lbcs.dp_qty * lbcs.buy_avg_price)').' as liquidbees')
-            )
-            ->whereIn('script_id', $lbs)
-            ->groupBy('lbcs.client_id');
-
-        $this->query = Client::from('clients as c')->userAccessControlled()
-            ->joinSub($indexScriptQ, 'cst', 'c.id' , '=', 'cst.cid', 'left')
-            ->joinSub($indexLBQ, 'lbq', 'c.id' , '=', 'lbq.lbcs_client_id', 'left')
-            ->join('users as u', 'c.rm_id', '=', 'u.id');
-
-        $this->selects = [
+       $this->selects = [
             'c.id as id',
             'c.rm_id as rm_id',
             'c.name as name',
@@ -174,6 +144,7 @@ class ClientService implements ModelViewConnector
             'buy_avg_price', ['name' => 'cs.buy_avg_price', 'type' => 'float'],
             'day_high' => ['name' => 's.day_high', 'type' => 'float'],
             'day_low' => ['name' => 's.day_low', 'type' => 'float'],
+            'overall_gain' => ['name' => '(s.cmp - cs.buy_avg_price) * cs.dp_qty', 'type' => 'float']
         ];
         $this->relFiltersMap = [
             'tracked' => ['name' => 's.tracked', 'type' => 'boolean']
@@ -193,6 +164,42 @@ class ClientService implements ModelViewConnector
         $this->relSelIdsKey = 's.id';
         $this->uniqueSortKey = 'c.id';
         $this->relUniqueSortKey = 's.id';
+    }
+
+    private function getQuery(): Builder
+    {
+        /******* Index query *******/
+
+        $indexScriptQ = DB::table('clients_scripts as cs')
+            ->join('scripts as s', 's.id', '=', 'cs.script_id')
+            ->select(
+                'cs.client_id as cid',
+                's.id as sid',
+                's.cmp as cmp',
+                's.tracked as tracked',
+                'cs.buy_avg_price as buy_avg_price',
+                'cs.dp_qty as dp_qty',
+                DB::raw(DB::raw('SUM(cs.dp_qty * cs.buy_avg_price)').' as allocated_aum'),
+                DB::raw(DB::raw('SUM(cs.dp_qty * s.cmp)').' as cur_value')
+            )->where('s.tracked', 1)->groupBy('cs.client_id');
+
+        $lbs = AppHelper::getLiquidbees();
+
+        $indexLBQ = DB::table('clients_scripts as lbcs')
+            ->select(
+                'lbcs.client_id as lbcs_client_id',
+                'lbcs.script_id as lbcs_script_id',
+                DB::raw(DB::raw('SUM(lbcs.dp_qty * lbcs.buy_avg_price)').' as liquidbees')
+            )
+            ->whereIn('script_id', $lbs)
+            ->groupBy('lbcs.client_id');
+
+        $query = Client::from('clients as c')->userAccessControlled()
+            ->joinSub($indexScriptQ, 'cst', 'c.id' , '=', 'cst.cid', 'left')
+            ->joinSub($indexLBQ, 'lbq', 'c.id' , '=', 'lbq.lbcs_client_id', 'left')
+            ->join('users as u', 'c.rm_id', '=', 'u.id');
+
+        return $query;
     }
 
     protected function applyGroupings($query) {
@@ -251,7 +258,7 @@ class ClientService implements ModelViewConnector
             $row['pnl'] = round($result['pnl'], 2);
             $row['pnl_pc'] = round($result['pnl_pc'], 2);
             $row['pa'] = round($result['pa'], 2);
-            $row['liquidbees'] = round($result['liquidbees'], 2);
+            $row['liquidbees'] = isset($result['liquidbees']) ? round($result['liquidbees'], 2) : 0;
             $row['cash'] = round($result['cash'], 2);
             $row['cash_pc'] = round($result['cash_pc'], 2);
             $row['returns'] = round($result['returns'], 2);
@@ -347,11 +354,12 @@ class ClientService implements ModelViewConnector
                 'discount_qty' => '0',
                 'trigger_price' => '0'
             ];
-
+            $p = round($result->cmp * (100 - $slippage) / 100, 2);
+            $p = round($p * 20) / 20; // round(($p * 100) / 5) * 5 / 100
             $row['script_name'] = $result->symbol.' EQ| '.$result->nse_code;
             $row['qty'] = round(($result->qty * $qty /100)) . '';
             $row['lot'] = round(($result->qty * $qty /100)) . '';
-            $row['price'] = round($result->cmp * (100 - $slippage) / 100, 2) . '';
+            $row['price'] = $p.'';
             $row['client_code'] = $result->client_code;
             $export[] = $row;
         }

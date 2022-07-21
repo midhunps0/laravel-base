@@ -10,7 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClientScriptController;
 use App\Http\Controllers\Auth\Custom\LoginController;
 use App\Http\Controllers\Auth\Custom\PasswordController;
-use App\Http\Controllers\LiveUpdateController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -67,6 +67,5 @@ Route::middleware(['auth'])->group(function () {
         ->name('clientscripts.order.download');
     Route::resource('clientscripts', ClientScriptController::class)->only('index');
 
-    Route::post('live-update', [LiveUpdateController::class, 'liveUpdate']);
     Route::post('pass-reset', [PasswordController::class, 'store'])->name('custom.password.reset');
 });
