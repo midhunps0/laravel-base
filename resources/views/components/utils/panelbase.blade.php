@@ -609,19 +609,16 @@
                         });
                         timers = [];
 
-                        liveUpdate = false;
-                        {{-- setTimeout(() => { --}}
-                            liveUpdate = true;
-                            timer = setInterval(() => {
-                                if (liveUpdate) {
-                                    triggerFetch();
-                                }
-                            }, 4000);
-                            console.log('new timer id: '+timer);
-                            timers.push(timer);
-                            console.log('timers:');
-                            console.log(timers);
-                        {{-- }, 2000); --}}
+                        liveUpdate = true;
+                        timer = setInterval(() => {
+                            if (liveUpdate) {
+                                triggerFetch();
+                            }
+                        }, 4000);
+                        console.log('new timer id: '+timer);
+                        timers.push(timer);
+                        console.log('timers:');
+                        console.log(timers);
 
                     });
                 "
