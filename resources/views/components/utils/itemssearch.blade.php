@@ -13,7 +13,7 @@
         });
     }
 }"
-    @submit.prevent.stop="getItemssList"
+    @submit.prevent.stop="getItemsList"
     action="" class="flex flex-row items-end space-x-4">
     <div class="form-control w-52 relative">
         {{-- <label class="label">
