@@ -13,47 +13,52 @@ class LiveUpdateController extends Controller
         $ltps = $request->input('LTP', []);
         $ohlcs = $request->input('OHLC', []);
         $scriptcode = "ScripCode";
-        info('LTPs count: ' . count($ltps));
-        info('OHLCs count: ' . count($ohlcs));
+		$savedLtps = [];
+
+		info('ltps: '.count($ltps).' OHLCs: '.count($ohlcs));
+
+        $allItems = [];
+        foreach ($ltps as $ltp) {
+            $allItems[$ltp[$scriptcode]]['ltp'] = $ltp;
+        }
+        foreach ($ohlcs as $ohlc) {
+            $allItems[$ohlc[$scriptcode]]['ohlc'] = $ohlc;
+        }
+		$count = 0;
         try {
-            foreach ($ltps as $ltp) {
+            foreach ($allItems as $code => $item) {
+                $ltp = $item['ltp'];
+                $ohlc = $item['ohlc'];
                 switch($ltp['Exchange']) {
                     case 'NSE':
-                        $script = Script::where('nse_code', $ltp[$scriptcode])->get()->first();
+                        Script::where('nse_code', $code)->update(
+                            [
+                                'cmp' => $ltp['LTP_Rate'],
+                                'day_high' => $ohlc['High'],
+                                'day_low' => $ohlc['Low'],
+                                'last_day_closing' => $ohlc['PrevDayClose'],
+                            ]
+                        );
                         break;
                     case 'BSE':
-                        $script = Script::where('bse_code', $ltp[$scriptcode])->get()->first();
+                        Script::where('bse_code', $code)->update(
+                            [
+                                'cmp' => $ltp['LTP_Rate'],
+                                'day_high' => $ohlc['High'],
+                                'day_low' => $ohlc['Low'],
+                                'last_day_closing' => $ohlc['PrevDayClose'],
+                            ]
+                        );
                         break;
                     default:
                         break;
                 }
-                if (!isset($script)) {
+				if (!isset($script)) {
                     continue;
                 }
-                $script->cmp = $ltp['LTP_Rate'];
-                $script->save();
+				$count++;
             }
-
-            foreach ($ohlcs as $ohlc) {
-                switch($ohlc['Exchange']) {
-                    case 'NSE':
-                        $script = Script::where('nse_code', $ohlc[$scriptcode])->get()->first();
-                        break;
-                    case 'BSE':
-                        $script = Script::where('bse_code', $ohlc[$scriptcode])->get()->first();
-                        break;
-                    default:
-                        break;
-                }
-                if (!isset($script)) {
-                    continue;
-                }
-                $script->day_high = $ohlc['High'];
-                $script->day_low = $ohlc['Low'];
-                $script->last_day_closing = $ohlc['PrevDayClose'];
-                $script->save();
-            }
-
+			info('LTP/OHLCss saved: '.$count);
             return response('Ok', 200);
         } catch (Exception $e) {
             return response('Invalid input.', 400);

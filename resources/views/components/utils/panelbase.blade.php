@@ -96,7 +96,7 @@
                 pages: [],
                 results: null,
                 aggregates: null,
-                profit_margin: 0,
+                profit_margin: '0',
                 {{-- orderVerifyUrl: '{{ $orderVerifyUrl }}', --}}
                 order: {
                     //bors: 'Sell',
@@ -352,11 +352,12 @@
                     }
                     params.items_count = this.itemsCount;
                     params.page = this.paginatorPage;
-
+                    console.log('items: '+ this.itemsCount);
                     return params;
                 },
                 async triggerFetch() {
                     let allParams = this.paramsExceptSelection();
+                    console.log('tf');
                     axios.get(
                         //this.url, {
                         url, {
@@ -366,10 +367,7 @@
                             params: allParams
                         }
                     ).then((r) => {
-                        console.log(r.data);
-                        console.log('ic in: '+this.itemsCount);
                         this.results = this.setResults(JSON.parse(r.data.results_json));
-                        console.log(this.results);
                         this.aggregates = JSON.parse(r.data.aggregates);
                         this.totalResults = r.data.total_results;
                         this.currentPage = r.data.current_page;
@@ -377,13 +375,18 @@
                         $dispatch('routechange', {route: r.data.route});
                         let temp = JSON.parse(JSON.stringify(this.selectedIds));
                         this.selectedIds = [];
-                        $nextTick(() => {this.selectedIds = JSON.parse(JSON.stringify(temp));});
-                        {{-- console.log('ic: '+this.itemsCount);
-                        this.initialised = true; --}}
-                        ajaxLoading = false;
+                        $nextTick(() => {
+                            this.selectedIds = JSON.parse(JSON.stringify(temp));
+                        });
+                        setTimeout(() => {
+                            ajaxLoading = false;
+                        }, 200);
                     });
                 },
                 fetchResults(param) {
+                    ajaxLoading = true;
+                    this.paginator.currentPage = 1;
+                    this.paginatorPage = 1;
                     this.setParam(param);
                     this.triggerFetch();
                 },
@@ -428,11 +431,14 @@
                 },
                 doFilter(detail) {
                     this.setFilter(detail);
+                    ajaxLoading = true;
+                    this.paginator.currentPage = 1;
+                    this.paginatorPage = 1;
                     this.triggerFetch();
                 },
                 pageUpdateCount(count) {
-                    console.log('pu count');
                     this.itemsCount = count;
+                    console.log('pu count: '+this.itemsCount);
                     this.triggerFetch();
                 },
                 processPageSelect() {
@@ -480,7 +486,6 @@
                     $dispatch('downloadurl', { url_all: this.downloadUrl + '?' + url_all, url_selected: this.downloadUrl + '?' + url_selected });
                 },
                 setResults(results) {
-                    console.log('pm: '+this.profit_margin);
                     results.map((result) => {
                         @foreach($result_calcs as $calc)
                         {{ $calc }}
@@ -521,9 +526,12 @@
                     showOrderForm = true;
                 }
             }" @spotsearch.window="fetchResults($event.detail)"
-                @setparam.window="setParam($event.detail)" @spotsort.window="doSort($event.detail)"
-                @setsort.window="setSort($event.detail)" @spotfilter.window="doFilter($event.detail);"
-                @setfilter.window="setFilter($event.detail)" @countchange.window="pageUpdateCount($event.detail.count);"
+                @setparam.window="setParam($event.detail)"
+                @spotsort.window="console.log('se!');doSort($event.detail)"
+                @setsort.window="setSort($event.detail)"
+                @spotfilter.window="doFilter($event.detail);"
+                @setfilter.window="setFilter($event.detail)"
+                @countchange.window="pageUpdateCount($event.detail.count);"
                 @selectpage="selectPage();"
                 @selectall="selectAll();"
                 @cancelselection="cancelSelection();"
@@ -542,50 +550,25 @@
                 @advsearch.window="conditions = $event.detail.conditions; advSearchStatus(); runQuery();"
                 @showorderform.window="initiateOrderForm();"
                 x-init="
-                console.log('in: '+ initialised);
-                console.log('res: ');
-                console.log(results);
-                if (!initialised) {
                     $watch('selectedIds', (ids) => {
                         if (ids.length < itemIds.length) {
                             pageSelected = false;
                             allSelected = false;
                         }
                     });
-                    $watch('profit_margin', () => {
-                        results = setResults(results);
-                    });
-                    {{--
-                    url = '{{ $indexUrl }}';
-                    totalResults = {{ $total_results }};
-                    itemsCount = {{ $items_count }};
-                    currentPage = {{ $current_page }};
-                    downloadUrl = '{{ $downloadUrl }}';
-                    orderBaseUrl = '{{ $orderBaseUrl }}';
-                    orderCheckUrl = '{{ $orderCheckUrl }}'; --}}
+                    {{-- $watch(
+                        'profit_margin',
+                        () => {
+                            results = setResults(JSON.parse(JSON.stringify(results)));
+                        }
+                    ); --}}
 
                     console.log('init done');
 
                     setDownloadUrl();
-                    {{-- $watch('order', (ord) => {
-                        order.url = orderBaseUrl + '?' +
-                            'bors=' + ord.bors + '&' +
-                            'qty=' + ord.qty + '&' +
-                            'price=' + ord.price + '&' +
-                            'slippage=' + ord.slippage;
-                        }) --}}
-
-                    //itemIds = JSON.parse(document.getElementById('itemIds').value);
-                    //itemIds = JSON.parse('{{$items_ids}}');
 
                     aggregates = JSON.parse(document.getElementById('aggregates').value);
 
-                    {{-- if (timer != undefined && timer != null) {
-                        clearInterval(timer);
-                        timer = null;
-                        delete timer;
-                    } --}}
-                    {{-- $nextTick(() => { --}}
                         url = '{{ $indexUrl }}';
                         params = {};
                         sort = {};
@@ -629,24 +612,25 @@
                         paginator = JSON.parse('{{$paginator}}');
                         $dispatch('setpagination', {paginator: paginator});
 
-                        timers.forEach((t) => {
-                            clearInterval(t);
-                        });
-                        timers = [];
 
-                        liveUpdate = true;
-                        timer = setInterval(() => {
-                            if (liveUpdate) {
-                                triggerFetch();
-                            }
-                        }, 6000);
-                        console.log('new timer id: '+timer);
-                        timers.push(timer);
-                        console.log('timers:');
-                        console.log(timers);
-                        initialised = true;
-                    {{-- }); --}}
-                }
+                        if (!initialised) {
+                            setTimeout(() => {
+                                liveUpdate = true;
+                                if (timers.length > 0) {
+                                    timers.forEach((t) => {
+                                        clearInterval(t);
+                                    });
+                                }
+                                timers = [];
+                                let t = setInterval(() => {
+                                    if (liveUpdate) {
+                                        triggerFetch();
+                                    }
+                                }, 6000);
+                                timers.push(t);
+                            initialised = true;
+                            }, 1000);
+                        }
                 "
                 action="#"
                 class="max-w-full">

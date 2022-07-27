@@ -15,10 +15,6 @@
     :enableAdvSearch="true"
     :paginator="$paginator"
     total_disp_cols=19
-    :result_calcs="[
-        'result.sell_rate = result.cmp * (100 + this.profit_margin * 1) / 100;',
-        'result.profit_pc = ((result.sell_rate * result.tot_qty) - result.amt_invested) / result.amt_invested * 100;',
-    ]"
     :columns="['client_code', 'cmp', 'pnl']"
     id="scripts_index">
     <x-slot:inputFields>
@@ -41,7 +37,7 @@
         <th class="text-right"><span x-text="formatted(aggregates.dlr_overall_gain)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.dlr_gain_pc, 2)"></span></th>
         <th colspan="2" class="text-center bg-base-300">
-            @ CMP&nbsp;+&nbsp;<input type="number" x-model="profit_margin" class="input input-sm w-14 py-0 px-1 h-6 text-secondary">&nbsp;%
+            @ CMP&nbsp;+&nbsp;<input type="number" x-model="profit_margin" class="input input-sm w-14 py-0 px-1 h-6 text-secondary" @blur="if(profit_margin.length == 0){profit_margin = 0;}">&nbsp;%
         </th>
         <th class="text-right"><span x-text="formatted(aggregates.dlr_todays_gain)"></span></th>
         <th></th>
@@ -183,8 +179,8 @@
                         <span x-text="formatted(result.gain_pc, 2)"></span>
                     </div>
                 </td>
-                <td class="text-right"><span x-text="formatted(result.sell_rate)"></span></td>
-                <td class="text-right"><span x-text="formatted(result.profit_pc, 2)"></span></td>
+                <td class="text-right"><span x-text="formatted(result.cmp * (100 + profit_margin * 1) / 100)"></span></td>
+                <td class="text-right"><span x-text="formatted((((result.cmp * (100 + profit_margin * 1) / 100) * result.tot_qty) - result.amt_invested) / result.amt_invested * 100, 2)"></span></td>
                 <td>
                     <div class="flex flex-row items-baseline justify-end"
                         :class="result.todays_gain < 0 ? 'text-error' : 'text-accent'">

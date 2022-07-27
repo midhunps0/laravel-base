@@ -9,12 +9,17 @@
             <div class="bg-base-100 overflow-hidden shadow-sm sm:rounded-md min-w-fit">
                 <x-sidebar />
             </div>
-            <div x-html="page" x-show="page != null" class="flex-grow bg-base-100 overflow-x-hidden shadow-sm sm:rounded-lg" :class="!ajaxLoading || 'opacity-50'"></div>
-            <template x-if="page == null">
-                <div x-data id="renderedpanel" class="flex-grow bg-base-100 overflow-x-hidden shadow-sm sm:rounded-lg" :class="!ajaxLoading || 'opacity-50'">
+            {{-- <template x-if="page != null">
+            <div x-html="page" class="flex-grow bg-base-100 overflow-x-hidden shadow-sm sm:rounded-lg"></div>
+            </template>
+            <template x-if="page == null"> --}}
+                <div x-data class="flex-grow bg-base-100 overflow-x-hidden shadow-sm sm:rounded-lg" id="renderedpanel">
                         {{$slot}}
                 </div>
-            </template>
+            {{-- </template> --}}
+
+            <div class="h-full w-full absolute top-0 left-0 z-50 bg-base-200 opacity-30" x-show="ajaxLoading"></div>
+
             {{-- <div x-data="{showform: false}"
                 @passwordform.window="showform = true;" x-show="showform" class="fixed top-0 left-0 z-50 h-screen w-screen">
                 <x-utils.password-form />

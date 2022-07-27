@@ -5339,97 +5339,75 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var thelink = link;
 
       if (detail.params != null) {
-        thelink += "?" + this.getQueryString(params); // let keys = Object.keys(params);
-        // for (let j=0; j < keys.length; j++) {
-        //     if (Array.isArray(params[keys[j]])) {
-        //         for (let x = 0; x < params[keys[j]].length; x++) {
-        //             thelink += keys[j]+'[]=' + params[keys[j]][x];
-        //             if (x < (params[keys[j]].length -1)) {
-        //                 thelink += '&';
-        //             }
-        //         }
-        //     } else {
-        //         thelink += keys[j]+'=' + params[keys[j]];
-        //     }
-        //     if (j < (keys.length -1) && params[keys[j]].length > 0) {
-        //         thelink += '&';
-        //     }
-        // }
+        thelink += "?" + this.getQueryString(params);
+      } // if (this.$store.app.xpages != undefined && this.$store.app.xpages[thelink] != undefined) {
+      //     this.showPage = false;
+      //     this.ajaxLoading = true;
+      //     if (this.$store.app.xpages[thelink] != undefined) {
+      //         setTimeout(() => {
+      //             this.showPage = true;
+      //             this.page = this.$store.app.xpages[thelink];
+      //             this.$dispatch('pagechanged', {currentpath: link, currentroute: detail.route});
+      //             this.ajaxLoading = false;
+      //         },
+      //             100
+      //         );
+      //     } else {
+      //         setTimeout(() => {
+      //             this.showPage = true;
+      //             this.ajaxLoading = false;
+      //         },
+      //             100
+      //         );
+      //     }
+      //     history.pushState({href: thelink}, '', thelink);
+      // } else {
+
+
+      this.$store.app.pageloading = true; // this.$dispatch('pageload');
+
+      if (params != null) {
+        params['x_mode'] = 'ajax';
+      } else {
+        params = {
+          x_mode: 'ajax'
+        };
       }
 
-      if (this.$store.app.xpages != undefined && this.$store.app.xpages[thelink] != undefined) {
-        this.showPage = false;
-        this.ajaxLoading = true;
+      this.ajaxLoading = true;
+      axios__WEBPACK_IMPORTED_MODULE_0___default().get(link, {
+        params: params
+      }).then(function (r) {
+        _this3.showPage = false;
+        _this3.ajax = true;
+        setTimeout(function () {
+          // if(document.getElementById('renderedpanel') != null) {document.getElementById('renderedpanel').remove();}
+          document.getElementById('renderedpanel').innerHTML = r.data;
+          _this3.page = r.data;
+          _this3.showPage = true;
+          _this3.ajaxLoading = false;
+        }, 100);
 
-        if (this.$store.app.xpages[thelink] != undefined) {
-          setTimeout(function () {
-            _this3.showPage = true;
-            _this3.page = _this3.$store.app.xpages[thelink];
-
-            _this3.$dispatch('pagechanged', {
-              currentpath: link,
-              currentroute: detail.route
-            });
-
-            _this3.ajaxLoading = false;
-          }, 100);
-        } else {
-          setTimeout(function () {
-            _this3.showPage = true;
-            _this3.ajaxLoading = false;
-          }, 100);
+        if (_this3.$store.app.xpages == undefined || _this3.$store.app.xpages == null) {
+          _this3.$store.app.xpages = [];
         }
 
+        _this3.$store.app.xpages[thelink] = r.data;
         history.pushState({
           href: thelink
         }, '', thelink);
-      } else {
-        this.$store.app.pageloading = true; // this.$dispatch('pageload');
+        _this3.$store.app.pageloading = false; // clearInterval(timer);
+        // timer = null;
+        // initialised = false;
 
-        if (params != null) {
-          params['x_mode'] = 'ajax';
-        } else {
-          params = {
-            x_mode: 'ajax'
-          };
-        }
-
-        axios__WEBPACK_IMPORTED_MODULE_0___default().get(link, {
-          params: params
-        }).then(function (r) {
-          _this3.showPage = false;
-          _this3.ajaxLoading = true;
-          _this3.ajax = true;
-          setTimeout(function () {
-            if (document.getElementById('renderedpanel') != null) {
-              document.getElementById('renderedpanel').remove();
-            }
-
-            _this3.page = r.data;
-            _this3.showPage = true;
-            _this3.ajaxLoading = false;
-          }, 100);
-
-          if (_this3.$store.app.xpages == undefined || _this3.$store.app.xpages == null) {
-            _this3.$store.app.xpages = [];
-          }
-
-          _this3.$store.app.xpages[thelink] = r.data;
-          history.pushState({
-            href: thelink
-          }, '', thelink);
-          _this3.$store.app.pageloading = false; // clearInterval(timer);
-          // timer = null;
-          // initialised = false;
-
-          _this3.$dispatch('pagechanged', {
-            currentpath: link,
-            currentroute: detail.route
-          });
-        })["catch"](function (e) {
-          console.log(e);
-        }); // this.$store.app.pageloading = false;
-      }
+        _this3.$dispatch('pagechanged', {
+          currentpath: link,
+          currentroute: detail.route
+        });
+      })["catch"](function (e) {
+        console.log(e);
+      }); // this.$store.app.pageloading = false;
+      // }
     },
     // doSearch(detail) {
     //     let fullUrl = detail.url + '?';

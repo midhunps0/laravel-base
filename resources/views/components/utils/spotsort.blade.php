@@ -17,10 +17,11 @@
             console.log('sp: dispatched');
         },
         reset(sorts) {
-            console.log('sorts: ->'+'{{$name}}');
-            console.log(sorts);
             if(!Object.keys(sorts).includes('{{$name}}')){
                 this.spotsort = 'none';
+                console.log('resetting: {{$name}}');
+            } else {
+                console.log('NOT resetting: {{$name}}');
             }
         }
     }"
