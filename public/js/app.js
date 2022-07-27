@@ -5418,7 +5418,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           history.pushState({
             href: thelink
           }, '', thelink);
-          _this3.$store.app.pageloading = false;
+          _this3.$store.app.pageloading = false; // clearInterval(timer);
+          // timer = null;
+          // initialised = false;
 
           _this3.$dispatch('pagechanged', {
             currentpath: link,

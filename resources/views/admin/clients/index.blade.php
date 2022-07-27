@@ -72,7 +72,7 @@
             </div>
         </th>
         <th class="border-l-2 border-base-100">
-            <div class="flex flex-row items-center min-w-72">
+            <div class="flex flex-row items-center min-w-36">
                 <x-utils.spotsort name="category" val="{{ $sort['category'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     Category

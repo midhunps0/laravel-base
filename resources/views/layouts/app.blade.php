@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html x-data="{theme: $persist('newdark'), href: '', currentpath: '{{url()->current()}}', currentroute: '{{ Route::currentRouteName() }}', timer: null, liveUpdate: false, url: '', timers: []}"
+<html x-data="{theme: $persist('newdark'), href: '', currentpath: '{{url()->current()}}', currentroute: '{{ Route::currentRouteName() }}', timer: null, liveUpdate: false, url: '', timers: [], initialised: false}"
 @themechange.window="theme = $event.detail.darktheme ? 'newdark' : 'light';" lang="{{ str_replace('_', '-', app()->getLocale()) }}"
 x-init="window.landingUrl = '{{\Request::getRequestUri()}}'"
+                    // timer = null;
 @pagechanged.window="console.log('pcanged');console.log($event.detail);
 currentpath=$event.detail.currentpath;
 currentroute=$event.detail.currentroute;"
@@ -24,7 +25,7 @@ currentroute=$event.detail.currentroute;"
         <script src="{{ asset('js/app.js') }}" defer></script>
     </head>
     <body x-data="initPage" x-init="initAction();"
-        @linkaction.window="fetchLink($event.detail);"
+        @linkaction.window="initialised = false; fetchLink($event.detail);"
         @popstate.window="historyAction($event)"
         class="font-sans antialiased text-sm">
         <div class="min-h-screen bg-base-200 flex flex-col">

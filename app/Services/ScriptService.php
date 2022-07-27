@@ -18,14 +18,18 @@ class ScriptService implements ModelViewConnector
 
     public function __construct()
     {
+        // $sum = Client::from('clients', 'c')->userAccessControlled()
+        //     ->join('clients_scripts as cs', 'c.id', '=', 'cs.client_id')
+        //     ->join('scripts as s', 's.id', '=', 'cs.script_id')
+        //     ->where('s.tracked', 1)
+        //     ->select(
+        //     DB::raw('SUM(buy_avg_price * cs.dp_qty) as amt_invested'),
+        // )->get()->first();
         $sum = Client::from('clients', 'c')->userAccessControlled()
-            ->join('clients_scripts as cs', 'c.id', '=', 'cs.client_id')
-            ->join('scripts as s', 's.id', '=', 'cs.script_id')
-            ->where('s.tracked', 1)
             ->select(
-            DB::raw('SUM(buy_avg_price * cs.dp_qty) as amt_invested'),
-        )->get()->first();
-        $tot_aum = $sum->amt_invested;
+                DB::raw('SUM(c.total_aum) as total_aum')
+            )->get()->first();
+        $tot_aum = $sum->total_aum;
 
         $this->selects = [
             'u.name as dealer',
@@ -33,6 +37,7 @@ class ScriptService implements ModelViewConnector
             'qcs.dop as dop',
             's.bse_code as bse_code',
             's.symbol as symbol',
+            's.id as sid',
             DB::raw('qcs.amt_invested / '.$tot_aum.' * 100 as pa'),
             's.agio_indutry as sector',
             'qcs.qty as tot_qty',
@@ -45,9 +50,22 @@ class ScriptService implements ModelViewConnector
             DB::raw('ROUND((s.cmp - s.last_day_closing) * qcs.qty, 2) as todays_gain'),
             's.day_high as day_high',
             's.day_low as day_low',
-            // DB::raw('ROUND((s.cmp - qcs.abv) * qcs.qty / '.$tot_aum.' * 100), 2) as impact')
+            DB::raw('ROUND((s.cmp - qcs.abv) * qcs.qty / '.$tot_aum.' * 100, 2) as impact')
         ];
 
+        $this->agrSelects = array_merge(
+            $this->selects,
+            [
+                DB::raw('SUM(qcs.qty) - SUM(qcs.qty) + '.$tot_aum.' as dlr_aum'),
+                DB::raw('SUM(qcs.qty) as dlr_qty'),
+                DB::raw('SUM(qcs.amt_invested) as dlr_amt_invested'),
+                DB::raw('SUM(s.cmp * qcs.qty) as dlr_cur_value'),
+                DB::raw('(SUM(qcs.amt_invested) - SUM(s.cmp * qcs.qty)) as dlr_overall_gain'),
+                DB::raw('(SUM(qcs.amt_invested) - SUM(s.cmp * qcs.qty)) / SUM(s.cmp * qcs.qty) * 100 as dlr_gain_pc'),
+                DB::raw('SUM(qcs.amt_invested) / '.$tot_aum.' * 100 as dlr_pa'),
+                DB::raw('SUM(s.cmp * qcs.qty) - SUM(s.last_day_closing * qcs.qty) as dlr_todays_gain')
+            ]
+        );
         $this->sortsMap = [
             'dealer' => ['name' => 'dealer', 'type' => 'string'],
             'dop' => ['name' => 'qcs.dop', 'type' => 'integer'],
@@ -60,7 +78,7 @@ class ScriptService implements ModelViewConnector
             //'amt_invested' => ['name' => 'DB::raw('ROUND(qcs.amt_invested, 2)', 'type' => 'integer']
             'cmp' => ['name' => 's.cmp', 'type' => 'integer'],
             // 'cur_value' => ['name' => 'DB::raw('ROUND(s.cmp * qcs.qty, 2)', 'type' => 'integer']
-            // 'overall_gain' => ['name' => 'DB::raw('ROUND((s.cmp - qcs.abv) * qcs.qty, 2)', 'type' => 'integer']
+            // 'overall_gain' => ['name' => 'DB::raw(\'ROUND((s.cmp - qcs.abv) * qcs.qty, 2))\'', 'type' => 'integer'],
             // 'gain_pc' => ['name' => 'DB::raw('ROUND((s.cmp - qcs.abv) / qcs.abv * 100, 2)', 'type' => 'integer']
             // 'todays_gain' => ['name' => 'DB::raw('ROUND((s.cmp - s.last_day_closing) * qcs.qty, 2)', 'type' => 'integer']
             'day_high' => ['name' => 's.day_high', 'type' => 'integer'],

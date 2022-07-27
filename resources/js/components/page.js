@@ -144,6 +144,7 @@ export default () => ({
                     this.$store.app.pageloading = false;
                     // clearInterval(timer);
                     // timer = null;
+                    // initialised = false;
                     this.$dispatch('pagechanged', {currentpath: link, currentroute: detail.route});
                 }
             ).catch(

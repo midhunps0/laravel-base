@@ -2,6 +2,12 @@
 <x-dashboard-base :ajax="$x_ajax">
     <div id="{{$id}}" x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative h-full" :id="$id('panel-base')">
 
+        @if (isset($inputFields))
+        <div>
+            {{ $inputFields }}
+        </div>
+        @endif
+
         @if (isset($body))
             <h3 class="text-xl font-bold">{{ $title }}</h3>
             <div class="my-4">{{ $body }}</div>
@@ -90,6 +96,7 @@
                 pages: [],
                 results: null,
                 aggregates: null,
+                profit_margin: 0,
                 {{-- orderVerifyUrl: '{{ $orderVerifyUrl }}', --}}
                 order: {
                     //bors: 'Sell',
@@ -359,7 +366,10 @@
                             params: allParams
                         }
                     ).then((r) => {
-                        this.results = JSON.parse(r.data.results_json);
+                        console.log(r.data);
+                        console.log('ic in: '+this.itemsCount);
+                        this.results = this.setResults(JSON.parse(r.data.results_json));
+                        console.log(this.results);
                         this.aggregates = JSON.parse(r.data.aggregates);
                         this.totalResults = r.data.total_results;
                         this.currentPage = r.data.current_page;
@@ -368,6 +378,9 @@
                         let temp = JSON.parse(JSON.stringify(this.selectedIds));
                         this.selectedIds = [];
                         $nextTick(() => {this.selectedIds = JSON.parse(JSON.stringify(temp));});
+                        {{-- console.log('ic: '+this.itemsCount);
+                        this.initialised = true; --}}
+                        ajaxLoading = false;
                     });
                 },
                 fetchResults(param) {
@@ -386,7 +399,8 @@
                     this.setSort(detail);
                     this.paginator.currentPage = 1;
                     this.paginatorPage = 1;
-                    this.triggerFetch();;
+                    ajaxLoading = true;
+                    this.triggerFetch();
                 },
                 setSort(detail) {
                     let keys = Object.keys(detail.data);
@@ -417,6 +431,7 @@
                     this.triggerFetch();
                 },
                 pageUpdateCount(count) {
+                    console.log('pu count');
                     this.itemsCount = count;
                     this.triggerFetch();
                 },
@@ -465,8 +480,8 @@
                     $dispatch('downloadurl', { url_all: this.downloadUrl + '?' + url_all, url_selected: this.downloadUrl + '?' + url_selected });
                 },
                 setResults(results) {
-                    this.results.map((result) => {
-                        {{-- result.cur_val = result.cmp * result.qty; --}}
+                    console.log('pm: '+this.profit_margin);
+                    results.map((result) => {
                         @foreach($result_calcs as $calc)
                         {{ $calc }}
                         @endforeach
@@ -527,19 +542,30 @@
                 @advsearch.window="conditions = $event.detail.conditions; advSearchStatus(); runQuery();"
                 @showorderform.window="initiateOrderForm();"
                 x-init="
+                console.log('in: '+ initialised);
+                console.log('res: ');
+                console.log(results);
+                if (!initialised) {
                     $watch('selectedIds', (ids) => {
-                    if (ids.length < itemIds.length) {
-                        pageSelected = false;
-                        allSelected = false;
-                    }
-
+                        if (ids.length < itemIds.length) {
+                            pageSelected = false;
+                            allSelected = false;
+                        }
+                    });
+                    $watch('profit_margin', () => {
+                        results = setResults(results);
+                    });
+                    {{--
                     url = '{{ $indexUrl }}';
                     totalResults = {{ $total_results }};
                     itemsCount = {{ $items_count }};
                     currentPage = {{ $current_page }};
                     downloadUrl = '{{ $downloadUrl }}';
                     orderBaseUrl = '{{ $orderBaseUrl }}';
-                    orderCheckUrl = '{{ $orderCheckUrl }}';
+                    orderCheckUrl = '{{ $orderCheckUrl }}'; --}}
+
+                    console.log('init done');
+
                     setDownloadUrl();
                     {{-- $watch('order', (ord) => {
                         order.url = orderBaseUrl + '?' +
@@ -548,7 +574,7 @@
                             'price=' + ord.price + '&' +
                             'slippage=' + ord.slippage;
                         }) --}}
-                    });
+
                     //itemIds = JSON.parse(document.getElementById('itemIds').value);
                     //itemIds = JSON.parse('{{$items_ids}}');
 
@@ -559,7 +585,7 @@
                         timer = null;
                         delete timer;
                     } --}}
-                    $nextTick(() => {
+                    {{-- $nextTick(() => { --}}
                         url = '{{ $indexUrl }}';
                         params = {};
                         sort = {};
@@ -598,11 +624,10 @@
                         }];
 
                         setDownloadUrl();
-                        results = JSON.parse(document.getElementById('results_json').value);
-                        {{-- results = setResults(results); --}}
+                        let rs = JSON.parse(document.getElementById('results_json').value);
+                        results = setResults(rs);
                         paginator = JSON.parse('{{$paginator}}');
                         $dispatch('setpagination', {paginator: paginator});
-
 
                         timers.forEach((t) => {
                             clearInterval(t);
@@ -614,13 +639,14 @@
                             if (liveUpdate) {
                                 triggerFetch();
                             }
-                        }, 4000);
+                        }, 6000);
                         console.log('new timer id: '+timer);
                         timers.push(timer);
                         console.log('timers:');
                         console.log(timers);
-
-                    });
+                        initialised = true;
+                    {{-- }); --}}
+                }
                 "
                 action="#"
                 class="max-w-full">
@@ -637,11 +663,6 @@
                             class="btn btn-xs">Cancel All</button>
                         </div>
                 </div>
-                @if (isset($inputFields))
-                <div>
-                    {{ $inputFields }}
-                </div>
-                @endif
                 <div class="overflow-x-scroll scroll-m-1 relative max-w-full p-0 m-0 rounded-md">
                     <table class="table min-w-200 w-full border-2 border-base-200 rounded-md"
                         :class="compact ? 'table-mini' : 'table-compact'">

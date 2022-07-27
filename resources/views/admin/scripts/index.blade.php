@@ -15,6 +15,10 @@
     :enableAdvSearch="true"
     :paginator="$paginator"
     total_disp_cols=19
+    :result_calcs="[
+        'result.sell_rate = result.cmp * (100 + this.profit_margin * 1) / 100;',
+        'result.profit_pc = ((result.sell_rate * result.tot_qty) - result.amt_invested) / result.amt_invested * 100;',
+    ]"
     :columns="['client_code', 'cmp', 'pnl']"
     id="scripts_index">
     <x-slot:inputFields>
@@ -23,21 +27,26 @@
         <input type="hidden" value="{{ $items_ids }}" id="itemIds">
     </x-slot>
     <x-slot:aggregateCols>
-            {{-- <th colspan="3">
+        <th colspan="2">
             Aggregates:
         </th>
+        <th class="sticky !left-40 z-20"></th>
+        <th class="text-right"><span x-text="formatted(aggregates.dlr_pa, 2)"></span></th>
+        <th></th>
+        <th class="text-right"><span x-text="formatted(aggregates.dlr_qty)"></span></th>
+        <th></th>
+        <th class="text-right"><span x-text="formatted(aggregates.dlr_amt_invested)"></span></th>
+        <th></th>
+        <th class="text-right"><span x-text="formatted(aggregates.dlr_cur_value)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.dlr_overall_gain)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.dlr_gain_pc, 2)"></span></th>
+        <th colspan="2" class="text-center bg-base-300">
+            @ CMP&nbsp;+&nbsp;<input type="number" x-model="profit_margin" class="input input-sm w-14 py-0 px-1 h-6 text-secondary">&nbsp;%
+        </th>
+        <th class="text-right"><span x-text="formatted(aggregates.dlr_todays_gain)"></span></th>
         <th></th>
         <th></th>
         <th></th>
-        <th></th>
-        <th class="text-right"><span x-text="formatted(aggregates.agr_buy_val)"></span></th>
-        <th></th>
-        <th class="text-right"><span x-text="formatted(aggregates.agr_cur_val)"></span></th>
-        <th class="text-right"><span x-text="formatted(aggregates.agr_pnl)"></span></th>
-        <th class="text-right"><span x-text="formatted(aggregates.agr_pnl_pc)"></span></th>
-        <th></th>
-        <th class="text-right"><span x-text="formatted(aggregates.agr_impact, 2)"></span></th>
-        <th class="text-right"><span x-text="formatted(aggregates.agr_pa, 2)"></span></th> --}}
     </x-slot>
     <x-slot:thead>
         <th class="relative w-44">
@@ -50,7 +59,7 @@
                 </div>
             </div>
         </th>
-        <th class="relative w-72">
+        {{-- <th class="relative w-72">
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="bse_code" val="{{ $sort['name'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
@@ -63,8 +72,8 @@
         <th>
             <x-utils.spotsort name="dop" val="{{ $sort['dop'] ?? 'none' }}" />
             <span>DOP</span>
-        </th>
-        <th>
+        </th> --}}
+        <th class="sticky !left-7">
             <x-utils.spotsort name="symbol" val="{{ $sort['symbol'] ?? 'none' }}" />
             <span>Symbol</span>
         <th>
@@ -105,11 +114,11 @@
         </th>
         <th>
             {{-- <x-utils.spotsort name="gain_pc" val="{{ $sort['gain_pc'] ?? 'none' }}" /> --}}
-            <span>Sell Rate 4%</span>
+            <span>Sell Rate</span>
         </th>
         <th>
             {{-- <x-utils.spotsort name="gain_pc" val="{{ $sort['gain_pc'] ?? 'none' }}" /> --}}
-            <span>Profit Rate</span>
+            <span>Profit %</span>
         </th>
         <th>
             <x-utils.spotsort name="todays_gain" val="{{ $sort['todays_gain'] ?? 'none' }}" />
@@ -132,13 +141,17 @@
         <template x-for="result in results">
             <tr>
                 <td>
-                    <input type="checkbox" :value="result.id" x-model="selectedIds"
+                    <input type="checkbox" :value="result.sid" x-model="selectedIds"
                     class="checkbox checkbox-primary checkbox-xs">
                 </td>
                 <td x-text="result.dealer"></td>
-                <td x-text="result.bse_code"></td>
-                <td x-text="result.dop"></td>
-                <td x-text="result.symbol"></td>
+                {{-- <td x-text="result.bse_code"></td>
+                <td x-text="result.dop"></td> --}}
+                <td class="sticky !left-7">
+                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('scripts.show', 0)}}'.replace('0', result.sid)})"
+                        class="link no-underline hover:underline" href="" x-text="result.symbol"></a>
+                        <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
+                </td>
                 <td class="text-right" x-text="formatted(result.pa, 2)"></td>
                 <td x-text="result.sector"></td>
                 <td class="text-right" x-text="result.tot_qty"></td>
@@ -170,8 +183,8 @@
                         <span x-text="formatted(result.gain_pc, 2)"></span>
                     </div>
                 </td>
-                <td></td>
-                <td></td>
+                <td class="text-right"><span x-text="formatted(result.sell_rate)"></span></td>
+                <td class="text-right"><span x-text="formatted(result.profit_pc, 2)"></span></td>
                 <td>
                     <div class="flex flex-row items-baseline justify-end"
                         :class="result.todays_gain < 0 ? 'text-error' : 'text-accent'">

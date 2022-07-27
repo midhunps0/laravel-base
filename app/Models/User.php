@@ -51,7 +51,7 @@ class User extends Authenticatable
     public function hasRole($role)
     {
         if (is_int($role)) {
-            return in_array($role, array_values($this->roles()->pluck('id')));
+            return in_array($role, array_values($this->roles()->pluck('id')->toArray()));
         } elseif (is_string($role)) {
             return in_array($role, array_values($this->roles()->pluck('name')->toArray()));
         } elseif ($role instanceof Role) {
