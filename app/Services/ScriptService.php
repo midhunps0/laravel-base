@@ -286,6 +286,9 @@ class ScriptService implements ModelViewConnector
         DB::statement("SET SQL_MODE='only_full_group_by'");
 
         $export = [];
+        $p = round($price * (100 - $slippage) / 100, 2);
+        $p = round($p * 20) / 20; // round(($p * 100) / 5) * 5 / 100
+
         foreach ($results as $result) {
             $row = [
                 'exchange_code' => 'NSE',
@@ -299,7 +302,7 @@ class ScriptService implements ModelViewConnector
             $row['script_name'] = $result->symbol.' EQ| '.$result->nse_code;
             $row['qty'] = round(($result->qty * $qty /100)) . '';
             $row['lot'] = round(($result->qty * $qty /100)) . '';
-            $row['price'] = round($price * (100 - $slippage) / 100, 2) . '';
+            $row['price'] = $p . '';
             $row['client_code'] = $result->code;
             $export[] = $row;
         }
