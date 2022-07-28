@@ -12,7 +12,6 @@
     results_name="scripts"
     unique_str="scrx"
     :results_json="$results_json"
-    :enableAdvSearch="true"
     :paginator="$paginator"
     total_disp_cols=19
     :columns="['client_code', 'cmp', 'pnl']"

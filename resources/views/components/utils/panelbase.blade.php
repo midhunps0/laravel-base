@@ -29,7 +29,7 @@
                                 showAdvSearch = false;
                             }
                             "
-                            class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center"
+                            class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors rounded-md flex flex-row items-center justify-center"
                             :class="noconditions || 'bg-accent text-base-200'">
                             <x-display.icon icon="icons.doc_search" height="h-5" width="w-5" />&nbsp;Adv Search
                         </button>
@@ -44,7 +44,7 @@
                             showOrderForm = false;
                         }
                         "
-                            class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center">
+                            class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors rounded-md flex flex-row items-center justify-center">
                             <x-display.icon icon="icons.play" height="h-5" width="w-5" />&nbsp;Sell Order
                         </button>
                     </div>

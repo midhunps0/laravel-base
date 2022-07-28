@@ -547,12 +547,12 @@ html {
   --p: 262 80% 50%;
   --pf: 262 80% 40%;
   --sf: 316 70% 40%;
-  --af: 175 84% 25%;
+  --af: 142 76% 29%;
   --nf: 215 28% 13%;
   --inc: 198 100% 12%;
   --suc: 158 100% 10%;
-  --wac: 43 100% 11%;
-  --erc: 0 100% 14%;
+  --wac: 25 100% 11%;
+  --erc: 347 100% 90%;
   --rounded-box: 1rem;
   --rounded-btn: 0.5rem;
   --rounded-badge: 1.9rem;
@@ -566,7 +566,7 @@ html {
   --pc: 0 0% 100%;
   --s: 316 70% 50%;
   --sc: 0 0% 100%;
-  --a: 175 84% 32%;
+  --a: 142 76% 36%;
   --ac: 175 44% 15%;
   --n: 215 28% 17%;
   --nc: 0 0% 100%;
@@ -576,20 +576,20 @@ html {
   --bc: 215 28% 17%;
   --in: 198 93% 60%;
   --su: 158 64% 52%;
-  --wa: 43 96% 56%;
-  --er: 0 91% 71%;
+  --wa: 25 95% 53%;
+  --er: 347 77% 50%;
 }
 
 [data-theme=light] {
   --p: 262 80% 50%;
   --pf: 262 80% 40%;
   --sf: 316 70% 40%;
-  --af: 175 84% 25%;
+  --af: 142 76% 29%;
   --nf: 215 28% 13%;
   --inc: 198 100% 12%;
   --suc: 158 100% 10%;
-  --wac: 43 100% 11%;
-  --erc: 0 100% 14%;
+  --wac: 25 100% 11%;
+  --erc: 347 100% 90%;
   --rounded-box: 1rem;
   --rounded-btn: 0.5rem;
   --rounded-badge: 1.9rem;
@@ -603,7 +603,7 @@ html {
   --pc: 0 0% 100%;
   --s: 316 70% 50%;
   --sc: 0 0% 100%;
-  --a: 175 84% 32%;
+  --a: 142 76% 36%;
   --ac: 175 44% 15%;
   --n: 215 28% 17%;
   --nc: 0 0% 100%;
@@ -613,8 +613,8 @@ html {
   --bc: 215 28% 17%;
   --in: 198 93% 60%;
   --su: 158 64% 52%;
-  --wa: 43 96% 56%;
-  --er: 0 91% 71%;
+  --wa: 25 95% 53%;
+  --er: 347 77% 50%;
 }
 
 [data-theme=newdark] {
@@ -2631,13 +2631,13 @@ body[dir="rtl"] .checkbox:checked,
   --tw-bg-opacity: 1;
   background-color: hsl(var(--b1) / var(--tw-bg-opacity));
 }
-.bg-base-300 {
-  --tw-bg-opacity: 1;
-  background-color: hsl(var(--b3, var(--b2)) / var(--tw-bg-opacity));
-}
 .bg-base-200 {
   --tw-bg-opacity: 1;
   background-color: hsl(var(--b2, var(--b1)) / var(--tw-bg-opacity));
+}
+.bg-base-300 {
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--b3, var(--b2)) / var(--tw-bg-opacity));
 }
 .bg-error {
   --tw-bg-opacity: 1;
@@ -2674,9 +2674,6 @@ body[dir="rtl"] .checkbox:checked,
 }
 .bg-opacity-50 {
   --tw-bg-opacity: 0.5;
-}
-.bg-opacity-30 {
-  --tw-bg-opacity: 0.3;
 }
 .fill-current {
   fill: currentColor;
@@ -2931,8 +2928,8 @@ body[dir="rtl"] .checkbox:checked,
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-.opacity-50 {
-  opacity: 0.5;
+.opacity-30 {
+  opacity: 0.3;
 }
 .opacity-0 {
   opacity: 0;
@@ -2942,9 +2939,6 @@ body[dir="rtl"] .checkbox:checked,
 }
 .opacity-60 {
   opacity: 0.6;
-}
-.opacity-30 {
-  opacity: 0.3;
 }
 .shadow-sm {
   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
