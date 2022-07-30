@@ -373,10 +373,10 @@
                         this.currentPage = r.data.current_page;
                         $dispatch('setpagination', {paginator: JSON.parse(r.data.paginator)});
                         $dispatch('routechange', {route: r.data.route});
-                        let temp = JSON.parse(JSON.stringify(this.selectedIds));
-                        this.selectedIds = [];
+                        //let temp = JSON.parse(JSON.stringify(this.selectedIds));
+                        //this.selectedIds = [];
                         $nextTick(() => {
-                            this.selectedIds = JSON.parse(JSON.stringify(temp));
+                            //this.selectedIds = JSON.parse(JSON.stringify(temp));
                         });
                         setTimeout(() => {
                             ajaxLoading = false;
@@ -451,6 +451,11 @@
                 selectPage() {
                     this.selectedIds = this.itemIds;
                     this.pageSelected = true;
+                    console.log('iil: '+this.itemIds.length+' tr: '+this.totalResults);
+                    if (this.itemIds.length == this.totalResults) {
+                        this.allSelected = true;
+                    }
+                    console.log(this.selectedIds);
                 },
                 selectAll() {
                     let params = this.paramsExceptSelection();
@@ -554,6 +559,8 @@
                         if (ids.length < itemIds.length) {
                             pageSelected = false;
                             allSelected = false;
+                        } else {
+                            pageSelected = true;
                         }
                     });
                     {{-- $watch(

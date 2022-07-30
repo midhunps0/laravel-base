@@ -14,7 +14,6 @@
     :results_json="$results_json"
     :paginator="$paginator"
     total_disp_cols=19
-    :columns="['client_code', 'cmp', 'pnl']"
     id="scripts_index">
     <x-slot:inputFields>
         <input type="hidden" value="{{ $aggregates }}" id="aggregates">

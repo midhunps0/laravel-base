@@ -13,9 +13,6 @@
     unique_str="clnx"
     :results_json="$results_json"
     :paginator="$paginator"
-    :result_calcs="[
-
-    ]"
     total_disp_cols="15"
     adv_fields="
         none: {key: 'none', text: 'Select A Field', type: 'none'},

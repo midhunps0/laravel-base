@@ -162,6 +162,7 @@ class ScriptService implements ModelViewConnector
                 'pa' => 'cs.buy_avg_price * cs.dp_qty / c.total_aum * 100',
             ]
         );
+        $this->idKey = 'sid';
         $this->relSelIdsKey = 'c.id';
     }
 
@@ -171,8 +172,8 @@ class ScriptService implements ModelViewConnector
             'c.rm_id as rm_id',
             'cs.script_id as script_id',
             DB::raw('SUM(cs.dp_qty) as qty'),
-            DB::raw('SUM(buy_avg_price * cs.dp_qty) as amt_invested'),
-            DB::raw('SUM(buy_avg_price * cs.dp_qty) / SUM(cs.dp_qty) as abv'),
+            DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) as amt_invested'),
+            DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) / SUM(cs.dp_qty) as abv'),
             'c.id as client_id',
             DB::raw('MIN(cs.entry_date) as dop')
         )->groupBy('cs.script_id');

@@ -100,6 +100,11 @@ trait IsModelViewConnector{
         return json_encode($ids);
     }
 
+    private function getRelItemIds($results) {
+        $ids = $results->pluck($this->relIdKey)->toArray();
+        return json_encode($ids);
+    }
+
     public function processDownload(
         array $searches,
         array $sorts,
@@ -272,7 +277,7 @@ trait IsModelViewConnector{
             'sort' => $queryData['sortParams'],
             'filter' => $queryData['filterData'],
             'items_count' => $itemsCount,
-            'items_ids' => $this->getItemIds($relatedResults),
+            'items_ids' => $this->getRelItemIds($relatedResults),
             'total_results' => $data['total'],
             'current_page' => $data['current_page'],
             'paginator' => json_encode($paginator),
