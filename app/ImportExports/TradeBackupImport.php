@@ -118,6 +118,10 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
                     info('Case S');
                     $newQty = $oldQty - $qty;
                     info('new qty: '.$newQty);
+                    if ($newQty < 0) {
+                        $newQty = 0;
+                        info('new qty corrected: '.$newQty);
+                    }
                     $pnl = $amt - ($oldAvgBuyPrice * $qty);
                     info('pnl: '.$pnl);
 

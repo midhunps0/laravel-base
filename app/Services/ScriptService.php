@@ -176,7 +176,8 @@ class ScriptService implements ModelViewConnector
             DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) / SUM(cs.dp_qty) as abv'),
             'c.id as client_id',
             DB::raw('MIN(cs.entry_date) as dop')
-        )->groupBy('cs.script_id');
+        )->groupBy('cs.script_id')
+        ->where('cs.dp_qty', '>', 0);
 
 
         $query = Script::from('scripts', 's')->joinSub($qcs, 'qcs', 'qcs.script_id', 's.id')
@@ -191,7 +192,8 @@ class ScriptService implements ModelViewConnector
             ->join('clients_scripts as cs', 's.id', '=', 'cs.script_id')
             ->join('clients as c', 'c.id', '=', 'cs.client_id')
             ->join('users as u', 'c.rm_id', '=', 'u.id')
-            ->where('s.id', $id);
+            ->where('s.id', $id)
+            ->where('cs.dp_qty', '>', 0);
 
         $user = $user ?? auth()->user();
         if ($user->hasRole('Dealer')) {

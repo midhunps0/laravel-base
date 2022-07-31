@@ -181,7 +181,8 @@ class ClientService implements ModelViewConnector
                 'cs.dp_qty as dp_qty',
                 DB::raw(DB::raw('SUM(cs.dp_qty * cs.buy_avg_price)').' as allocated_aum'),
                 DB::raw(DB::raw('SUM(cs.dp_qty * s.cmp)').' as cur_value')
-            )->where('s.tracked', 1)->groupBy('cs.client_id');
+            )->where('s.tracked', 1)->groupBy('cs.client_id')
+            ->where('cs.dp_qty', '>', 0);
 
         $lbs = AppHelper::getLiquidbees();
 
@@ -211,7 +212,8 @@ class ClientService implements ModelViewConnector
         return Client::from('clients as c')
             ->join('clients_scripts as cs', 'c.id' , '=', 'cs.client_id')
             ->join('scripts as s', 's.id', '=', 'cs.script_id')
-            ->where('c.id', $id);
+            ->where('c.id', $id)
+            ->where('cs.dp_qty', '>', 0);
     }
 
     public function getList($search)
