@@ -55,8 +55,8 @@
                         class="checkbox checkbox-xs checkbox-primary">
                     <label for="compact">{{ __('Compact View') }}</label>
                 </div>
-                <div x-data="{ dropopen: false, url_all: '', url_selected: '' }"
-                    @downloadurl.window="url_all = $event.detail.url_all; url_selected=$event.detail.url_selected;"
+                <div x-data="{ dropopen: false, url_all: '', url_selected: '', selectedCount: 0 }"
+                    @downloadurl.window="url_all = $event.detail.url_all; url_selected=$event.detail.url_selected; selectedCount = $event.detail.idscount;"
                     @click.outside="dropopen = false;" class="relative">
                     <label @click="dropopen = !dropopen;" tabindex="0"
                         class="btn btn-xs m-1">{{ __('Export') }}&nbsp;
@@ -65,8 +65,11 @@
                     <ul x-show="dropopen" tabindex="0"
                         class="absolute top-5 right-0 z-50 p-2 shadow-md bg-base-200 rounded-md w-52 scale-90 origin-top-right transition-all duration-100 opacity-0"
                         :class="!dropopen || 'top-8 scale-110 opacity-100'">
-                        <li class="py-2 px-4 hover:bg-base-100"><a :href="url_selected"
-                                download>{{ __('Download Selected') }}</a></li>
+                        <li class="py-2 px-4" :class="selectedCount > 0 ? 'cursor-pointer hover:bg-base-100' : 'opacity-40'">
+                            <span x-show="selectedCount == 0">{{ __('Download Selected') }}</span>
+                            <a x-show="selectedCount > 0" :href="url_selected"
+                                download>{{ __('Download Selected') }}</a>
+                            </li>
                         <li class="py-2 px-4 hover:bg-base-100"><a :href="url_all"
                                 download>{{ __('Download All') }}</a></li>
                     </ul>
@@ -488,7 +491,7 @@
                     }
                     let url_selected = getQueryString(allParams);
 
-                    $dispatch('downloadurl', { url_all: this.downloadUrl + '?' + url_all, url_selected: this.downloadUrl + '?' + url_selected });
+                    $dispatch('downloadurl', { url_all: this.downloadUrl + '?' + url_all, url_selected: this.downloadUrl + '?' + url_selected, idscount: this.selectedIds.length });
                 },
                 setResults(results) {
                     results.map((result) => {
@@ -562,6 +565,7 @@
                         } else {
                             pageSelected = true;
                         }
+                        setDownloadUrl();
                     });
                     {{-- $watch(
                         'profit_margin',
@@ -613,7 +617,6 @@
                             value: 0
                         }];
 
-                        setDownloadUrl();
                         let rs = JSON.parse(document.getElementById('results_json').value);
                         results = setResults(rs);
                         paginator = JSON.parse('{{$paginator}}');
