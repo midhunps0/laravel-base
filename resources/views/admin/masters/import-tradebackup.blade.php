@@ -37,13 +37,13 @@
                         console.log(r);
                         if (r.data.success) {
                             this.message = 'Import finished.';
+                            this.uploadResult.totalItems = r.data.total_items;
+                            this.uploadResult.failedItems = r.data.failed_items;
                         } else {
                             this.message = 'Opps! Import failed unexpectedly. Please make sure you have all the required column titles.';
                         }
-                        this.uploadResult.status = r.data.success;
-                        this.uploadResult.totalItems = r.data.total_items;
-                        this.uploadResult.failedItems = r.data.failed_items;
 
+                        this.uploadResult.status = r.data.success;
                         this.processing = false;
                         this.finished = true;
                         this.file = null;
