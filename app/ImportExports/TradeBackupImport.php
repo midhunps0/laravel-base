@@ -31,6 +31,7 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
         // $post->tags()->updateExistingPivot($tagId, [
         //     'name' => 'Give me a name',
         // ]);
+
         foreach ($data as $item) {
             $this->totalItems++;
             info('----Start----');

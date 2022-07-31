@@ -1,5 +1,5 @@
 @if ($ajax)
-    <div class="flex-grow bg-base-100 overflow-hidden shadow-sm sm:rounded-lg">
+    <div class="flex-grow bg-base-100 overflow-hidden shadow-sm sm:rounded-lg min-h-full overflow-y-scroll">
             {{$slot}}
     </div>
 @else
@@ -13,7 +13,7 @@
             <div x-html="page" class="flex-grow bg-base-100 overflow-x-hidden shadow-sm sm:rounded-lg"></div>
             </template>
             <template x-if="page == null"> --}}
-                <div x-data class="flex-grow bg-base-100 overflow-x-hidden shadow-sm sm:rounded-lg" id="renderedpanel">
+                <div x-data class="flex-grow bg-base-100 overflow-x-hidden shadow-sm sm:rounded-lg min-h-full overflow-y-scroll" id="renderedpanel">
                         {{$slot}}
                 </div>
             {{-- </template> --}}

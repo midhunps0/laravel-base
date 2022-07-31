@@ -52,8 +52,24 @@ class ScriptController extends SmartController
             $this->request->input('adv_search', []),
             $this->request->input('selected_ids', '')
         );
-
-        return Excel::download(new DefaultCollectionExports($scripts), 'scripts.xlsx');
+        $colsFormat = [
+            'dealer',
+            'symbol',
+            'pa',
+            'sector',
+            'tot_qty',
+            'abv',
+            'amt_invested',
+            'cmp',
+            'cur_value',
+            'overall_gain',
+            'gain_pc',
+            'todays_gain',
+            'day_high',
+            'day_low',
+            'impact'
+        ];
+        return Excel::download(new DefaultArrayExports($scripts, $colsFormat), 'scripts.xlsx');
     }
 
     /**
