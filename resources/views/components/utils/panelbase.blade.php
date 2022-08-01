@@ -7,18 +7,102 @@
             {{ $inputFields }}
         </div>
         @endif
-
+        <div class="flex-grow flex flex-row flex-wrap justify-between items-center space-x-4">
+            <h3 class="text-xl font-bold"><span>{{ $title }}</span>&nbsp;
+                <button x-data="{navcollapsed: $persist(false)}"
+                    x-init="$dispatch('navresize', {navcollapsed: navcollapsed});" class="btn btn-xs" :class="!navcollapsed || 'text-warning'" @click.prevent.stop="navcollapsed = !navcollapsed; $dispatch('navresize', {navcollapsed: navcollapsed});">
+                <x-display.icon x-show="navcollapsed" icon="icons.minus_circle" height="h-4" width="w-4"/>
+                <x-display.icon x-show="!navcollapsed" icon="icons.expand" height="h-4" width="w-4"/>
+            </button>
+        </h3>
+            <div class="flex-grow flex flex-row flex-wrap justify-end items-center space-x-4">
+                <div class="flex-grow flex flex-row flex-wrap justify-end items-center space-x-4">
+                    <div x-data="{showbtns: false}" class="flex flex-row flex-grow justify-end items-center space-x-4">
+                        <div class="relative w-full">
+                            <div x-show="showbtns" class="w-full absolute right-0 -top-4 z-20 flex flex-row justify-end items-center space-x-4">
+                                <x-utils.itemscount items_count="{{ $items_count }}" />
+                                <div>
+                                    <input x-model="compact" type="checkbox" id="compact"
+                                        class="checkbox checkbox-xs checkbox-primary">
+                                    <label for="compact">{{ __('Compact View') }}</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-xs" :class="!showbtns || 'text-secondary'" @click.prevent.stop="showbtns = !showbtns;">
+                                <x-display.icon icon="icons.gear" height="h-4" width="w-4"/>
+                            </button>
+                        </div>
+                    </div>
+                    <div x-data="{ dropopen: false, url_all: '', url_selected: '', selectedCount: 0 }"
+                        @downloadurl.window="url_all = $event.detail.url_all; url_selected=$event.detail.url_selected; selectedCount = $event.detail.idscount;"
+                        @click.outside="dropopen = false;" class="relative">
+                        <label @click="dropopen = !dropopen;" tabindex="0"
+                            class="btn btn-xs m-1">{{ __('Export') }}&nbsp;
+                            <x-display.icon icon="icons.down" />
+                        </label>
+                        <ul x-show="dropopen" tabindex="0"
+                            class="absolute top-5 right-0 z-50 p-2 shadow-md bg-base-200 rounded-md w-52 scale-90 origin-top-right transition-all duration-100 opacity-0"
+                            :class="!dropopen || 'top-8 scale-110 opacity-100'">
+                            <li class="py-2 px-4" :class="selectedCount > 0 ? 'cursor-pointer hover:bg-base-100' : 'opacity-40'">
+                                <span x-show="selectedCount == 0">{{ __('Download Selected') }}</span>
+                                <a x-show="selectedCount > 0" :href="url_selected"
+                                    download>{{ __('Download Selected') }}</a>
+                                </li>
+                            <li class="py-2 px-4 hover:bg-base-100"><a :href="url_all"
+                                    download>{{ __('Download All') }}</a></li>
+                        </ul>
+                    </div>
+                </div>
+                {{-- <a href="#" role="button" class="btn btn-xs">Add&nbsp;
+                    <x-display.icon icon="icons.plus" />
+                </a> --}}
+            </div>
+        </div>
         @if (isset($body))
-            <h3 class="text-xl font-bold">{{ $title }}</h3>
+        <div class="flex flex-row justify-between items-center flex-wrap">
             <div class="my-4">{{ $body }}</div>
+            @if ($enableAdvSearch)
+            <div class="flex flex-row items-center justify-end space-x-4 flex-wrap">
+                <div>
+                    <button @click.prevent.stop="showAdvSearch = true;"
+                        @keydown.window="
+                        if($event.altKey && $event.keyCode == 65) {
+                            showAdvSearch = true;
+                        }
+                        if($event.altKey && $event.shiftKey && $event.keyCode == 65) {
+                            showAdvSearch = false;
+                        }
+                        "
+                        class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors rounded-md flex flex-row items-center justify-center"
+                        :class="noconditions || 'bg-accent text-base-200'">
+                        <x-display.icon icon="icons.doc_search" height="h-5" width="w-5" />&nbsp;Adv Search
+                    </button>
+                </div>
+                <div>
+                    <button @click.prevent.stop="$dispatch('showorderform');"
+                    @keydown.window="
+                    if($event.altKey && $event.keyCode == 83) {
+                        showOrderForm = true;
+                    }
+                    if($event.altKey && $event.shiftKey && $event.keyCode == 83) {
+                        showOrderForm = false;
+                    }
+                    "
+                        class="btn btn-sm py-0 px-1 hover:bg-base-300 hover:text-warning transition-colors rounded-md flex flex-row items-center justify-center">
+                        <x-display.icon icon="icons.play" height="h-5" width="w-5" />&nbsp;Sell Order
+                    </button>
+                </div>
+            </div>
+            @endif
+        </div>
         @endif
 
         <div class="flex flex-row flex-wrap justify-between items-center mb-4">
             @if (!isset($body))
-                <h3 class="text-xl font-bold">{{ $title }}</h3>
-            @endif
-            <div class="flex-grow flex flex-row flex-wrap justify-end items-center space-x-4">
+                {{-- <h3 class="text-xl font-bold">{{ $title }}</h3> --}}
                 @if ($enableAdvSearch)
+                <div class="flex flex-row items-center justify-end space-x-4 flex-wrap">
                     <div>
                         <button @click.prevent.stop="showAdvSearch = true;"
                             @keydown.window="
@@ -48,36 +132,9 @@
                             <x-display.icon icon="icons.play" height="h-5" width="w-5" />&nbsp;Sell Order
                         </button>
                     </div>
+                </div>
                 @endif
-                <x-utils.itemscount items_count="{{ $items_count }}" />
-                <div>
-                    <input x-model="compact" type="checkbox" id="compact"
-                        class="checkbox checkbox-xs checkbox-primary">
-                    <label for="compact">{{ __('Compact View') }}</label>
-                </div>
-                <div x-data="{ dropopen: false, url_all: '', url_selected: '', selectedCount: 0 }"
-                    @downloadurl.window="url_all = $event.detail.url_all; url_selected=$event.detail.url_selected; selectedCount = $event.detail.idscount;"
-                    @click.outside="dropopen = false;" class="relative">
-                    <label @click="dropopen = !dropopen;" tabindex="0"
-                        class="btn btn-xs m-1">{{ __('Export') }}&nbsp;
-                        <x-display.icon icon="icons.down" />
-                    </label>
-                    <ul x-show="dropopen" tabindex="0"
-                        class="absolute top-5 right-0 z-50 p-2 shadow-md bg-base-200 rounded-md w-52 scale-90 origin-top-right transition-all duration-100 opacity-0"
-                        :class="!dropopen || 'top-8 scale-110 opacity-100'">
-                        <li class="py-2 px-4" :class="selectedCount > 0 ? 'cursor-pointer hover:bg-base-100' : 'opacity-40'">
-                            <span x-show="selectedCount == 0">{{ __('Download Selected') }}</span>
-                            <a x-show="selectedCount > 0" :href="url_selected"
-                                download>{{ __('Download Selected') }}</a>
-                            </li>
-                        <li class="py-2 px-4 hover:bg-base-100"><a :href="url_all"
-                                download>{{ __('Download All') }}</a></li>
-                    </ul>
-                </div>
-                {{-- <a href="#" role="button" class="btn btn-xs">Add&nbsp;
-                    <x-display.icon icon="icons.plus" />
-                </a> --}}
-            </div>
+            @endif
         </div>
 
         <div class="rounded-md relative">

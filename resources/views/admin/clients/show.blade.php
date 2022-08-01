@@ -25,8 +25,8 @@
     orderBaseUrl="{{route('clients.order.download', $model->id)}}"
     id="clients_show">
     <x-slot:body>
-        <div class="flex flex-row space-x-4" >
-        <div class="font-bold border border-base-300 rounded-md p-4">
+    <div class="flex flex-row flex-wrap space-x-4">
+        <div class="font-bold border border-base-300 rounded-md p-4 mb-2 md:mb-0">
             <h1><span class="inline-block mr-1">Code: </span><span class="inline-block mr-4 text-warning">{{$model->client_code}}</span><span class="inline-block mr-1">Name: </span><span class="inline-block mr-4 text-warning">{{$model->name}}</span><span class="inline-block mr-1">AUM: </span><span class="inline-block mr-4 text-warning">{{$model->total_aum}}</span></h1>
         </div>
         <x-utils.itemssearch

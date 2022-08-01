@@ -4,7 +4,8 @@
     class="overflow-hidden fixed top-0 left-0 z-50 sm:relative bg-base-100 w-full sm:w-auto min-w-fit ransition-all"
     :class="!hidden || 'w-0'">
     <div class="border-b border-base-300">
-        <span x-data="{sidebarcollapse: false, collapsed: false}"
+        <span x-data="{sidebarcollapse: $persist(false), collapsed: $persist(false)}"
+            x-init="$nextTick(() => {$dispatch('sidebarresize', {'collapsed': sidebarcollapse});});"
             class="w-full sm:w-auto flex flex-row items-center text-sm px-2 bg-base-200">
             <x-display.icon icon="icons.go_left" height="h-6" width="w-6"
             @click="sidebarcollapse=!sidebarcollapse; collapsed=sidebarcollapse; $dispatch('sidebarresize', {'collapsed': sidebarcollapse});" class="hidden sm:inline-block transition-all"  x-bind:class="!collapsed || 'rotate-180'"/>

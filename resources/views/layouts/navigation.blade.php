@@ -1,6 +1,6 @@
 <nav x-data="{ open: false }" class="bg-base-100 border-b border-base-200">
     <!-- Primary Navigation Menu -->
-    <div class="px-2 sm:px-4">
+    <div x-data="{navcollapsed: false}" @navresize.window="navcollapsed = $event.detail.navcollapsed;" x-show="!navcollapsed" class="px-2 sm:px-4" x-transition>
         <div class="flex justify-between h-16">
             <div class="flex">
                 <div class="shrink-0 flex items-center mr-2 sm:hidden">

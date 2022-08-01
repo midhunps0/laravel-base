@@ -30,18 +30,18 @@
     id="scripts_show"
     >
     <x-slot:body>
-        <div class="flex flex-row space-x-4" >
-        <div class="font-bold border border-base-300 rounded-md p-4">
-            <h1><span class="inline-block mr-1">Symbol: </span><span class="inline-block mr-4 text-warning">{{$model->symbol}}</span><span class="inline-block mr-1">Company Name: </span><span class="inline-block mr-4 text-warning">{{$model->company_name}}</span></h1>
+        <div class="flex flex-row flex-wrap space-x-4 my-2">
+            <div class="font-bold border border-base-300 rounded-md p-4 mb-2 md:mb-0">
+                <h1><span class="inline-block mr-1">Symbol: </span><span class="inline-block mr-4 text-warning">{{$model->symbol}}</span><span class="inline-block mr-1">Company Name: </span><span class="inline-block mr-4 text-warning">{{$model->company_name}}</span></h1>
+            </div>
+            <x-utils.itemssearch
+                itemsName="scripts"
+                url="{{route('scripts.show', 0)}}"
+                searchUrl="{{route('scripts.list')}}"
+                routeName="scripts.show"
+                :searchDisplayKeys="['symbol', 'company_name']"
+                />
         </div>
-        <x-utils.itemssearch
-            itemsName="scripts"
-            url="{{route('scripts.show', 0)}}"
-            searchUrl="{{route('scripts.list')}}"
-            routeName="scripts.show"
-            :searchDisplayKeys="['symbol', 'company_name']"
-            />
-    </div>
     </x-slot>
     <x-slot:inputFields>
         <input type="hidden" value="{{$aggregates}}" id="aggregates">
