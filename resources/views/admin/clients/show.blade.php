@@ -43,9 +43,10 @@
         <input type="hidden" value="{{$items_ids}}" id="itemIds">
     </x-slot>
     <x-slot:aggregateCols>
-        <th colspan="3">
+        <th colspan="2">
             Totals:
         </th>
+        <th class=" sticky !left-12"></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_pa, 2)"></span></th>
         <th></th>
         <th></th>

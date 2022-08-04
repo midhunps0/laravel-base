@@ -28,11 +28,11 @@
         <input type="hidden" value="{{$items_ids}}" id="itemIds">
     </x-slot>
     <x-slot:aggregateCols>
-        <th colspan="2">
+        <th colspan="2" class="sticky !left-0">
             Totals:
         </th>
-        <th class="sticky !left-40 z-20"></th>
-        <th></th>
+        <th class="sticky !left-36 z-20"></th>
+        <th class="sticky !left-72 z-30"></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_aum)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_allocated_aum)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_pa, 2)"></span></th>
