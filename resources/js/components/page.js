@@ -154,5 +154,11 @@ export default () => ({
     },
     formatted(e, n = 0) {
         return (e * 1).toFixed(n);
+    },
+    formatString(str, n = 10) {
+        if (str.length > n) {
+            return str.substring(0, n) + '...';
+        }
+        return str;
     }
 });

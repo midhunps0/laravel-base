@@ -50,20 +50,20 @@
     </x-slot>
     <x-slot:aggregateCols>
         <th colspan="3">
-            Aggregates:
+            Totals:
         </th>
         <th></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_pa, 2)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_qty)"></span></th>
         <th></th>
         <th></th>
-        <th></th>
-        <th class="text-right"><span x-text="formatted(aggregates.agr_buy_val)"></span></th>
         <th></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_cur_val)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_pnl)"></span></th>
-        <th class="text-right"><span x-text="formatted(aggregates.agr_pnl_pc)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_pnl_pc, 2)"></span></th>
         <th></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_impact, 2)"></span></th>
-        <th class="text-right"><span x-text="formatted(aggregates.agr_pa, 2)"></span></th>
+        <th></th>
     </x-slot>
     <x-slot:thead>
         <th class="relative text-center">
@@ -80,17 +80,17 @@
             </div>
         </th>
         <th class="text-center border-l-2 border-base-100">
-            <div class="flex flex-row items-center w-44">
-                <x-utils.spotsort name="category" val="{{ $sort['category'] ?? 'none' }}" />
+            <div class="flex flex-row items-center w-32">
                 <div class="relative flex-grow ml-2 text-left">
-                    Client Category
+                    Symbol
                 </div>
             </div>
         </th>
         <th class="text-center border-l-2 border-base-100">
-            <div class="flex flex-row items-center w-44">
-                <div class="relative flex-grow ml-2 text-left">
-                    Symbol
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="pa" val="{{ $sort['pa'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Allocation %
                 </div>
             </div>
         </th>
@@ -167,10 +167,10 @@
             </div>
         </th>
         <th class="text-center border-l-2 border-base-100">
-            <div class="flex flex-row items-center">
-                <x-utils.spotsort name="pa" val="{{ $sort['pa'] ?? 'none' }}" />
-                <div class="relative flex-grow ml-2">
-                    Allocation %
+            <div class="flex flex-row items-center w-44">
+                <x-utils.spotsort name="category" val="{{ $sort['category'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2 text-left">
+                    Type
                 </div>
             </div>
         </th>
@@ -191,8 +191,8 @@
                         class="link no-underline hover:underline" href="" x-text="result.code"></a>
                         <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
                 </td>
-                <td x-text="result.category"></td>
                 <td x-text="result.symbol"></td>
+                <td class="text-right" x-text="formatted(result.pa, 2)"></td>
                 <td class="text-right" x-text="result.qty"></td>
                 <td class="text-right" x-text="formatted(result.buy_avg_price)"></td>
                 <td class="text-right" x-text="formatted(result.buy_val)"></td>
@@ -214,7 +214,7 @@
                     <x-display.icon x-show="result.impact < 0" icon="icons.down-arrow"/> --}}
                     <span x-text="formatted(result.impact, 2)"></span>
                 </td>
-                <td class="text-right" x-text="formatted(result.pa, 2)"></td>
+                <td x-text="result.category"></td>
             </tr>
         </template>
         {{-- @endforeach --}}

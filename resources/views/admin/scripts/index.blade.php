@@ -22,9 +22,8 @@
     </x-slot>
     <x-slot:aggregateCols>
         <th colspan="2">
-            Aggregates:
+            Totals:
         </th>
-        <th class="sticky !left-40 z-20"></th>
         <th class="text-right"><span x-text="formatted(aggregates.dlr_pa, 2)"></span></th>
         <th></th>
         <th class="text-right"><span x-text="formatted(aggregates.dlr_qty)"></span></th>
@@ -34,25 +33,17 @@
         <th class="text-right"><span x-text="formatted(aggregates.dlr_cur_value)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.dlr_overall_gain)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.dlr_gain_pc, 2)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.dlr_todays_gain)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.dlr_todays_gain_pc, 2)"></span></th>
         <th colspan="2" class="text-center bg-base-300">
             @ CMP&nbsp;+&nbsp;<input type="number" x-model="profit_margin" class="input input-sm w-14 py-0 px-1 h-6 text-secondary" @blur="if(profit_margin.length == 0){profit_margin = 0;}">&nbsp;%
         </th>
-        <th class="text-right"><span x-text="formatted(aggregates.dlr_todays_gain)"></span></th>
+        <th></th>
         <th></th>
         <th></th>
         <th></th>
     </x-slot>
     <x-slot:thead>
-        <th class="relative w-44">
-            <div class="flex flex-row items-center w-36">
-                <x-utils.spotsort name="dealer" val="{{ $sort['dealer'] ?? 'none' }}" />
-                <div class="relative flex-grow ml-2">
-                    Dealer
-                    <x-utils.spotsearch textval="{{ $params['dealer'] ?? '' }}" textname="dealer"
-                        label="Search dealer" />
-                </div>
-            </div>
-        </th>
         {{-- <th class="relative w-72">
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="bse_code" val="{{ $sort['name'] ?? 'none' }}" />
@@ -80,7 +71,7 @@
         </th>
         <th>
             <x-utils.spotsort name="tot_qty" val="{{ $sort['tot_qty'] ?? 'none' }}" />
-            <span>Tot. Qty.</span>
+            <span>Quantity</span>
         </th>
         <th>
             <x-utils.spotsort name="abv" val="{{ $sort['abv'] ?? 'none' }}" />
@@ -88,7 +79,7 @@
         </th>
         <th>
             <x-utils.spotsort name="amt_invested" val="{{ $sort['amt_invested'] ?? 'none' }}" />
-            <span>Amt Invested</span>
+            <span>Buy Value</span>
         </th>
         <th>
             <x-utils.spotsort name="cmp" val="{{ $sort['cmp'] ?? 'none' }}" />
@@ -107,16 +98,20 @@
             <span>Gain %</span>
         </th>
         <th>
+            <x-utils.spotsort name="todays_gain" val="{{ $sort['todays_gain'] ?? 'none' }}" />
+            <span>Day's Gain</span>
+        </th>
+        <th>
+            <x-utils.spotsort name="todays_gain_pc" val="{{ $sort['todays_gain_pc'] ?? 'none' }}" />
+            <span>Day's Gain %</span>
+        </th>
+        <th>
             {{-- <x-utils.spotsort name="gain_pc" val="{{ $sort['gain_pc'] ?? 'none' }}" /> --}}
             <span>Sell Rate</span>
         </th>
         <th>
-            {{-- <x-utils.spotsort name="gain_pc" val="{{ $sort['gain_pc'] ?? 'none' }}" /> --}}
+            <x-utils.spotsort name="gain_pc" val="{{ $sort['gain_pc'] ?? 'none' }}" />
             <span>Profit %</span>
-        </th>
-        <th>
-            <x-utils.spotsort name="todays_gain" val="{{ $sort['todays_gain'] ?? 'none' }}" />
-            <span>Today's Gain</span>
         </th>
         <th>
             <x-utils.spotsort name="day_high" val="{{ $sort['day_high'] ?? 'none' }}" />
@@ -130,6 +125,16 @@
             <x-utils.spotsort name="impact" val="{{ $sort['impact'] ?? 'none' }}" />
             <span>Impact</span>
         </th>
+        <th class="relative w-44">
+            <div class="flex flex-row items-center w-36">
+                <x-utils.spotsort name="dealer" val="{{ $sort['dealer'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Dealer
+                    <x-utils.spotsearch textval="{{ $params['dealer'] ?? '' }}" textname="dealer"
+                        label="Search dealer" />
+                </div>
+            </div>
+        </th>
     </x-slot>
     <x-slot:rows>
         <template x-for="result in results">
@@ -138,7 +143,6 @@
                     <input type="checkbox" :value="result.sid" x-model="selectedIds"
                     class="checkbox checkbox-primary checkbox-xs">
                 </td>
-                <td x-text="result.dealer"></td>
                 {{-- <td x-text="result.bse_code"></td>
                 <td x-text="result.dop"></td> --}}
                 <td class="sticky !left-7">
@@ -177,14 +181,20 @@
                         <span x-text="formatted(result.gain_pc, 2)"></span>
                     </div>
                 </td>
-                <td class="text-right"><span x-text="formatted(result.cmp * (100 + profit_margin * 1) / 100)"></span></td>
-                <td class="text-right"><span x-text="formatted((((result.cmp * (100 + profit_margin * 1) / 100) * result.tot_qty) - result.amt_invested) / result.amt_invested * 100, 2)"></span></td>
                 <td>
                     <div class="flex flex-row items-baseline justify-end"
                         :class="result.todays_gain < 0 ? 'text-error' : 'text-accent'">
-                        <span x-text="formatted(result.todays_gain, 2)"></span>
+                        <span x-text="formatted(result.todays_gain)"></span>
                     </div>
                 </td>
+                <td>
+                    <div class="flex flex-row items-baseline justify-end"
+                        :class="result.todays_gain_pc < 0 ? 'text-error' : 'text-accent'">
+                        <span x-text="formatted(result.todays_gain_pc, 2)"></span>
+                    </div>
+                </td>
+                <td class="text-right"><span x-text="formatted(result.cmp * (100 + profit_margin * 1) / 100)"></span></td>
+                <td class="text-right"><span x-text="formatted((((result.cmp * (100 + profit_margin * 1) / 100) * result.tot_qty) - result.amt_invested) / result.amt_invested * 100, 2)"></span></td>
                 <td x-text="formatted(result.day_high, 2)"></td>
                 <td x-text="formatted(result.day_low, 2)"></td>
                 <td>
@@ -193,6 +203,7 @@
                         <span x-text="formatted(result.impact, 2)"></span>
                     </div>
                 </td>
+                <td x-text="result.dealer"></td>
             </tr>
         </template>
     </x-slot>

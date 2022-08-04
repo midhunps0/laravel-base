@@ -48,6 +48,7 @@ class ScriptService implements ModelViewConnector
             DB::raw('ROUND((s.cmp - qcs.abv) * qcs.qty, 2) as overall_gain'),
             DB::raw('ROUND((s.cmp - qcs.abv) / qcs.abv * 100, 2) as gain_pc'),
             DB::raw('ROUND((s.cmp - s.last_day_closing) * qcs.qty, 2) as todays_gain'),
+            DB::raw('ROUND(((s.cmp - s.last_day_closing) / s.last_day_closing * 100), 2) as todays_gain_pc'),
             's.day_high as day_high',
             's.day_low as day_low',
             DB::raw('ROUND((s.cmp - qcs.abv) * qcs.qty / '.$tot_aum.' * 100, 2) as impact')
@@ -63,7 +64,8 @@ class ScriptService implements ModelViewConnector
                 DB::raw('(SUM(qcs.amt_invested) - SUM(s.cmp * qcs.qty)) as dlr_overall_gain'),
                 DB::raw('(SUM(qcs.amt_invested) - SUM(s.cmp * qcs.qty)) / SUM(s.cmp * qcs.qty) * 100 as dlr_gain_pc'),
                 DB::raw('SUM(qcs.amt_invested) / '.$tot_aum.' * 100 as dlr_pa'),
-                DB::raw('SUM(s.cmp * qcs.qty) - SUM(s.last_day_closing * qcs.qty) as dlr_todays_gain')
+                DB::raw('SUM(s.cmp * qcs.qty) - SUM(s.last_day_closing * qcs.qty) as dlr_todays_gain'),
+                DB::raw('(SUM(s.cmp * qcs.qty) - SUM(s.last_day_closing * qcs.qty)) / SUM(s.last_day_closing * qcs.qty) * 100 as dlr_todays_gain_pc')
             ]
         );
         $this->sortsMap = [
@@ -109,6 +111,7 @@ class ScriptService implements ModelViewConnector
         $this->relAgrSelects = array_merge(
             $this->relationSelects,
             [
+                DB::raw('SUM(cs.dp_qty) as agr_qty'),
                 DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) as agr_buy_val'),
                 DB::raw('SUM(s.cmp * cs.dp_qty) as agr_cur_val'),
                 DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) as agr_pnl'),

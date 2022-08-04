@@ -72,7 +72,6 @@ trait IsModelViewConnector{
 
         // dd($agrQuery['query']->select($this->agrSelects)->toSql());
         $aggregates = $agrQuery['query']->select($this->agrSelects)->get()->first();
-
         DB::statement("SET SQL_MODE='only_full_group_by'");
 // dd($results->toArray());
         // $itemIds = $results->pluck('id')->toArray();

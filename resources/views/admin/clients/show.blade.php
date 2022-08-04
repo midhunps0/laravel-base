@@ -44,11 +44,8 @@
     </x-slot>
     <x-slot:aggregateCols>
         <th colspan="3">
-            Aggregates:
+            Totals:
         </th>
-        <th></th>
-        <th></th>
-        <th></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_pa, 2)"></span></th>
         <th></th>
         <th></th>
@@ -57,6 +54,9 @@
         <th class="text-right"><span x-text="formatted(aggregates.agr_cur_value)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_overall_gain)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_pc_change, 2)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_todays_gain)"></span></th>
+        <th class="text-right"><span x-text="formatted(aggregates.agr_todays_gain_pc, 2)"></span></th>
+        <th></th>
         <th></th>
         <th></th>
         <th></th>
@@ -75,27 +75,6 @@
                     Symbol
                     <x-utils.spotsearch textval="{{ $params['symbol'] ?? '' }}" textname="symbol"
                         label="Search symbol" />
-                </div>
-            </div>
-        </th>
-        <th class="relative w-52 border-l-2 border-base-100">DOP</th>
-        <th class="text-center border-l-2 border-base-100">
-            <div class="flex flex-row items-center w-48">
-                <x-utils.spotsort name="industry" val="{{ $sort['industry'] ?? 'none' }}" />
-                <div class="relative flex-grow ml-2">
-                    Industry
-                    <x-utils.spotsearch textval="{{ $params['industry'] ?? '' }}" textname="industry"
-                        label="Search industry" />
-                </div>
-            </div>
-        </th>
-        <th class="text-center border-l-2 border-base-100">
-            <div class="flex flex-row items-center w-48">
-                <x-utils.spotsort name="mvg_sector" val="{{ $sort['mvg_sector'] ?? 'none' }}" />
-                <div class="relative flex-grow ml-2">
-                    Sector
-                    <x-utils.spotsearch textval="{{ $params['mvg_sector'] ?? '' }}" textname="mvg_sector"
-                        label="Search sector" />
                 </div>
             </div>
         </th>
@@ -120,7 +99,7 @@
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="amt_invested" val="{{ $sort['amt_invested'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    Amount Invested
+                    Buy Value
                 </div>
             </div>
         </th>
@@ -160,7 +139,15 @@
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="todays_gain" val="{{ $sort['todays_gain'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    Today's Gain
+                    Day's Gain
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="todays_gain_pc" val="{{ $sort['todays_gain_pc'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Day's Gain %
                 </div>
             </div>
         </th>
@@ -193,6 +180,17 @@
                 <x-utils.spotsort name="nof_days" val="{{ $sort['nof_days'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     No. of days
+                </div>
+            </div>
+        </th>
+        <th class="relative w-52 border-l-2 border-base-100">DOP</th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center w-48">
+                <x-utils.spotsort name="industry" val="{{ $sort['industry'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Industry
+                    <x-utils.spotsearch textval="{{ $params['industry'] ?? '' }}" textname="industry"
+                        label="Search industry" />
                 </div>
             </div>
         </th>
@@ -245,9 +243,6 @@
                         class="link no-underline hover:underline" href="" x-text="result.symbol"></a>
                         <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
                 </td>
-                <td x-text="result.entry_date"></td>
-                <td x-text="result.industry"></td>
-                <td x-text="result.sector"></td>
                 <td class="text-right" x-text="formatted(result.pa, 2)"></td>
                 <td x-text="result.qty"></td>
                 <td x-text="formatted(result.buy_avg_price)"></td>
@@ -265,10 +260,13 @@
                 <td class="text-right" :class="{'text-error' : result.overall_gain < 0, 'text-accent' : result.overall_gain > 0}" x-text="formatted(result.overall_gain)"></td>
                 <td class="text-right" :class="{'text-error' : result.pc_change < 0, 'text-accent' : result.pc_change > 0}" x-text="formatted(result.pc_change, 2)"></td>
                 <td class="text-right" :class="{'text-error' : result.todays_gain < 0, 'text-accent' : result.todays_gain > 0}" x-text="formatted(result.todays_gain)"></td>
+                <td class="text-right" :class="{'text-error' : result.todays_gain_pc < 0, 'text-accent' : result.todays_gain > 0}" x-text="formatted(result.todays_gain_pc, 2)"></td>
                 <td class="text-right" x-text="formatted(result.day_high)"></td>
                 <td class="text-right" x-text="formatted(result.day_low)"></td>
                 <td class="text-right" :class="{'text-error' : result.impact < 0, 'text-accent' : result.impact > 0}" x-text="formatted(result.impact, 2)"></td>
                 <td class="text-center" x-text="result.nof_days"></td>
+                <td x-text="result.entry_date"></td>
+                <td x-text="result.industry"></td>
                 <td class="text-center" x-text="result.tracked ? 'Tracked' : 'Untracked'"></td>
             </tr>
         </template>

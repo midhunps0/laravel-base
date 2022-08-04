@@ -39,12 +39,14 @@ class ClientService implements ModelViewConnector
             'lbq.liquidbees as liquidbees',
             DB::raw('c.total_aum - cst.allocated_aum as cash'),
             DB::raw('(c.total_aum - cst.allocated_aum) / c.total_aum * 100 as cash_pc'),
+            'c.ledger_balance as ledger_balance',
             DB::raw('c.realised_pnl + cst.cur_value - c.total_aum as returns'),
             DB::raw('(c.realised_pnl + cst.cur_value - c.total_aum) /c.total_aum * 100 as returns_pc'),
         ];
 
         $this->agrSelects = array_merge($this->selects, [
             DB::raw('SUM(c.total_aum) as agr_aum'),
+            DB::raw('SUM(c.ledger_balance) as agr_ledger_balance'),
             DB::raw('SUM(cst.allocated_aum) as agr_allocated_aum'),
             DB::raw('SUM(cst.allocated_aum) / SUM(c.total_aum) * 100 as agr_pa'),
             DB::raw('SUM(c.realised_pnl) as agr_realised_pnl'),
@@ -92,6 +94,7 @@ class ClientService implements ModelViewConnector
             DB::raw('(s.cmp - cs.buy_avg_price) / cs.buy_avg_price * 100 as pc_change'),
             's.last_day_closing as ldc',
             DB::raw('(s.cmp - s.last_day_closing) * cs.dp_qty as todays_gain'),
+            DB::raw('(s.cmp - s.last_day_closing) / s.last_day_closing * 100 as todays_gain_pc'),
             's.day_high as day_high',
             's.day_low as day_low',
             DB::raw('((s.cmp - cs.buy_avg_price) * cs.dp_qty) / c.total_aum * 100 as impact'),
@@ -105,6 +108,8 @@ class ClientService implements ModelViewConnector
             DB::raw('SUM(s.cmp * cs.dp_qty) as agr_cur_value'),
             DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) as agr_overall_gain'),
             DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) / SUM(cs.buy_avg_price * cs.dp_qty) * 100 as agr_pc_change'),
+            DB::raw('SUM((s.cmp - s.last_day_closing) * cs.dp_qty) as agr_todays_gain'),
+            DB::raw('SUM((s.cmp - s.last_day_closing) * cs.dp_qty) / SUM(s.last_day_closing * cs.dp_qty) * 100 as agr_todays_gain_pc'),
         ]);
 
         $this->relSearchesMap = [
@@ -131,6 +136,7 @@ class ClientService implements ModelViewConnector
             'cur_value' => ['name' => 'cst.cur_value', 'type' => 'float'],
             'allocated_aum' => ['name' => 'cst.allocated_aum', 'type' => 'float'],
             'liquidbees' => ['name' => 'lbq.liquidbees', 'type' => 'float'],
+            'ledger_balance' => ['name' => 'c.ledger_balance', 'type' => 'float'],
         ];
 
         $this->relSortsMap = [

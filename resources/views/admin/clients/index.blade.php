@@ -29,7 +29,7 @@
     </x-slot>
     <x-slot:aggregateCols>
         <th colspan="2">
-            Aggregates:
+            Totals:
         </th>
         <th class="sticky !left-40 z-20"></th>
         <th></th>
@@ -43,13 +43,14 @@
         <th class="text-right"><span x-text="formatted(aggregates.agr_liquidbees)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_cash)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_cash_pc, 2)"></span></th>
+        <td class="text-right"><span x-text="formatted(aggregates.agr_ledger_balance)"></span></td>
         <th class="text-right"><span x-text="formatted(aggregates.agr_returns)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_returns_pc, 2)"></span></th>
-        <th></th>
+        <th class="text-right"></th>
     </x-slot>
     <x-slot:thead>
-        <th class="sticky !left-6 w-44">
-            <div class="flex flex-row items-center w-36">
+        <th class="sticky !left-6 w-32">
+            <div class="flex flex-row items-center w-32">
                 <x-utils.spotsort name="client_code" val="{{ $sort['client_code'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     Code
@@ -58,8 +59,8 @@
                 </div>
             </div>
         </th>
-        <th class="w-72 border-l-2 border-base-100 sticky !left-40 z-20">
-            <div class="flex flex-row items-center min-w-72">
+        <th class="w-36 border-l-2 border-base-100 sticky !left-36 z-20">
+            <div class="flex flex-row items-center w-36">
                 <x-utils.spotsort name="name" val="{{ $sort['name'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     Name
@@ -68,13 +69,13 @@
                 </div>
             </div>
         </th>
-        <th class="border-l-2 border-base-100">
-            <div class="flex flex-row items-center min-w-36">
+        <th class="border-l-2 border-base-100 sticky !left-72 z-30">
+            <div class="flex flex-row items-center">
                 <x-utils.spotsort name="category" val="{{ $sort['category'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    Category
-                    <x-utils.spotsearch textval="{{ $params['category'] ?? '' }}" textname="category"
-                        label="Search category" />
+                    Type
+                    {{-- <x-utils.spotsearch textval="{{ $params['category'] ?? '' }}" textname="category"
+                        label="Search category" /> --}}
                 </div>
             </div>
         </th>
@@ -90,7 +91,7 @@
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="allocated_aum" val="{{ $sort['allocated_aum'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    Alctd AUM
+                    Buy Value
                 </div>
             </div>
         </th>
@@ -106,7 +107,7 @@
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="cur_value" val="{{ $sort['cur_value'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    Cur Value
+                    Cur. Value
                 </div>
             </div>
         </th>
@@ -154,7 +155,15 @@
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="cash_pc" val="{{ $sort['cash_pc'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    Cash%
+                    Cash %
+                </div>
+            </div>
+        </th>
+        <th class="text-center border-l-2 border-base-100">
+            <div class="flex flex-row items-center">
+                <x-utils.spotsort name="ledger_balance" val="{{ $sort['ledger_balance'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2">
+                    Ledger Balance
                 </div>
             </div>
         </th>
@@ -162,7 +171,7 @@
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="returns" val="{{ $sort['returns'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    T RETN
+                    Return
                 </div>
             </div>
         </th>
@@ -170,7 +179,7 @@
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="returns_pc" val="{{ $sort['returns_pc'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
-                    T Retn %
+                    Return %
                 </div>
             </div>
         </th>
@@ -198,12 +207,16 @@
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
                         class="link no-underline hover:underline" href="" x-text="result.client_code"></a>
                 </td>
-                <td class="sticky !left-40 z-20">
+                <td class="sticky !left-36 z-20">
+                    <div class="tooltip tooltip-top" :data-tip="result.name">
                     <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
-                        class="link no-underline hover:underline" href="" x-text="result.name"></a>
-                        <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
+                        class="link no-underline hover:underline" href="" x-text="formatString(result.name, 10)"></a>
+                    </div>
                 </td>
-                <td x-text="result.category"></td>
+                <td class="sticky !left-72 z-20 text-center">
+                    <span x-text="result.category"></span>
+                    <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
+                </td>
                 <td class="text-right" x-text="formatted(result.aum)"></td>
                 <td class="text-right" x-text="formatted(result.allocated_aum)"></td>
                 <td class="text-right" x-text="formatted(result.pa, 2)"></td>
@@ -234,6 +247,7 @@
                 <td class="text-right" x-text="formatted(result.liquidbees)"></td>
                 <td class="text-right" x-text="formatted(result.cash)"></td>
                 <td class="text-right" x-text="formatted(result.cash_pc, 2)"></td>
+                <td class="text-right" x-text="formatted(result.ledger_balance)"></td>
                 <td>
                     <div class="flex flex-row items-baseline justify-end" :class="{'text-error' : result.returns < 0, 'text-accent' : result.returns > 0}">
                         <span x-text="formatted(result.returns)"></span>
