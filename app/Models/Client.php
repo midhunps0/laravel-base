@@ -36,4 +36,9 @@ class Client extends Model
         }
         return $query;
     }
+
+    public function dealer()
+    {
+        return $this->belongsTo(User::class, 'rm_id', 'id');
+    }
 }

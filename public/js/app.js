@@ -5433,6 +5433,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       }
 
       return str;
+    },
+    isEmail: function isEmail(email) {
+      return String(email).toLowerCase().match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
     }
   };
 });

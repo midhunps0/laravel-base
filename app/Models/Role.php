@@ -15,6 +15,11 @@ class Role extends Model
         'updated_at'
     ];
 
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'users_roles', 'role_id', 'user_id');
+    }
+
     public function permissions()
     {
         return $this->belongsToMany(

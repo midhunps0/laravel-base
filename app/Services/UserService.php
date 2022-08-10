@@ -3,6 +3,7 @@ namespace App\Services;
 
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class UserService
 {
@@ -20,12 +21,16 @@ class UserService
             $filters,
             $selectedIds
         );
-        $users = $queryData['query']->paginate(
-            $itemsCount,
-            ['*'],
-            'page',
-            $page
-        );
+        $users = $queryData['query']
+            ->whereHas('roles', function ($query) {
+                $query->where('name', '<>', 'Super Admin');
+            })
+            ->paginate(
+                $itemsCount,
+                ['*'],
+                'page',
+                $page
+            );
 
         $itemIds = $users->pluck('id')->toArray();
         $data = $users->toArray();
@@ -114,6 +119,70 @@ class UserService
             'searchParams' => $searchParams,
             'sortParams' => $sortParams,
             'filterData' => $filterData
+        ];
+    }
+
+    public function store($data)
+    {
+        $fields = [
+            'name' => $data['name'],
+            'username' => $data['username'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+        ];
+        if(isset($data['tl_id'])) {
+            $fields['teamleader_id'] = intval($data['tl_id']);
+        }
+        info($fields);
+        $user = User::create($fields);
+        $user->assignRole(intval($data['role_id']));
+        return [
+            'success' => true,
+            'message' => 'New user added.'
+        ];
+    }
+
+    public function update($user, $data)
+    {
+        $fields = [
+            'name' => $data['name'],
+            'username' => $data['username'],
+            'email' => $data['email'],
+        ];
+        if(isset($data['tl_id'])) {
+            $fields['teamleader_id'] = intval($data['tl_id']);
+        }
+        $user->update($fields);
+        $user->roles()->sync([intval($data['role_id'])]);
+        return true;
+    }
+
+    public function destroy($id)
+    {
+        $user = User::withcount('dealers', 'clients')->where('id', $id)->get()->first();
+        $result = false;
+        $message = '';
+        if ($user->dealers_count > 0) {
+            $message = "Unable to delete the user. There are dealers assigned to this user.";
+        } elseif ($user->clients_count > 0) {
+            $message = "Unable to delete the user. There are clients assigned to this user.";
+        } else {
+            DB::beginTransaction();
+            try {
+                $user->roles()->sync([]);
+                $user->teamleader()->delete();
+                $user->delete();
+                $message = "user deleted!";
+                $result = true;
+                DB::commit();
+            } catch (\Throwable $e) {
+                DB::rollback();
+                $message = "Unexpected Error. Failed to delete user.";
+            }
+        }
+        return [
+            'success' => $result,
+            'message' => $message
         ];
     }
 }

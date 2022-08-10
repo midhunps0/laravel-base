@@ -2,14 +2,14 @@
     <div x-data="{ compact: $persist(false) }" class="p-3 border-b border-base-200 overflow-x-scroll">
 
         <div class="flex flex-row justify-between items-center mb-4">
-            <h3 class="text-xl font-bold">Users</h3>
+            <h3 class="text-xl font-bold"><span>Users</span><button @click.prevent.stop="$dispatch('linkaction', {link: '{{route('users.create')}}'});" class="ml-4 btn btn-sm btn-primary">Add&nbsp;<x-display.icon icon="icons.plus" width="h-4" height="w-4"/></button></h3>
             <div class="flex-grow flex flex-row justify-end items-center space-x-4">
                 <x-utils.itemscount items_count="{{ $items_count }}" />
                 <div>
                     <input x-model="compact" type="checkbox" id="compact" class="checkbox checkbox-xs checkbox-primary">
                     <label for="compact">Compact View</label>
                 </div>
-                <div x-data="{dropopen: false, url_all: '', url_selected: ''}"
+                {{-- <div x-data="{dropopen: false, url_all: '', url_selected: ''}"
                     @downloadurl.window="url_all = $event.detail.url_all; url_selected=$event.detail.url_selected;"
                     @click.outside="dropopen = false;"
                     class="relative">
@@ -22,7 +22,7 @@
                         <li class="py-2 px-4 hover:bg-base-100"><a :href="url_selected" download>Download Selected</a></li>
                         <li class="py-2 px-4 hover:bg-base-100"><a :href="url_all" download>Download All</a></li>
                     </ul>
-                </div>
+                </div> --}}
                 {{-- <a href="#" role="button" class="btn btn-xs">Add&nbsp;
                     <x-display.icon icon="icons.plus" />
                 </a> --}}
@@ -44,6 +44,7 @@
                 totalResults: {{$total_results}},
                 currentPage: {{$current_page}},
                 downloadUrl: '{{route('users.download')}}',
+                deleteUrl: '',
 
                 processParams(params) {
                     let processed = [];
@@ -66,6 +67,7 @@
                         params.filter = this.processParams(this.filters);
                     }
                     params.items_count = this.itemsCount;
+                    params.page = this.currentPage;
 
                     return params;
                 },
@@ -170,6 +172,17 @@
                     let url_selected = getQueryString(allParams);
 
                     $dispatch('downloadurl', {url_all: this.downloadUrl+'?'+url_all, url_selected: this.downloadUrl+'?'+url_selected});
+                },
+                deleteItem(id) {
+                    axios.post(
+                        this.deleteUrl.replace('0', id),
+                        {
+                            _method: 'DELETE'
+                        }
+                    ).then((r) => {
+                        $dispatch('deletedone', {success: r.data.success, message: r.data.message});
+                    })
+                    .catch((e) => { console.log(e)});
                 }
             }" @spotsearch.window="fetchResults($event.detail)"
                 @setparam.window="setParam($event.detail)"
@@ -182,13 +195,16 @@
                 @selectall="selectAll()"
                 @cancelselection="cancelSelection()"
                 @pageselect="processPageSelect()"
-                x-init="$watch('selectedIds', (ids) => {
+                x-init="
+                $watch('selectedIds', (ids) => {
                     if (ids.length < itemIds.length) {
                         pageSelected = false;
                         allSelected = false;
                     }
                     setDownloadUrl();
-                }); $nextTick(() => {setDownloadUrl();});"
+                });
+                deleteUrl = '{{route('users.destroy', 0)}}';
+                $nextTick(() => {setDownloadUrl();});"
                 action="#">
                 <table class="table min-w-200 w-full border-2 border-base-200 rounded-md"
                     :class="!compact || 'table-compact'">
@@ -224,7 +240,7 @@
                             <th class="relative w-3/12 p-0">
                                 <div class="flex flex-row items-center">
                                     <div class="relative flex-grow ml-2 flex flex-row items-center justify-between">
-                                        <span>Roles</span>
+                                        <span>Role</span>
                                         <select x-data="{
                                             'val': 0
                                         }" x-init="val = {{ $filter['roles']['selected'] ?? 0 }};
@@ -272,11 +288,50 @@
                                         @endif
                                     @endforeach
                                 </td>
-                                <td>Edit/Delete</td>
+                                <td>
+                                    <div class="flex flex-row justify-center space-x-4 items-center">
+                                        <a href="#"
+                                            @click.prevent.stop="$dispatch('linkaction', {link: '{{route('users.edit', $user->id)}}'});"
+                                            class="btn btn-xs btn-warning capitalize">
+                                            <span>Edit</span>&nbsp;<x-display.icon icon="icons.edit" height="h-4" width="w-4"/>
+                                        </a>
+                                        <button @click.prevent.stop="$dispatch('deleteitem', {itemId: {{$user->id}}});" class="btn btn-xs btn-error capitalize">Delete&nbsp;<x-display.icon icon="icons.delete" height="h-4" width="w-4"/></button>
+                                    </div>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
+                <div x-data="{
+                        open: false,
+                        id: null
+                    }"
+                    @deleteitem.window="id = $event.detail.itemId; open = true;"
+                    class="absolute top-0 left-0 h-full w-full flex flex-row justify-center items-center bg-base-300 bg-opacity-50"
+                    x-show="open">
+                    <div class="bg-base-100 p-4 rounded-md shadow-md text-center space-y-5">
+                        <div>You cannot undo this action. Do you really want to delete this user?</div>
+                        <div class="flex flex-row justify-center items-center space-x-10">
+                            <button @click.prevent.stop="open=false;" class="btn btn-sm capitalize">No</button>
+                            <button @click.prevent.stop="open=false; deleteItem(id); id = null;" class="btn btn-sm btn-error capitalize">Yes</button>
+                        </div>
+                    </div>
+                </div>
+                <div x-data="{
+                    open: false,
+                    message: '',
+                    success: false
+                }"
+                @deletedone.window="success = $event.detail.success; message = $event.detail.message; open = true;"
+                class="absolute top-0 left-0 h-full w-full flex flex-row justify-center items-center bg-base-300 bg-opacity-50"
+                x-show="open">
+                <div class="bg-base-100 p-4 rounded-md shadow-md text-center space-y-5 min-w-72">
+                    <div><span x-text="message" :class="success ? 'text-success' : 'text-error'"></span></div>
+                    <div class="flex flex-row justify-center items-center space-x-10">
+                        <button @click.prevent.stop="open=false; triggerFetch();" class="btn btn-sm capitalize" :class="success ? 'btn-success': 'btn-error'">Ok</button>
+                    </div>
+                </div>
+            </div>
             </form>
         </div>
         <div class="my-4 p-2">

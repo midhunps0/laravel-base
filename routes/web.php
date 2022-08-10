@@ -32,7 +32,7 @@ require __DIR__.'/auth.php';
 Route::middleware(['auth'])->group(function () {
     Route::get('users/select-ids', [UserController::class, 'queryIds'])->name('users.selectIds');
     Route::get('users/download', [UserController::class, 'download'])->name('users.download');
-    Route::resource('users', UserController::class);
+    Route::resource('users', UserController::class)->middleware('access.control:user.create_any');
 
 
     Route::get('clients/get-list', [ClientController::class, 'list'])->name('clients.list');

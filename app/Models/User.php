@@ -20,8 +20,10 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
+        'teamleader_id'
     ];
 
     /**
@@ -59,7 +61,7 @@ class User extends Authenticatable
         }
     }
 
-    public function permissions()
+    public function getPermissionsAttribute()
     {
         $permissions = [];
         foreach ($this->roles as $role) {
@@ -71,11 +73,11 @@ class User extends Authenticatable
     public function hasPermissionTo($permission)
     {
         if (is_int($permission)) {
-            return in_array($permission, array_values($this->permissions()->pluck('id')->toArray()));
+            return in_array($permission, array_values($this->permissions->pluck('id')->toArray()));
         } elseif (is_string($permission)) {
-            return in_array($permission, array_values($this->permissions()->pluck('name')->toArray()));
+            return in_array($permission, array_values($this->permissions->pluck('name')->toArray()));
         } elseif ($permission instanceof Permission) {
-            return in_array($permission->id, array_values($this->permissions()->pluck('id')->toArray()));
+            return in_array($permission->id, array_values($this->permissions->pluck('id')->toArray()));
         }
     }
 
@@ -111,8 +113,38 @@ class User extends Authenticatable
 
     public function scopeWithRoles($query, $roles)
     {
+        if (count($roles) == 0) {
+            return $query;
+        }
         return $query->whereHas('roles', function($q) use ($roles){
-            $q->whereIn('id', $roles);
+            if (is_int($roles[0])) {
+                $q->whereIn('id', $roles);
+            } elseif (is_string($roles[0])) {
+                $q->whereIn('name', $roles);
+            }
         });
     }
+
+    public function teamLeader()
+    {
+        return $this->belongsTo(User::class, 'teamleader_id', 'id');
+    }
+
+    public function dealers()
+    {
+        return $this->hasMany(User::class, 'teamleader_id', 'id');
+    }
+
+    public function clients()
+    {
+        return $this->hasMany(Client::class, 'rm_id', 'id');
+    }
+
+    // public static function boot() {
+    //     parent::boot();
+
+    //     static::deleting(function($user) {
+    //          $user->roles()->delete();
+    //     });
+    // }
 }
