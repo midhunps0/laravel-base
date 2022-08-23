@@ -286,15 +286,15 @@
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}
                 <td class="sticky !left-6">
-                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
+                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id), route: 'clients.show'})"
                         class="link no-underline hover:underline" href="" x-text="result.client_code"></a>
                 </td>
                 <td class="sticky z-20 !left-6 w-44">
-                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
+                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id), route: 'clients.show'})"
                         class="link no-underline hover:underline" href="" x-text="result.name"></a>
                 </td>
                 <td class="sticky z-30 !left-44 ">
-                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
+                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id), route: 'clients.show'})"
                         class="link no-underline hover:underline" href="" x-text="result.symbol"></a>
                 </td>
                 <td class="text-right" x-text="result.client_category"></td>

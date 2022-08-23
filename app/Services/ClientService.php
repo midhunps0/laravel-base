@@ -21,7 +21,7 @@ class ClientService implements ModelViewConnector
 
     public function __construct()
     {
-       $this->selects = [
+        $this->selects = [
             'c.id as id',
             'c.rm_id as rm_id',
             'c.name as name',
@@ -377,6 +377,25 @@ class ClientService implements ModelViewConnector
     // private function getFilterParams($query, $filters) {
     //     return [];
     // }
+
+    // public function bulkImport($file)
+    // {
+    //     return true;
+    // }
+
+    public function update($id, $data)
+    {
+        return Client::where('id', $id)->update($data);
+    }
+
+    public function updateScript($id, $data)
+    {
+        $client = Client::find($id);
+        return $client->scripts()->updateExistingPivot($data['script_id'], [
+                'dp_qty' => $data['qty'],
+                'buy_avg_price' => $data['buy_avg_price']
+            ]);
+    }
 }
 
 ?>

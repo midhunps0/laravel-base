@@ -323,6 +323,11 @@ class ScriptService implements ModelViewConnector
     private function getFilterParams($query, $filters) {
         return [];
     }
+
+    public function update($id, $data)
+    {
+        return Script::where('id', $id)->update($data);
+    }
 }
 
 ?>

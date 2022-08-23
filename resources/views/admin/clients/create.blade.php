@@ -2,14 +2,9 @@
     <div x-data="{ compact: $persist(false) }" class="p-3 overflow-x-scroll">
 
         <div class="flex flex-col justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-left w-full">Edit User</h3>
+            <h3 class="text-xl font-bold text-left w-full">Add New User</h3>
             <div class="flex-grow flex flex-row justify-end items-center space-x-4">
                 <form x-data="{
-                    name: '',
-                    username: '',
-                    email: '',
-                    role: 0,
-                    tl: 0,
                     result: 0,
                     error: '',
                     formValid() {
@@ -17,22 +12,17 @@
                             isEmail(this.email) &&
                             this.role > 0
                     },
-                    addUser() {
+                    addClient() {
                         let params = {
-                                _method: 'PUT',
-                                name: this.name,
-                                username: this.username,
-                                email: this.email,
-                                password: this.password,
-                                role_id: this.role
                             }
                         if (this.role > 0 && this.tl > 0) {
                             params.tl_id = this.tl;
                         }
                         axios.post(
-                            '{{route('users.update', $user->id)}}',
+                            '{{route('users.store')}}',
                             params
                         ).then((r) => {
+                            console.log(r);
                             if (r.data.success) {
                                 this.result = 1;
                             } else {
@@ -61,30 +51,20 @@
                             console.log(e);
                         });
                     }
-                }"
-                x-init="
-                    name = '{{$user->name}}';
-                    username = '{{$user->username}}';
-                    email = '{{$user->email}}';
-                    role = {{$user->roles[0]->id}};
-                    @if(isset($user->teamleader_id))
-                    tl = {{$user->teamleader_id}};
-                    @endif
-                "
-                action="" @submit.prevent.stop="addUser();"
-                class="p-4 border border-base-200 rounded-md w-96 relative">
+                }" action="" @submit.prevent.stop="addUser();"
+                class="p-4 border border-base-200 rounded-md w-full relative">
                     <div x-show="result == 1" class="absolute top-0 left-0 z-20 w-full h-full bg-base-200 text-center flex flex-col space-y-8 items-center justify-center">
-                            <div class="text-success">User added successfully!</div>
+                            <div class="text-success">Client added successfully!</div>
                             <div class="flex flex-row justify-evenly space-x-4">
-                                <a href="#" @click.prevent.stop="result = 0; $dispatch('linkaction', {link: '{{route('users.index')}}', route: 'users.index'})" class="btn btn-sm capitalize">Back To All Users</a>
-                                <button @click.prevent.stop="result = 0;" class="btn btn-sm capitalize">Close</button>
+                                <a href="#" @click.prevent.stop="result = 0; $dispatch('linkaction', {link: '{{route('users.index')}}', route: 'users.index'})" class="btn btn-sm capitalize">Back To Clients</a>
+                                <button @click.prevent.stop="result = 0;" class="btn btn-sm capitalize">Add Another Client</button>
                             </div>
                     </div>
                     <div x-show="result == -1" class="absolute top-0 left-0 z-20 w-full h-full bg-base-200 text-center flex flex-col space-y-8 items-center justify-center">
-                        <div class="text-error">Couldn't add user:</div>
+                        <div class="text-error">Couldn't add client:</div>
                         <div class="flex flex-col space-y-4 justify-center items-center space-x-4">
                             <span x-text="error"></span>
-                            <button @click.prevent.stop="result = 0;" class="btn btn-sm btn-error capitalize">Ok</button>
+                            <button @click.prevent.stop="result = 0;" class="btn btn-sm capitalize">Ok</button>
                         </div>
                     </div>
                     <div class="form-control w-full max-w-md mb-1">
@@ -105,12 +85,12 @@
                         </label>
                         <input x-model="email"  type="text" class="input input-bordered w-full max-w-md" required/>
                     </div>
-                    {{-- <div class="form-control w-full max-w-md my-1">
+                    <div class="form-control w-full max-w-md my-1">
                         <label class="label mb-0 pb-0">
                           <span class="label-text">Password</span>
                         </label>
                         <input x-model="password"  type="text" class="input input-bordered w-full max-w-md" minlength="8" required/>
-                    </div> --}}
+                    </div>
                     <div class="form-control w-full max-w-md my-1">
                         <label class="label mb-0 pb-0">
                           <span class="label-text">Role</span>
@@ -134,7 +114,7 @@
                         </select>
                     </div>
                     <div class="form-control w-full max-w-md mt-6 mb-2">
-                        <button type="submit" class="btn btn-primary" :disabled="!formValid()">Update</button>
+                        <button type="submit" class="btn btn-primary" :disabled="!formValid()">Add User</button>
                     </div>
                 </form>
             </div>

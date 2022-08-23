@@ -1,6 +1,6 @@
 @props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'soPriceField' => 'false', 'paginator', 'columns' => [], 'orderBaseUrl' => '', 'orderVerifyUrl' => '', 'orderCheckUrl' => '', 'id' => ''])
 <x-dashboard-base :ajax="$x_ajax">
-    <div id="{{$id}}" x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 border-b border-base-200 overflow-x-scroll relative h-full" :id="$id('panel-base')">
+    <div id="{{$id}}" x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 overflow-x-scroll relative h-full" :id="$id('panel-base')">
 
         @if (isset($inputFields))
         <div>
@@ -11,10 +11,13 @@
             <h3 class="text-xl font-bold"><span>{{ $title }}</span>&nbsp;
                 <button x-data="{navcollapsed: $persist(false)}"
                     x-init="$dispatch('navresize', {navcollapsed: navcollapsed});" class="btn btn-xs" :class="!navcollapsed || 'text-warning'" @click.prevent.stop="navcollapsed = !navcollapsed; $dispatch('navresize', {navcollapsed: navcollapsed});">
-                <x-display.icon x-show="navcollapsed" icon="icons.minus_circle" height="h-4" width="w-4"/>
-                <x-display.icon x-show="!navcollapsed" icon="icons.expand" height="h-4" width="w-4"/>
-            </button>
-        </h3>
+                    <x-display.icon x-show="navcollapsed" icon="icons.minus_circle" height="h-4" width="w-4"/>
+                    <x-display.icon x-show="!navcollapsed" icon="icons.expand" height="h-4" width="w-4"/>
+                </button>
+            </h3>
+            @if (isset($searchbox))
+                <div>{{$searchbox}}</div>
+            @endif
             <div class="flex-grow flex flex-row flex-wrap justify-end items-center space-x-4">
                 <div class="flex-grow flex flex-row flex-wrap justify-end items-center space-x-4">
                     <div x-data="{showbtns: false}" class="flex flex-row flex-grow justify-end items-center space-x-4">
@@ -614,6 +617,7 @@
                 "
                 @advsearch.window="conditions = $event.detail.conditions; advSearchStatus(); runQuery();"
                 @showorderform.window="initiateOrderForm();"
+                @triggerfetch.window="triggerFetch();"
                 x-init="
                     $watch('selectedIds', (ids) => {
                         if (ids.length < itemIds.length) {

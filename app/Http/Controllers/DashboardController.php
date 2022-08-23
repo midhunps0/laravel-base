@@ -10,4 +10,10 @@ class DashboardController extends SmartController
     {
         return $this->buildResponse('admin.dashboard');
     }
+
+    public function masterData()
+    {
+        return $this->buildResponse('admin.masters.index');
+    }
+
 }

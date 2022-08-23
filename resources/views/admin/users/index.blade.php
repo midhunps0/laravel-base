@@ -1,8 +1,8 @@
 <x-dashboard-base :ajax="$x_ajax">
-    <div x-data="{ compact: $persist(false) }" class="p-3 border-b border-base-200 overflow-x-scroll">
+    <div x-data="{ compact: $persist(false) }" class="p-3 overflow-x-scroll">
 
         <div class="flex flex-row justify-between items-center mb-4">
-            <h3 class="text-xl font-bold"><span>Users</span><button @click.prevent.stop="$dispatch('linkaction', {link: '{{route('users.create')}}'});" class="ml-4 btn btn-sm btn-primary">Add&nbsp;<x-display.icon icon="icons.plus" width="h-4" height="w-4"/></button></h3>
+            <h3 class="text-xl font-bold"><span>Users</span><button @click.prevent.stop="$dispatch('linkaction', {link: '{{route('users.create')}}', route: 'users.create'});" class="ml-4 btn btn-sm btn-primary">Add&nbsp;<x-display.icon icon="icons.plus" width="h-4" height="w-4"/></button></h3>
             <div class="flex-grow flex flex-row justify-end items-center space-x-4">
                 <x-utils.itemscount items_count="{{ $items_count }}" />
                 <div>
@@ -291,7 +291,7 @@
                                 <td>
                                     <div class="flex flex-row justify-center space-x-4 items-center">
                                         <a href="#"
-                                            @click.prevent.stop="$dispatch('linkaction', {link: '{{route('users.edit', $user->id)}}'});"
+                                            @click.prevent.stop="$dispatch('linkaction', {link: '{{route('users.edit', $user->id)}}', route: 'users.edit'});"
                                             class="btn btn-xs btn-warning capitalize">
                                             <span>Edit</span>&nbsp;<x-display.icon icon="icons.edit" height="h-4" width="w-4"/>
                                         </a>

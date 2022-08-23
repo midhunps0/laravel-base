@@ -30,6 +30,7 @@ Route::get('/dashboard', [DashboardController::class, 'dashboard'])->middleware(
 require __DIR__.'/auth.php';
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard/master-data', [DashboardController::class, 'masterData'])->middleware(['auth'])->name('dashboard.masterdata');
     Route::get('users/select-ids', [UserController::class, 'queryIds'])->name('users.selectIds');
     Route::get('users/download', [UserController::class, 'download'])->name('users.download');
     Route::resource('users', UserController::class)->middleware('access.control:user.create_any');
@@ -43,6 +44,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('clients/{id}/download', [ClientController::class, 'showDownload'])->name('clients.show.download');
     Route::get('clients/{id}/download-order', [ClientController::class, 'downloadOrder'])
         ->name('clients.order.download');
+    Route::get('import/clients', [ClientController::class, 'bulkImportCreate'])->name('clients.import.create');
+    Route::post('import/clients', [ClientController::class, 'bulkImportStore'])->name('clients.import.store');
+    Route::post('clients/{id}/update-script', [ClientController::class, 'updateScript'])->name('clients.script.update');
+
     Route::resource('clients', ClientController::class);
 
     Route::get('scripts/select-ids', [ScriptController::class, 'queryIds'])->name('scripts.selectIds');
@@ -52,6 +57,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('scripts/get-list', [ScriptController::class, 'list'])->name('scripts.list');
     Route::get('sripts/{id}/download-order', [ScriptController::class, 'downloadOrder'])
         ->name('scripts.order.download');
+    Route::get('import/scripts', [ScriptController::class, 'bulkImportCreate'])->name('scripts.import.create');
+    Route::post('import/scripts', [ScriptController::class, 'bulkImportStore'])->name('scripts.import.store');
     Route::resource('scripts', ScriptController::class);
 
     Route::get('import/trade-backup', [ImportController::class, 'tradeBackupForm'])->name('get.import.trade_backup');

@@ -10,7 +10,7 @@ class PermissionSeeder extends Seeder
     private $permissionsStrings = [
         'user',
         'dealer',
-        'customer',
+        'client',
         'script',
         'role',
         'permission'

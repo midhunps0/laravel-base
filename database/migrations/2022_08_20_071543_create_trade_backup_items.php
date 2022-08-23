@@ -13,9 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('username', 20)->unique()->after('name');
-            $table->foreignId('teamleader_id')->after('id')->nullable()->constrained('users', 'id');
+        Schema::create('trade_backup_items', function (Blueprint $table) {
+            $table->date('date');
+            $table->integer('client_id');
+            $table->integer('script_id');
         });
     }
 
@@ -26,8 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['username', 'teamleader_id']);
-        });
+        Schema::dropIfExists('trade_backup_items');
     }
 };

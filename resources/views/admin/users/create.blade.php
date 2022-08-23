@@ -1,5 +1,5 @@
 <x-dashboard-base :ajax="$x_ajax">
-    <div x-data="{ compact: $persist(false) }" class="p-3 border-b border-base-200 overflow-x-scroll">
+    <div x-data="{ compact: $persist(false) }" class="p-3 overflow-x-scroll">
 
         <div class="flex flex-col justify-between items-center mb-4">
             <h3 class="text-xl font-bold text-left w-full">Add New User</h3>
@@ -73,7 +73,7 @@
                     <div x-show="result == 1" class="absolute top-0 left-0 z-20 w-full h-full bg-base-200 text-center flex flex-col space-y-8 items-center justify-center">
                             <div class="text-success">User added successfully!</div>
                             <div class="flex flex-row justify-evenly space-x-4">
-                                <a href="#" @click.prevent.stop="result = 0; $dispatch('linkaction', {link: '{{route('users.index')}}'})" class="btn btn-sm capitalize">Back To All Users</a>
+                                <a href="#" @click.prevent.stop="result = 0; $dispatch('linkaction', {link: '{{route('users.index')}}', route: 'users.index'})" class="btn btn-sm capitalize">Back To All Users</a>
                                 <button @click.prevent.stop="result = 0;" class="btn btn-sm capitalize">Add Another User</button>
                             </div>
                     </div>
@@ -136,7 +136,7 @@
                 </form>
             </div>
             <div>
-                <a href="#" @click="$dispatch('linkaction', {link: '{{route('users.index')}}'})" class="text-warning">Go Back</a>
+                <a href="#" @click="$dispatch('linkaction', {link: '{{route('users.index')}}', route: 'users.index'})" class="text-warning">Go Back</a>
             </div>
         </div>
     </div>

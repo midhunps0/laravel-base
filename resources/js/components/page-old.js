@@ -7,15 +7,13 @@ export default () => ({
     ajaxLoading: false,
     async initAction() {
         let link = window.landingUrl;
-        let route = window.landingRoute;
         let el = document.getElementById('renderedpanel');
         while (el == null) {
             await window.sleep(50);
             el = document.getElementById('renderedpanel');
         }
         this.$store.app.xpages[link] = el.innerHTML;
-        console.log(link);
-        history.pushState({href: link, route: route}, '', link);
+        history.pushState({href: link}, '', link);
         // axios.get(link, {data: {"x_mode": 'ajax'}} ).then(
         //     (r) => {
         //         this.$store.app.xpages = [];
@@ -31,15 +29,13 @@ export default () => ({
     historyAction(e) {
         if (e.state != undefined && e.state != null) {
             let link = e.state.href;
-            let route = e.state.route;
             this.showPage = false;
             this.ajaxLoading = true;
             if (this.$store.app.xpages[link] != undefined) {
                 setTimeout(() => {
                     this.showPage = true;
-                    // this.page = this.$store.app.xpages[link];
-                    document.getElementById('renderedpanel').innerHTML = this.$store.app.xpages[link];
-                    this.$dispatch('pagechanged', {currentpath: link, currentroute: route});
+                    this.page = this.$store.app.xpages[link];
+                    this.$dispatch('pagechanged', {currentpath: link, currentroute: detail.route});
                     this.ajaxLoading = false;
                 },
                     100
@@ -78,34 +74,31 @@ export default () => ({
         let link = detail.link;
         let params = detail.params;
         let thelink = link;
-        let theRoute = detail.route;
-        let forceFresh = detail.fresh != undefined && detail.fresh != null;
         if (detail.params != null) {
             thelink += "?" + this.getQueryString(params);
         }
-        if (!forceFresh && this.$store.app.xpages != undefined && this.$store.app.xpages[thelink] != undefined) {
-            this.showPage = false;
-            this.ajaxLoading = true;
-            if (this.$store.app.xpages[thelink] != undefined) {
-                setTimeout(() => {
-                    this.showPage = true;
-                    // this.page = this.$store.app.xpages[thelink];
-                    document.getElementById('renderedpanel').innerHTML = this.$store.app.xpages[thelink];
-                    this.$dispatch('pagechanged', {currentpath: link, currentroute: detail.route});
-                    this.ajaxLoading = false;
-                },
-                    100
-                );
-            } else {
-                setTimeout(() => {
-                    this.showPage = true;
-                    this.ajaxLoading = false;
-                },
-                    100
-                );
-            }
-            history.pushState({href: thelink, route: theRoute}, '', thelink);
-        } else {
+        // if (this.$store.app.xpages != undefined && this.$store.app.xpages[thelink] != undefined) {
+        //     this.showPage = false;
+        //     this.ajaxLoading = true;
+        //     if (this.$store.app.xpages[thelink] != undefined) {
+        //         setTimeout(() => {
+        //             this.showPage = true;
+        //             this.page = this.$store.app.xpages[thelink];
+        //             this.$dispatch('pagechanged', {currentpath: link, currentroute: detail.route});
+        //             this.ajaxLoading = false;
+        //         },
+        //             100
+        //         );
+        //     } else {
+        //         setTimeout(() => {
+        //             this.showPage = true;
+        //             this.ajaxLoading = false;
+        //         },
+        //             100
+        //         );
+        //     }
+        //     history.pushState({href: thelink}, '', thelink);
+        // } else {
             this.$store.app.pageloading = true;
             // this.$dispatch('pageload');
             if (params != null) {
@@ -122,7 +115,7 @@ export default () => ({
                         () => {
                             // if(document.getElementById('renderedpanel') != null) {document.getElementById('renderedpanel').remove();}
                             document.getElementById('renderedpanel').innerHTML = r.data;
-                            // this.page = r.data;
+                            this.page = r.data;
                             this.showPage = true;
                             this.ajaxLoading = false;
                         },
@@ -132,7 +125,7 @@ export default () => ({
                         this.$store.app.xpages = [];
                     }
                     this.$store.app.xpages[thelink] = r.data;
-                    history.pushState({href: thelink, route: theRoute}, '', thelink);
+                    history.pushState({href: thelink}, '', thelink);
                     this.$store.app.pageloading = false;
                     // clearInterval(timer);
                     // timer = null;
@@ -145,7 +138,7 @@ export default () => ({
                 }
             );
             // this.$store.app.pageloading = false;
-        }
+        // }
     },
     // doSearch(detail) {
     //     let fullUrl = detail.url + '?';

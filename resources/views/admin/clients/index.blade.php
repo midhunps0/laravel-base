@@ -204,12 +204,12 @@
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}
                 <td class="sticky !left-6">
-                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
+                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id), route: 'clients.show'})"
                         class="link no-underline hover:underline" href="" x-text="result.client_code"></a>
                 </td>
                 <td class="sticky !left-36 z-20">
                     <div class="tooltip tooltip-top" :data-tip="result.name">
-                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
+                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id), route: 'clients.show'})"
                         class="link no-underline hover:underline" href="" x-text="formatString(result.name, 10)"></a>
                     </div>
                 </td>

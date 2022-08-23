@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Script;
 use Illuminate\Http\Request;
 use App\Services\ScriptService;
+use App\ImportExports\ScriptsImport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\SmartController;
+use App\Http\Requests\ScriptUpdateRequest;
 use App\ImportExports\DefaultArrayExports;
+use App\Http\Requests\ScriptsImportRequest;
 use App\ImportExports\DefaultCollectionExports;
 
 class ScriptController extends SmartController
@@ -223,7 +226,17 @@ class ScriptController extends SmartController
      */
     public function edit(Script $script)
     {
-        //
+        $indutries = Script::select('industry')->distinct()->get();
+        $serie = Script::select('series')->distinct()->get();
+        $mvg_sectors = Script::select('mvg_sector')->distinct()->get();
+        $agio_industries = Script::select('agio_indutry')->distinct()->get();
+        return $this->buildResponse('admin.scripts.edit', [
+            'script' => $script,
+            'industries' => $indutries,
+            'serie' => $serie,
+            'mvg_sectors' => $mvg_sectors,
+            'agio_industries' => $agio_industries
+        ]);
     }
 
     /**
@@ -233,9 +246,37 @@ class ScriptController extends SmartController
      * @param  \App\Models\Script  $script
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Script $script)
+    public function update(ScriptUpdateRequest $request, $script, ScriptService $scriptService)
     {
-        //
+        $result = $scriptService->update($script, $request->validated());
+        return response()->json([
+            'success' => $result,
+        ]);
+    }
+
+
+    public function bulkImportCreate()
+    {
+        return $this->buildResponse('admin.scripts.import');
+    }
+
+    public function bulkImportStore(ScriptsImportRequest $request, ScriptService $clientService)
+    {
+        try {
+            $tbi = new ScriptsImport();
+            Excel::import($tbi, $this->request->file('file'));
+
+            return response()->json([
+                'success' => true,
+                'total_items' => $tbi->totalItems,
+                'failed_items' => $tbi->failedItems
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->__toString()
+            ]);
+        }
     }
 
     /**

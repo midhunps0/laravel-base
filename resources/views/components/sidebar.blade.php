@@ -28,8 +28,12 @@
             icon="icons.lock"/></li>
         @endif
         @if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Superadmin'))
+        <li><x-menu-item title="Data Import" route="dashboard.masterdata" href="{{route('dashboard.masterdata')}}"
+            icon="icons.download"/></li>
+        @endif
+        {{-- @if (auth()->user()->hasRole('Admin') || auth()->user()->hasRole('Superadmin'))
         <li><x-menu-item title="Trade Backup" route="get.import.trade_backup" href="{{route('get.import.trade_backup')}}"
             icon="icons.lock"/></li>
-        @endif
+        @endif --}}
     </ul>
 </div>

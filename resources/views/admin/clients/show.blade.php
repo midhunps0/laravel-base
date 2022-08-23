@@ -23,19 +23,37 @@
     :enableAdvSearch="true"
     :soPriceField="false"
     orderBaseUrl="{{route('clients.order.download', $model->id)}}"
-    id="clients_show">
+    id="clients_show"
+    :editbtn="true"
+    editroute="clients.import.store"
+    :model_id="$model->id">
+    <x-slot:searchbox>
+        <x-utils.itemssearch
+        itemsName="clients"
+        url="{{route('clients.show', 0)}}"
+        searchUrl="{{route('clients.list')}}"
+        routeName="clients.show"
+        :searchDisplayKeys="['code', 'name']"
+        />
+    </x-slot>
     <x-slot:body>
-    <div class="flex flex-row flex-wrap space-x-4">
+    <div class="flex flex-row flex-wrap space-x-2 items-center">
         <div class="font-bold border border-base-300 rounded-md p-4 mb-2 md:mb-0">
             <h1><span class="inline-block mr-1">Code: </span><span class="inline-block mr-4 text-warning">{{$model->client_code}}</span><span class="inline-block mr-1">Name: </span><span class="inline-block mr-4 text-warning">{{$model->name}}</span><span class="inline-block mr-1">AUM: </span><span class="inline-block mr-4 text-warning">{{$model->total_aum}}</span></h1>
         </div>
-        <x-utils.itemssearch
-            itemsName="clients"
-            url="{{route('clients.show', 0)}}"
-            searchUrl="{{route('clients.list')}}"
-            routeName="clients.show"
-            :searchDisplayKeys="['code', 'name']"
-            />
+        <div>
+            <button class="btn btn-sm btn-ghost text-warning" @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.edit', $model->id)}}', route: 'clients.edit', fresh: true});">
+                <x-display.icon icon="icons.view_on" height="h-5" width="w-5"/>
+            </button>
+        </div>
+        {{-- <x-utils.itemssearch
+        itemsName="clients"
+        url="{{route('clients.show', 0)}}"
+        searchUrl="{{route('clients.list')}}"
+        routeName="clients.show"
+        :searchDisplayKeys="['code', 'name']"
+        /> --}}
+
     </div>
     </x-slot><x-slot:inputFields>
         <input type="hidden" value="{{$aggregates}}" id="aggregates">
@@ -240,14 +258,19 @@
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}
                 <td class="sticky !left-12">
-                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('scripts.show', 0)}}'.replace('0', result.id)})"
-                        class="link no-underline hover:underline" href="" x-text="result.symbol"></a>
+                    <div class="flex flex-row justify-between items-center">
+                        <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('scripts.show', 0)}}'.replace('0', result.id), route: 'scripts.show'})"
+                            class="link no-underline hover:underline" href="" x-text="result.symbol"></a>
+                        <button @click.prevent.stop="$dispatch('editcs', {symbol: result.symbol, script_id: result.id, qty: result.qty, buy_avg_price: result.buy_avg_price});" class="btn btn-xs btn-ghost text-warning">
+                            <x-display.icon icon="icons.edit" height="h-4" width="w-4"/>
+                        </button>
+                    </div>
                         <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
                 </td>
                 <td class="text-right" x-text="formatted(result.pa, 2)"></td>
-                <td x-text="result.qty"></td>
-                <td x-text="formatted(result.buy_avg_price)"></td>
-                <td x-text="formatted(result.amt_invested)"></td>
+                <td class="text-right" x-text="result.qty"></td>
+                <td class="text-right" x-text="formatted(result.buy_avg_price)"></td>
+                <td class="text-right" x-text="formatted(result.amt_invested)"></td>
                 <td>
                     <div class="flex flex-row items-baseline justify-end"
                     :class="{'text-error' : result.cmp < result.buy_avg_price, 'text-accent' : result.cmp > result.buy_avg_price}">
@@ -272,5 +295,104 @@
             </tr>
         </template>
         {{-- @endforeach --}}
+    <div x-data="{
+        client_id: {{$model->id}},
+        symbol: '',
+        script_id: 0,
+        qty: 0,
+        buy_avg_price: 0,
+        show: false,
+        result: 0,
+        error: '',
+        get formvalid() {
+            return this.qty.toString().length > 0 &&
+                this.buy_avg_price.toString().length > 0;
+        },
+        updatecs() {
+            let params = {
+                script_id: this.script_id,
+                qty: this.qty,
+                buy_avg_price: this.buy_avg_price
+            };
+            axios.post(
+                '{{route('clients.script.update', $model->id)}}',
+                params
+            ).then((r) => {
+                if (r.data.success) {
+                    this.result = 1;
+                } else {
+                    this.result = -1;
+                    console.log(Object.values(r.data.error));
+
+                    let estr = Object.values(r.data.error).reduce((s, e) => {
+                        e.forEach((ers) => {
+                            if (s.length > 0) {
+                                return s+', '+ers;
+                            }
+                            else {
+                                return s + ers;
+                            }
+                        });
+                        console.log(e);
+                        return s;
+                    });
+                    console.log(estr);
+                    this.error = estr;
+                }
+            }).catch((e) => {
+                this.result = -1;
+                this.error = 'Sorry, something went wrong.';
+                console.log(e);
+            });
+        }
+    }"
+    x-show="show"
+    @editcs.window="
+    show = true;
+    symbol = $event.detail.symbol;
+    script_id = $event.detail.script_id;
+    qty = $event.detail.qty;
+    buy_avg_price = $event.detail.buy_avg_price;
+    "
+    class="fixed z-50 top-0 left-0 flex flex-row justify-center items-center w-full h-full bg-base-200 bg-opacity-70">
+        <div class="bg-base-200 p-4 border border-base-300 rounded-md relative">
+            <div class="w-full text-right">
+                <button @click.prevent.stop="show = false;" class="btn btn-xs btn-ghost text-warning">
+                    <x-display.icon icon="icons.close" height="h-4" width="w-4"/>
+                </button>
+            </div>
+            <form action="" class="max-w-md relative">
+                <div x-show="result == 1" class="absolute top-0 left-0 z-20 w-full h-full bg-base-200 text-center flex flex-col space-y-8 items-center justify-center">
+                    <div class="text-success">Client updated successfully!</div>
+                    <div class="flex flex-row justify-evenly space-x-4">
+                        <a href="#" @click.prevent.stop="result = 0; show=false; $dispatch('triggerfetch'); /*$dispatch('linkaction', {link: '{{route('clients.show', $model->id)}}', route: 'clients.show'})*/" class="btn btn-sm capitalize">Ok</a>
+                    </div>
+                </div>
+                <div x-show="result == -1" class="absolute top-0 left-0 z-20 w-full h-full bg-base-200 text-center flex flex-col space-y-8 items-center justify-center">
+                    <div class="text-error">Upadte failed:</div>
+                    <div class="flex flex-col space-y-4 justify-center items-center space-x-4">
+                        <span x-text="error"></span>
+                        <button @click.prevent.stop="result = 0;" class="btn btn-sm btn-error capitalize">Ok</button>
+                    </div>
+                </div>
+                <label class="block w-full font-bold text-center" x-text="symbol"></label>
+                <div class="form-control w-60 max-w-md my-3 relative">
+                    <label class="label mb-0 pb-0">
+                    <span class="label-text">Qty</span>
+                    </label>
+                    <input x-model="qty" type="number" class="input input-bordered w-full max-w-md read-only:bg-base-200"/>
+                </div>
+                <div class="form-control w-60 max-w-md my-3">
+                    <label class="label mb-0 pb-0">
+                    <span class="label-text">Buy Avg. Price</span>
+                    </label>
+                    <input x-model="buy_avg_price"  type="number" step="0.01" class="input input-bordered w-full max-w-md read-only:bg-base-200"/>
+                </div>
+                <div class="w-full mt-6 mb-3 text-center">
+                    <button @click.prevent.stop="updatecs();" type="submit" class="btn btn-primary btn-sm" :disabled="!formvalid">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
     </x-slot>
 </x-utils.panelbase>

@@ -1,5 +1,5 @@
 <x-dashboard-base :ajax="$x_ajax">
-    <div class="p-3 border-b border-base-200 overflow-x-scroll h-full mb-8">
+    <div class="p-3 overflow-x-scroll h-full mb-8">
         <div class="p-4 w-full text-center text-warning text-sm font-bold">
             @if (isset($error))
                 @if ($error_type=="access denied")
@@ -17,6 +17,6 @@
             searchUrl="{{route('scripts.list')}}"
             routeName="scripts.show"
             :searchDisplayKeys="['symbol', 'company_name']"
-            />
+            class="!justify-start"/>
     </div>
 </x-dashboard-base>

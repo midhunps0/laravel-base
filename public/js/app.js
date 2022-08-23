@@ -5234,32 +5234,35 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var _this = this;
 
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var link, el;
+        var link, route, el;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
                 link = window.landingUrl;
+                route = window.landingRoute;
                 el = document.getElementById('renderedpanel');
 
-              case 2:
+              case 3:
                 if (!(el == null)) {
-                  _context.next = 8;
+                  _context.next = 9;
                   break;
                 }
 
-                _context.next = 5;
+                _context.next = 6;
                 return window.sleep(50);
 
-              case 5:
+              case 6:
                 el = document.getElementById('renderedpanel');
-                _context.next = 2;
+                _context.next = 3;
                 break;
 
-              case 8:
+              case 9:
                 _this.$store.app.xpages[link] = el.innerHTML;
+                console.log(link);
                 history.pushState({
-                  href: link
+                  href: link,
+                  route: route
                 }, '', link); // axios.get(link, {data: {"x_mode": 'ajax'}} ).then(
                 //     (r) => {
                 //         this.$store.app.xpages = [];
@@ -5272,7 +5275,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 //     }
                 // );
 
-              case 10:
+              case 12:
               case "end":
                 return _context.stop();
             }
@@ -5285,17 +5288,19 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
       if (e.state != undefined && e.state != null) {
         var link = e.state.href;
+        var route = e.state.route;
         this.showPage = false;
         this.ajaxLoading = true;
 
         if (this.$store.app.xpages[link] != undefined) {
           setTimeout(function () {
-            _this2.showPage = true;
-            _this2.page = _this2.$store.app.xpages[link];
+            _this2.showPage = true; // this.page = this.$store.app.xpages[link];
+
+            document.getElementById('renderedpanel').innerHTML = _this2.$store.app.xpages[link];
 
             _this2.$dispatch('pagechanged', {
               currentpath: link,
-              currentroute: detail.route
+              currentroute: route
             });
 
             _this2.ajaxLoading = false;
@@ -5337,77 +5342,87 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       var link = detail.link;
       var params = detail.params;
       var thelink = link;
+      var theRoute = detail.route;
+      var forceFresh = detail.fresh != undefined && detail.fresh != null;
 
       if (detail.params != null) {
         thelink += "?" + this.getQueryString(params);
-      } // if (this.$store.app.xpages != undefined && this.$store.app.xpages[thelink] != undefined) {
-      //     this.showPage = false;
-      //     this.ajaxLoading = true;
-      //     if (this.$store.app.xpages[thelink] != undefined) {
-      //         setTimeout(() => {
-      //             this.showPage = true;
-      //             this.page = this.$store.app.xpages[thelink];
-      //             this.$dispatch('pagechanged', {currentpath: link, currentroute: detail.route});
-      //             this.ajaxLoading = false;
-      //         },
-      //             100
-      //         );
-      //     } else {
-      //         setTimeout(() => {
-      //             this.showPage = true;
-      //             this.ajaxLoading = false;
-      //         },
-      //             100
-      //         );
-      //     }
-      //     history.pushState({href: thelink}, '', thelink);
-      // } else {
-
-
-      this.$store.app.pageloading = true; // this.$dispatch('pageload');
-
-      if (params != null) {
-        params['x_mode'] = 'ajax';
-      } else {
-        params = {
-          x_mode: 'ajax'
-        };
       }
 
-      this.ajaxLoading = true;
-      axios__WEBPACK_IMPORTED_MODULE_0___default().get(link, {
-        params: params
-      }).then(function (r) {
-        _this3.showPage = false;
-        _this3.ajax = true;
-        setTimeout(function () {
-          // if(document.getElementById('renderedpanel') != null) {document.getElementById('renderedpanel').remove();}
-          document.getElementById('renderedpanel').innerHTML = r.data;
-          _this3.page = r.data;
-          _this3.showPage = true;
-          _this3.ajaxLoading = false;
-        }, 100);
+      if (!forceFresh && this.$store.app.xpages != undefined && this.$store.app.xpages[thelink] != undefined) {
+        this.showPage = false;
+        this.ajaxLoading = true;
 
-        if (_this3.$store.app.xpages == undefined || _this3.$store.app.xpages == null) {
-          _this3.$store.app.xpages = [];
+        if (this.$store.app.xpages[thelink] != undefined) {
+          setTimeout(function () {
+            _this3.showPage = true; // this.page = this.$store.app.xpages[thelink];
+
+            document.getElementById('renderedpanel').innerHTML = _this3.$store.app.xpages[thelink];
+
+            _this3.$dispatch('pagechanged', {
+              currentpath: link,
+              currentroute: detail.route
+            });
+
+            _this3.ajaxLoading = false;
+          }, 100);
+        } else {
+          setTimeout(function () {
+            _this3.showPage = true;
+            _this3.ajaxLoading = false;
+          }, 100);
         }
 
-        _this3.$store.app.xpages[thelink] = r.data;
         history.pushState({
-          href: thelink
+          href: thelink,
+          route: theRoute
         }, '', thelink);
-        _this3.$store.app.pageloading = false; // clearInterval(timer);
-        // timer = null;
-        // initialised = false;
+      } else {
+        this.$store.app.pageloading = true; // this.$dispatch('pageload');
 
-        _this3.$dispatch('pagechanged', {
-          currentpath: link,
-          currentroute: detail.route
-        });
-      })["catch"](function (e) {
-        console.log(e);
-      }); // this.$store.app.pageloading = false;
-      // }
+        if (params != null) {
+          params['x_mode'] = 'ajax';
+        } else {
+          params = {
+            x_mode: 'ajax'
+          };
+        }
+
+        this.ajaxLoading = true;
+        axios__WEBPACK_IMPORTED_MODULE_0___default().get(link, {
+          params: params
+        }).then(function (r) {
+          _this3.showPage = false;
+          _this3.ajax = true;
+          setTimeout(function () {
+            // if(document.getElementById('renderedpanel') != null) {document.getElementById('renderedpanel').remove();}
+            document.getElementById('renderedpanel').innerHTML = r.data; // this.page = r.data;
+
+            _this3.showPage = true;
+            _this3.ajaxLoading = false;
+          }, 100);
+
+          if (_this3.$store.app.xpages == undefined || _this3.$store.app.xpages == null) {
+            _this3.$store.app.xpages = [];
+          }
+
+          _this3.$store.app.xpages[thelink] = r.data;
+          history.pushState({
+            href: thelink,
+            route: theRoute
+          }, '', thelink);
+          _this3.$store.app.pageloading = false; // clearInterval(timer);
+          // timer = null;
+          // initialised = false;
+
+          _this3.$dispatch('pagechanged', {
+            currentpath: link,
+            currentroute: detail.route
+          });
+        })["catch"](function (e) {
+          console.log(e);
+        }); // this.$store.app.pageloading = false;
+      }
     },
     // doSearch(detail) {
     //     let fullUrl = detail.url + '?';

@@ -14,7 +14,7 @@
     }
 }"
     @submit.prevent.stop="getItemsList"
-    action="" class="flex flex-row items-end space-x-4">
+    action="" {{$attributes->merge(['class' => 'flex flex-row justify-end items-center space-x-4 p-0 m-0'])}}>
     <div class="form-control w-52 relative">
         {{-- <label class="label">
           <span class="label-text">Code/Name</span>
@@ -28,7 +28,7 @@
             type="text" placeholder="Code/Name" class="input input-bordered input-sm w-full max-w-xs" />
         <ul x-show="list.length > 0"
             @click.outside="search=''; list=[];"
-            class="absolute top-10 left-0 z-10 flex flex-col bg-base-200 p-2 rounded-sm shadow-sm">
+            class="absolute top-10 left-0 z-50 flex flex-col bg-base-200 p-2 rounded-sm shadow-sm">
             <template x-for="item in list">
                 <a href="#" @click.prevent.stop="id = item.id;
                     $dispatch('linkaction', { link: url.replace('0', id), route: '{{$routeName}}'}); list=[];"

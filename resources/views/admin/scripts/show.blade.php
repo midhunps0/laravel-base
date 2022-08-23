@@ -28,19 +28,29 @@
     orderBaseUrl="{{route('scripts.order.download', $model->id)}}"
     orderVerifyUrl="{{route('clientsripts.sellorder.verify')}}"
     id="scripts_show"
+    :editbtn="true"
+    editroute="scripts.import.store"
+    :model_id="$model->id"
     >
+    <x-slot:searchbox>
+        <x-utils.itemssearch
+            itemsName="scripts"
+            url="{{route('scripts.show', 0)}}"
+            searchUrl="{{route('scripts.list')}}"
+            routeName="scripts.show"
+            :searchDisplayKeys="['symbol', 'company_name']"
+            />
+    </x-slot>
     <x-slot:body>
-        <div class="flex flex-row flex-wrap space-x-4 my-2">
+        <div class="flex flex-row flex-wrap space-x-2 items-center">
             <div class="font-bold border border-base-300 rounded-md p-4 mb-2 md:mb-0">
                 <h1><span class="inline-block mr-1">Symbol: </span><span class="inline-block mr-4 text-warning">{{$model->symbol}}</span><span class="inline-block mr-1">Company Name: </span><span class="inline-block mr-4 text-warning">{{$model->company_name}}</span></h1>
             </div>
-            <x-utils.itemssearch
-                itemsName="scripts"
-                url="{{route('scripts.show', 0)}}"
-                searchUrl="{{route('scripts.list')}}"
-                routeName="scripts.show"
-                :searchDisplayKeys="['symbol', 'company_name']"
-                />
+            <div>
+                <button class="btn btn-sm btn-ghost text-warning" @click.prevent.stop="$dispatch('linkaction', {link: '{{route('scripts.edit', $model->id)}}', route: 'scripts.edit', fresh: true});">
+                    <x-display.icon icon="icons.view_on" height="h-5" width="w-5"/>
+                </button>
+            </div>
         </div>
     </x-slot>
     <x-slot:inputFields>
@@ -187,7 +197,7 @@
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}
                 <td class="sticky !left-6" >
-                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id)})"
+                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id), route: 'clients.show'})"
                         class="link no-underline hover:underline" href="" x-text="result.code"></a>
                         <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
                 </td>

@@ -3,7 +3,7 @@
 @themechange.window="theme = $event.detail.darktheme ? 'newdark' : 'light';" lang="{{ str_replace('_', '-', app()->getLocale()) }}"
 x-init="window.landingUrl = '{{\Request::getRequestUri()}}'"
                     // timer = null;
-@pagechanged.window="console.log('pcanged');console.log($event.detail);
+@pagechanged.window="
 currentpath=$event.detail.currentpath;
 currentroute=$event.detail.currentroute;"
 @routechange.window="currentroute=$event.detail.route;"

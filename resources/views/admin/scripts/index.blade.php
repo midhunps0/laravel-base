@@ -58,9 +58,13 @@
             <x-utils.spotsort name="dop" val="{{ $sort['dop'] ?? 'none' }}" />
             <span>DOP</span>
         </th> --}}
-        <th class="sticky !left-7">
+        <th class="sticky !left-7 flex flex-row min-w-36">
             <x-utils.spotsort name="symbol" val="{{ $sort['symbol'] ?? 'none' }}" />
-            <span>Symbol</span>
+            <div class="relative flex-grow ml-2 min-w-32">
+                <span>Symbol</span>
+                <x-utils.spotsearch textval="{{ $params['symbol'] ?? '' }}" textname="symbol"
+                    label="Search symbol" />
+            </div>
         <th>
             <x-utils.spotsort name="pa" val="{{ $sort['pa'] ?? 'none' }}" />
             <span>PA</span>
@@ -146,7 +150,7 @@
                 {{-- <td x-text="result.bse_code"></td>
                 <td x-text="result.dop"></td> --}}
                 <td class="sticky !left-7">
-                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('scripts.show', 0)}}'.replace('0', result.sid)})"
+                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('scripts.show', 0)}}'.replace('0', result.sid), route: 'scripts.show'})"
                         class="link no-underline hover:underline" href="" x-text="result.symbol"></a>
                         <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
                 </td>
