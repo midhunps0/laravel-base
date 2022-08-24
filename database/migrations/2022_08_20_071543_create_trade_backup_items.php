@@ -14,6 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('trade_backup_items', function (Blueprint $table) {
+            $table->id();
             $table->date('date');
             $table->integer('client_id');
             $table->integer('script_id');

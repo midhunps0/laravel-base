@@ -3,7 +3,30 @@
     title="Import Clients"
     actionRoute="clients.import.store"
     filename="clients.xlsx"
-    buttonText="Import">
+    buttonText="Import"
+    :headings="[
+        'RM',
+        'Client Code',
+        'Unique Code',
+        'Name',
+        'Fresh Fund',
+        'Re Invest',
+        'Withdrawal',
+        'Payout',
+        'Total Aum',
+        'Other Funds',
+        'Brokerage',
+        'Realised PNL',
+        'Ledger Balance',
+        'PFO Type',
+        'Category',
+        'Type',
+        'FNO',
+        'Pan Number',
+        'Email',
+        'Phone Number',
+        'Whatsapp',
+    ]">
     <x-slot:thead>
         <th>No.</th>
         <th>Client Code</th>

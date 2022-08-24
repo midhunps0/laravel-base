@@ -259,18 +259,18 @@ class ClientService implements ModelViewConnector
             $al_aum = $result['allocated_aum'];
 
             $row = $result;
-            $row['total_aum'] = round($aum, 2);
-            $row['allocated_aum'] = round($al_aum, 2) ?? 0;
-            $row['cur_value'] = round($cv, 2) ?? 0;
-            $row['realised_pnl'] = round($result['realised_pnl'], 2);
-            $row['pnl'] = round($result['pnl'], 2);
-            $row['pnl_pc'] = round($result['pnl_pc'], 2);
-            $row['pa'] = round($result['pa'], 2);
-            $row['liquidbees'] = isset($result['liquidbees']) ? round($result['liquidbees'], 2) : 0;
-            $row['cash'] = round($result['cash'], 2);
-            $row['cash_pc'] = round($result['cash_pc'], 2);
-            $row['returns'] = round($result['returns'], 2);
-            $row['returns_pc'] = round($result['returns_pc'], 2);
+            $row['total_aum'] = isset($aum) ? round($aum, 2) : 0;
+            $row['allocated_aum'] = isset($al_aum) ? round($al_aum, 2) : 0;
+            $row['cur_value'] = isset($cv) ? round($cv, 2) : 0;
+            $row['realised_pnl'] = isset($result['realised_pnl']) ? round($result['realised_pnl'], 2) : 0;
+            $row['pnl'] = isset($result['pnl']) ? round($result['pnl'], 2) : 0;
+            $row['pnl_pc'] = isset($result['pnl_pc']) ? round($result['pnl_pc'], 2) : 0;
+            $row['pa'] = isset($result['pa']) ? round($result['pa'], 2) : 0;
+            $row['liquidbees'] = isset($result['liquidbees']) ? round($result['liquidbees']) : 0;
+            $row['cash'] = isset($result['cash']) ? round($result['cash'], 2) : 0;
+            $row['cash_pc'] = isset($result['cash_pc']) ? round($result['cash_pc'], 2) : 0;
+            $row['returns'] = isset($result['returns']) ? round($result['returns'], 2) : 0;
+            $row['returns_pc'] = isset($result['returns_pc']) ? round($result['returns_pc'], 2) : 0;
 
             $formatted[] = $row;
         }

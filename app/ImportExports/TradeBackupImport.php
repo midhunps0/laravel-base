@@ -4,7 +4,9 @@ namespace App\ImportExports;
 
 use App\Models\Client;
 use App\Models\Script;
+use App\Models\TradeBackupItem;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -33,11 +35,15 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
         // ]);
 
         foreach ($data as $item) {
-            $this->totalItems++;
+            if (isset($item['client_code'])) {
+                $this->totalItems++;
+            } else {
+                continue;
+            }
             info('----Start----');
             info('Client: '.$item['client_code']);
             $success = true;
-            $itemStatus = ['client' => 'Success', 'script' => '--', 'client_script' => 'not checked'];
+            $itemStatus = ['client' => 'Ok', 'script' => 'Unchecked', 'client_script' => 'Unchecked', 'trade_date' => 'Ok'];
             $client = Client::with('scripts')->where('client_code', $item['client_code'])->get()->first();
             $script = Script::where('symbol', $item['symbol'])->first();
             $itemStatus['client_code'] = $item['client_code'];
@@ -52,6 +58,25 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
                 $success = false;
                 $itemStatus['client'] = 'Not Found';
             }
+
+            if (strpos($item['trade_date_time'], '-') > 0) {
+                $d = explode('-', $item['trade_date_time']);
+            } else if (strpos($item['trade_date_time'], '/') > 0) {
+                $d = explode('/', $item['trade_date_time']);
+            } else {
+                $itemStatus['trade_date'] = 'Invalid date';
+            }
+            $ddate = $d[2].'-'.$d[1].'-'.$d[0];
+
+            $tbi = TradeBackupItem::where('date', $ddate)
+                ->where('script_id', $scriptId)
+                ->where('client_id', $client->id)
+                ->get()->first();
+            if ($tbi != null) {
+                $success = false;
+                $itemStatus['trade_date'] = 'Duplicate backup.';
+            }
+
             $qty = intval($item['trade_qty']);
             $price = floatval($item['trade_price']);
             $amt = $price * $qty;
@@ -138,7 +163,11 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
                     $client->update(['realised_pnl' => $newRealisedPnl]);
                     break;
             }
-
+            TradeBackupItem::create([
+                'date' => $ddate,
+                'client_id' => $client->id,
+                'script_id' => $scriptId
+            ]);
             info('----Finish----');
         }
         return [$this->totalItems, $this->failedItems];

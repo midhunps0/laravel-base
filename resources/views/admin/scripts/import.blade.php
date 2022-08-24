@@ -3,7 +3,27 @@
     title="Import Scripts"
     actionRoute="scripts.import.store"
     filename="scripts.xlsx"
-    buttonText="Import">
+    buttonText="Import"
+    :headings="[
+        'ISIN Code',
+        'Symbol',
+        'Tracked',
+        'Company Name',
+        'Industry',
+        'Series',
+        'FNO',
+        'NIFTY',
+        'NSE Code',
+        'BSE Code',
+        'Yahoo Code',
+        'Doc',
+        'BBG Ticker',
+        'BSE Security Id',
+        'Capitaline Code',
+        'MVG Sector',
+        'Agio Industry',
+        'Remarks',
+    ]">
     <x-slot:thead>
         <th>No.</th>
         <th>Symbol</th>

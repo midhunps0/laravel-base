@@ -46,6 +46,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('clients.order.download');
     Route::get('import/clients', [ClientController::class, 'bulkImportCreate'])->name('clients.import.create');
     Route::post('import/clients', [ClientController::class, 'bulkImportStore'])->name('clients.import.store');
+    Route::get('import/client-portfolio', [ClientController::class, 'portfolioImportCreate'])->name('clientsportfolio.import.create');
+    Route::post('import/client-portfolio', [ClientController::class, 'portfolioImportStore'])->name('clientsportfolio.import.store');
     Route::post('clients/{id}/update-script', [ClientController::class, 'updateScript'])->name('clients.script.update');
 
     Route::resource('clients', ClientController::class);

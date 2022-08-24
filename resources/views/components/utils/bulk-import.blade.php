@@ -1,4 +1,4 @@
-@props(['title', 'actionRoute', 'filename' => 'file', 'buttonText' => 'Import File'])
+@props(['title', 'actionRoute', 'filename' => 'file', 'buttonText' => 'Import File', 'headings' => [], 'notes'])
 <div class="p-3">
     <h3 class="text-xl font-bold">{{$title}}</h3>
     <div class="mt-4">
@@ -16,6 +16,7 @@
                 console.log(files);
                 if (files == null) {
                     this.file = null;
+                    document.getElementById('ifile').value = '';
                 } else {
                     this.file = files[0];
                 }
@@ -61,14 +62,14 @@
             @filechange="setFile($event.detail.files); console.log('file changed');"
             action="#"
             class="relative">
-            <label class="border-2 border-base-200 p-3 flex flex-row items-center w-full rounded cursor-pointer my-2" for="ifile" x-data="{ files: null }"
+            <label class="border-2 border-base-200 bg-base-200 p-3 flex flex-row w-72 items-center rounded cursor-pointer my-2" for="ifile" x-data="{ files: null }"
             @filesReset.window="files = null; console.log('files cancelled');"
             >
-                <button x-show="files != null"
+                <button x-show="file != null"
                     @click.prevent.stop="files = null; $dispatch('filechange', {files: files}); processing = false; finished = false;"
-                    class="p-1 border border-error text-error mr-2"><x-display.icon icon="icons.close"/></button>
+                    class="p-1 border border-error rounded-md text-error mr-2"><x-display.icon icon="icons.close"/></button>
                 <input x-ref="ifile" type="file" class="sr-only" id="ifile" @change="console.log($event.target.files);$dispatch('filechange', {files: Object.values($event.target.files)});" accept=".xlsx">
-                <span x-text="file ? file.name : 'Choose file...'"></span>
+                <span x-text="file ? file.name : 'Choose file...'" class="font-bold text-accent"></span>
             </label>
             <div x-show="file != null">
                 <button @click.prevent.stop="doSubmit" class="btn btn-sm text-accent">{{$buttonText}}</button>
@@ -106,5 +107,21 @@
                 </div>
             </div>
         </form>
+        <div class="mt-8 p-3 border border-warning border-opacity-50 rounded-md">
+            <h4 class="font-bold mb-3">
+                Make sure the .xlsx file to be imported has the following <span class="text-warning">column headers:</span>
+            </h4>
+            @if (count($headings) > 0)
+                @foreach ($headings as $item)
+                {{$item}}
+                @if (!$loop->last)
+                    ,&nbsp;
+                @endif
+                @endforeach
+            @endif
+            @if (isset($notes))
+                <div class="mt-5">{!!$notes!!}</div>
+            @endif
+        </div>
     </div>
 </div>

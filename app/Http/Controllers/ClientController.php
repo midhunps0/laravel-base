@@ -11,7 +11,9 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\ImportExports\DefaultArrayExports;
 use App\Http\Requests\ClientsImportRequest;
 use App\Http\Requests\ClientUpdateRequest;
+use App\Http\Requests\PortfolioImportRequest;
 use App\ImportExports\DefaultCollectionExports;
+use App\ImportExports\PortfolioImport;
 use Illuminate\Support\Facades\Config;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
 
@@ -226,6 +228,30 @@ class ClientController extends SmartController
     {
         try {
             $tbi = new ClientsImport();
+            Excel::import($tbi, $this->request->file('file'));
+
+            return response()->json([
+                'success' => true,
+                'total_items' => $tbi->totalItems,
+                'failed_items' => $tbi->failedItems
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->__toString()
+            ]);
+        }
+    }
+
+    public function portfolioImportCreate()
+    {
+        return $this->buildResponse('admin.clients.portfolio');
+    }
+
+    public function portfolioImportStore(PortfolioImportRequest $request)
+    {
+        try {
+            $tbi = new PortfolioImport();
             Excel::import($tbi, $this->request->file('file'));
 
             return response()->json([

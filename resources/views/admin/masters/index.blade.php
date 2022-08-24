@@ -9,6 +9,7 @@
             <x-display.dashboard-item route="get.import.trade_backup" title="Trade Backup" />
             <x-display.dashboard-item route="clients.import.create" title="Clients" />
             <x-display.dashboard-item route="scripts.import.create" title="Scripts" />
+            <x-display.dashboard-item route="clientsportfolio.import.create" title="Portfolio" />
         </div>
     </div>
 </x-dashboard-base>

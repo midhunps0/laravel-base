@@ -58,7 +58,7 @@ class ScriptsImport implements ToCollection, WithHeadingRow
                 'bse_security_id' => $item['bse_security_id'],
                 'capitaline_code' => $item['capitaline_code'],
                 'mvg_sector' => $item['mvg_sector'],
-                'agio_indutry' => $item['agio_indutry'],
+                'agio_indutry' => $item['agio_industry'],
                 'remarks' => $item['remarks'],
             ];
             $this->setAttributes($script, $attrs);
