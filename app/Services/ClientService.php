@@ -44,21 +44,21 @@ class ClientService implements ModelViewConnector
             DB::raw('(c.realised_pnl + cst.cur_value - c.total_aum) /c.total_aum * 100 as returns_pc'),
         ];
 
-        $this->agrSelects = array_merge($this->selects, [
-            DB::raw('SUM(c.total_aum) as agr_aum'),
-            DB::raw('SUM(c.ledger_balance) as agr_ledger_balance'),
-            DB::raw('SUM(cst.allocated_aum) as agr_allocated_aum'),
-            DB::raw('SUM(cst.allocated_aum) / SUM(c.total_aum) * 100 as agr_pa'),
-            DB::raw('SUM(c.realised_pnl) as agr_realised_pnl'),
-            DB::raw('SUM(cst.cur_value) as agr_cur_value'),
-            DB::raw('(SUM(cst.cur_value) - SUM(cst.allocated_aum)) as agr_pnl'),
-            DB::raw('(SUM(cst.cur_value) - SUM(cst.allocated_aum)) / SUM(cst.allocated_aum) * 100 as agr_pnl_pc'),
-            DB::raw('SUM(lbq.liquidbees) as agr_liquidbees'),
-            DB::raw('SUM(c.total_aum) - SUM(cst.allocated_aum) as agr_cash'),
-            DB::raw('(SUM(c.total_aum) - SUM(cst.allocated_aum)) / SUM(c.total_aum) as agr_cash_pc'),
-            DB::raw('SUM(c.realised_pnl + cst.cur_value - c.total_aum) as agr_returns'),
-            DB::raw('SUM(c.realised_pnl + cst.cur_value - c.total_aum) / SUM(c.total_aum) * 100 as agr_returns_pc'),
-        ]);
+        // $this->agrSelects = array_merge($this->selects, [
+        //     DB::raw('SUM(c.total_aum) as agr_aum'),
+        //     DB::raw('SUM(c.ledger_balance) as agr_ledger_balance'),
+        //     DB::raw('SUM(cst.allocated_aum) as agr_allocated_aum'),
+        //     DB::raw('SUM(cst.allocated_aum) / SUM(c.total_aum) * 100 as agr_pa'),
+        //     DB::raw('SUM(c.realised_pnl) as agr_realised_pnl'),
+        //     DB::raw('SUM(cst.cur_value) as agr_cur_value'),
+        //     DB::raw('(SUM(cst.cur_value) - SUM(cst.allocated_aum)) as agr_pnl'),
+        //     DB::raw('(SUM(cst.cur_value) - SUM(cst.allocated_aum)) / SUM(cst.allocated_aum) * 100 as agr_pnl_pc'),
+        //     DB::raw('SUM(lbq.liquidbees) as agr_liquidbees'),
+        //     DB::raw('SUM(c.total_aum) - SUM(cst.allocated_aum) as agr_cash'),
+        //     DB::raw('(SUM(c.total_aum) - SUM(cst.allocated_aum)) / SUM(c.total_aum) as agr_cash_pc'),
+        //     DB::raw('SUM(c.realised_pnl + cst.cur_value - c.total_aum) as agr_returns'),
+        //     DB::raw('SUM(c.realised_pnl + cst.cur_value - c.total_aum) / SUM(c.total_aum) * 100 as agr_returns_pc'),
+        // ]);
         $this->searchesMap = [
             'dealer' => 'u.name',
             'name' => 'c.name',
@@ -102,15 +102,17 @@ class ClientService implements ModelViewConnector
             DB::raw('cs.buy_avg_price * cs.dp_qty * 100 / c.total_aum as pa'),
         ];
 
-        $this->relAgrSelects = array_merge($this->relationSelects, [
-            DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) / SUM(c.total_aum) * 100 as agr_pa'),
-            DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) as agr_amt_invested'),
-            DB::raw('SUM(s.cmp * cs.dp_qty) as agr_cur_value'),
-            DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) as agr_overall_gain'),
-            DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) / SUM(cs.buy_avg_price * cs.dp_qty) * 100 as agr_pc_change'),
-            DB::raw('SUM((s.cmp - s.last_day_closing) * cs.dp_qty) as agr_todays_gain'),
-            DB::raw('SUM((s.cmp - s.last_day_closing) * cs.dp_qty) / SUM(s.last_day_closing * cs.dp_qty) * 100 as agr_todays_gain_pc'),
-        ]);
+
+
+        // $this->relAgrSelects = array_merge($this->relationSelects, [
+        //     DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) / SUM(c.total_aum) * 100 as agr_pa'),
+        //     DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) as agr_amt_invested'),
+        //     DB::raw('SUM(s.cmp * cs.dp_qty) as agr_cur_value'),
+        //     DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) as agr_overall_gain'),
+        //     DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) / SUM(cs.buy_avg_price * cs.dp_qty) * 100 as agr_pc_change'),
+        //     DB::raw('SUM((s.cmp - s.last_day_closing) * cs.dp_qty) as agr_todays_gain'),
+        //     DB::raw('SUM((s.cmp - s.last_day_closing) * cs.dp_qty) / SUM(s.last_day_closing * cs.dp_qty) * 100 as agr_todays_gain_pc'),
+        // ]);
 
         $this->relSearchesMap = [
             'aum' => 'c.total_aum',
@@ -170,6 +172,39 @@ class ClientService implements ModelViewConnector
         $this->relSelIdsKey = 's.id';
         $this->uniqueSortKey = 'c.id';
         $this->relUniqueSortKey = 's.id';
+    }
+
+    private function agrSelects()
+    {
+        return array_merge($this->selects, [
+            DB::raw('SUM(c.total_aum) as agr_aum'),
+            DB::raw('SUM(c.ledger_balance) as agr_ledger_balance'),
+            DB::raw('SUM(cst.allocated_aum) as agr_allocated_aum'),
+            DB::raw('SUM(cst.allocated_aum) / SUM(c.total_aum) * 100 as agr_pa'),
+            DB::raw('SUM(c.realised_pnl) as agr_realised_pnl'),
+            DB::raw('SUM(cst.cur_value) as agr_cur_value'),
+            DB::raw('(SUM(cst.cur_value) - SUM(cst.allocated_aum)) as agr_pnl'),
+            DB::raw('(SUM(cst.cur_value) - SUM(cst.allocated_aum)) / SUM(cst.allocated_aum) * 100 as agr_pnl_pc'),
+            DB::raw('SUM(lbq.liquidbees) as agr_liquidbees'),
+            DB::raw('SUM(c.total_aum) - SUM(cst.allocated_aum) as agr_cash'),
+            DB::raw('(SUM(c.total_aum) - SUM(cst.allocated_aum)) / SUM(c.total_aum) as agr_cash_pc'),
+            DB::raw('SUM(c.realised_pnl + cst.cur_value - c.total_aum) as agr_returns'),
+            DB::raw('SUM(c.realised_pnl + cst.cur_value - c.total_aum) / SUM(c.total_aum) * 100 as agr_returns_pc'),
+        ]);
+    }
+
+    private function relAgrSelects()
+    {
+        $client = Client::find($this->modelId);
+        return array_merge($this->relationSelects, [
+            DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) / '.$client->total_aum.' * 100 as agr_pa'),
+            DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) as agr_amt_invested'),
+            DB::raw('SUM(s.cmp * cs.dp_qty) as agr_cur_value'),
+            DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) as agr_overall_gain'),
+            DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) / SUM(cs.buy_avg_price * cs.dp_qty) * 100 as agr_pc_change'),
+            DB::raw('SUM((s.cmp - s.last_day_closing) * cs.dp_qty) as agr_todays_gain'),
+            DB::raw('SUM((s.cmp - s.last_day_closing) * cs.dp_qty) / SUM(s.last_day_closing * cs.dp_qty) * 100 as agr_todays_gain_pc'),
+        ]);
     }
 
     private function getQuery(): Builder

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Request;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 trait IsModelViewConnector{
+    protected $modelId = null;
     protected $query;
     protected $itemQuery;
     protected $relationQuery;
@@ -71,7 +72,7 @@ trait IsModelViewConnector{
         );
 
         // dd($agrQuery['query']->select($this->agrSelects)->toSql());
-        $aggregates = $agrQuery['query']->select($this->agrSelects)->get()->first();
+        $aggregates = $agrQuery['query']->select($this->agrSelects())->get()->first();
         DB::statement("SET SQL_MODE='only_full_group_by'");
 // dd($results->toArray());
         // $itemIds = $results->pluck('id')->toArray();
@@ -237,6 +238,7 @@ trait IsModelViewConnector{
         string $selectedIds = '',
         string $relationsResultsName = 'results'
     ) {
+        $this->modelId = $id;
         $this->preRelExtra();
         $item = $this->itemQuery->find($id);
         if (!$this->accessCheck($item)) {
@@ -259,7 +261,7 @@ trait IsModelViewConnector{
             'page',
             $page
         );
-        $aggregates = $queryData['query']->select($this->relAgrSelects)->get()->first();
+        $aggregates = $queryData['query']->select($this->relAgrSelects())->get()->first();
         DB::statement("SET SQL_MODE='only_full_group_by'");
 
         // $itemIds = $relatedResults->pluck('id')->toArray();
@@ -282,6 +284,16 @@ trait IsModelViewConnector{
             'paginator' => json_encode($paginator),
             'route' => Request::route()->getName()
         ];
+    }
+
+    private function agrSelects()
+    {
+        return ['*'];
+    }
+
+    private function relAgrSelects()
+    {
+        return ['*'];
     }
 
     public function getRelationQueryAndParams(

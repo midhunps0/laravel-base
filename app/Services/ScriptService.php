@@ -15,6 +15,7 @@ class ScriptService implements ModelViewConnector
     use IsModelViewConnector;
 
     private $pa;
+    private $tot_aum;
 
     public function __construct()
     {
@@ -29,7 +30,7 @@ class ScriptService implements ModelViewConnector
             ->select(
                 DB::raw('SUM(c.total_aum) as total_aum')
             )->get()->first();
-        $tot_aum = $sum->total_aum;
+        $this->tot_aum = $sum->total_aum;
 
         $this->selects = [
             'u.name as dealer',
@@ -38,7 +39,7 @@ class ScriptService implements ModelViewConnector
             's.bse_code as bse_code',
             's.symbol as symbol',
             's.id as sid',
-            DB::raw('qcs.amt_invested / '.$tot_aum.' * 100 as pa'),
+            DB::raw('qcs.amt_invested / '.$this->tot_aum.' * 100 as pa'),
             's.agio_indutry as sector',
             'qcs.qty as tot_qty',
             DB::raw('ROUND(qcs.abv, 2) as abv'),
@@ -51,29 +52,29 @@ class ScriptService implements ModelViewConnector
             DB::raw('ROUND(((s.cmp - s.last_day_closing) / s.last_day_closing * 100), 2) as todays_gain_pc'),
             's.day_high as day_high',
             's.day_low as day_low',
-            DB::raw('ROUND((s.cmp - qcs.abv) * qcs.qty / '.$tot_aum.' * 100, 2) as impact')
+            DB::raw('ROUND((s.cmp - qcs.abv) * qcs.qty / '.$this->tot_aum.' * 100, 2) as impact')
         ];
 
-        $this->agrSelects = array_merge(
-            $this->selects,
-            [
-                DB::raw('SUM(qcs.qty) - SUM(qcs.qty) + '.$tot_aum.' as dlr_aum'),
-                DB::raw('SUM(qcs.qty) as dlr_qty'),
-                DB::raw('SUM(qcs.amt_invested) as dlr_amt_invested'),
-                DB::raw('SUM(s.cmp * qcs.qty) as dlr_cur_value'),
-                DB::raw('(SUM(qcs.amt_invested) - SUM(s.cmp * qcs.qty)) as dlr_overall_gain'),
-                DB::raw('(SUM(qcs.amt_invested) - SUM(s.cmp * qcs.qty)) / SUM(s.cmp * qcs.qty) * 100 as dlr_gain_pc'),
-                DB::raw('SUM(qcs.amt_invested) / '.$tot_aum.' * 100 as dlr_pa'),
-                DB::raw('SUM(s.cmp * qcs.qty) - SUM(s.last_day_closing * qcs.qty) as dlr_todays_gain'),
-                DB::raw('(SUM(s.cmp * qcs.qty) - SUM(s.last_day_closing * qcs.qty)) / SUM(s.last_day_closing * qcs.qty) * 100 as dlr_todays_gain_pc')
-            ]
-        );
+        // $this->agrSelects = array_merge(
+        //     $this->selects,
+        //     [
+        //         DB::raw('SUM(qcs.qty) - SUM(qcs.qty) + '.$tot_aum.' as dlr_aum'),
+        //         DB::raw('SUM(qcs.qty) as dlr_qty'),
+        //         DB::raw('SUM(qcs.amt_invested) as dlr_amt_invested'),
+        //         DB::raw('SUM(s.cmp * qcs.qty) as dlr_cur_value'),
+        //         DB::raw('(SUM(qcs.amt_invested) - SUM(s.cmp * qcs.qty)) as dlr_overall_gain'),
+        //         DB::raw('(SUM(qcs.amt_invested) - SUM(s.cmp * qcs.qty)) / SUM(s.cmp * qcs.qty) * 100 as dlr_gain_pc'),
+        //         DB::raw('SUM(qcs.amt_invested) / '.$tot_aum.' * 100 as dlr_pa'),
+        //         DB::raw('SUM(s.cmp * qcs.qty) - SUM(s.last_day_closing * qcs.qty) as dlr_todays_gain'),
+        //         DB::raw('(SUM(s.cmp * qcs.qty) - SUM(s.last_day_closing * qcs.qty)) / SUM(s.last_day_closing * qcs.qty) * 100 as dlr_todays_gain_pc')
+        //     ]
+        // );
         $this->sortsMap = [
             'dealer' => ['name' => 'dealer', 'type' => 'string'],
             'dop' => ['name' => 'qcs.dop', 'type' => 'integer'],
             'bse_code' => ['name' => 's.bse_code', 'type' => 'string'],
             'symbol' => ['name' => 's.symbol', 'type' => 'string'],
-            'pa' => ['name' => 'qcs.amt_invested / '.$tot_aum.' * 100', 'type' => 'integer'],
+            'pa' => ['name' => 'qcs.amt_invested / '.$this->tot_aum.' * 100', 'type' => 'integer'],
             'sector' => ['name' => 's.agio_indutry', 'type' => 'string'],
             'tot_qty' => ['name' => 'qcs.qty', 'type' => 'integer'],
             //'abv' => ['name' => 'DB::raw('ROUND(qcs.abv, 2)', 'type' => 'integer']
@@ -108,17 +109,17 @@ class ScriptService implements ModelViewConnector
             DB::raw('cs.buy_avg_price * cs.dp_qty / c.total_aum * 100 as pa'),
         ];
 
-        $this->relAgrSelects = array_merge(
-            $this->relationSelects,
-            [
-                DB::raw('SUM(cs.dp_qty) as agr_qty'),
-                DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) as agr_buy_val'),
-                DB::raw('SUM(s.cmp * cs.dp_qty) as agr_cur_val'),
-                DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) as agr_pnl'),
-                DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) / SUM(cs.buy_avg_price * cs.dp_qty) * 100 as agr_pnl_pc'),
-                DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) / SUM(c.total_aum) * 100 as agr_impact'),
-                DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) / SUM(c.total_aum) * 100 as agr_pa'),
-            ]);
+        // $this->relAgrSelects = array_merge(
+        //     $this->relationSelects,
+        //     [
+        //         DB::raw('SUM(cs.dp_qty) as agr_qty'),
+        //         DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) as agr_buy_val'),
+        //         DB::raw('SUM(s.cmp * cs.dp_qty) as agr_cur_val'),
+        //         DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) as agr_pnl'),
+        //         DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) / SUM(cs.buy_avg_price * cs.dp_qty) * 100 as agr_pnl_pc'),
+        //         DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) / SUM(c.total_aum) * 100 as agr_impact'),
+        //         DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) / SUM(c.total_aum) * 100 as agr_pa'),
+        //     ]);
 
         $this->selIdsKey = 's.id';
 
@@ -167,6 +168,40 @@ class ScriptService implements ModelViewConnector
         );
         $this->idKey = 'sid';
         $this->relSelIdsKey = 'c.id';
+    }
+
+    private function agrSelects()
+    {
+        return array_merge(
+            $this->selects,
+            [
+                DB::raw('SUM(qcs.qty) - SUM(qcs.qty) + '.$this->tot_aum.' as dlr_aum'),
+                DB::raw('SUM(qcs.qty) as dlr_qty'),
+                DB::raw('SUM(qcs.amt_invested) as dlr_amt_invested'),
+                DB::raw('SUM(s.cmp * qcs.qty) as dlr_cur_value'),
+                DB::raw('(SUM(qcs.amt_invested) - SUM(s.cmp * qcs.qty)) as dlr_overall_gain'),
+                DB::raw('(SUM(qcs.amt_invested) - SUM(s.cmp * qcs.qty)) / SUM(s.cmp * qcs.qty) * 100 as dlr_gain_pc'),
+                DB::raw('SUM(qcs.amt_invested) / '.$this->tot_aum.' * 100 as dlr_pa'),
+                DB::raw('SUM(s.cmp * qcs.qty) - SUM(s.last_day_closing * qcs.qty) as dlr_todays_gain'),
+                DB::raw('(SUM(s.cmp * qcs.qty) - SUM(s.last_day_closing * qcs.qty)) / SUM(s.last_day_closing * qcs.qty) * 100 as dlr_todays_gain_pc')
+            ]
+        );
+    }
+
+    private function relAgrSelects()
+    {
+        return array_merge(
+            $this->relationSelects,
+            [
+                DB::raw('SUM(cs.dp_qty) as agr_qty'),
+                DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) as agr_buy_val'),
+                DB::raw('SUM(s.cmp * cs.dp_qty) as agr_cur_val'),
+                DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) as agr_pnl'),
+                DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) / SUM(cs.buy_avg_price * cs.dp_qty) * 100 as agr_pnl_pc'),
+                DB::raw('SUM((s.cmp - cs.buy_avg_price) * cs.dp_qty) / SUM(c.total_aum) * 100 as agr_impact'),
+                DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) / SUM(c.total_aum) * 100 as agr_pa'),
+            ]
+        );
     }
 
     private function getQuery(): Builder
