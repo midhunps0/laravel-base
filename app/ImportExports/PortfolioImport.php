@@ -39,7 +39,7 @@ class PortfolioImport implements ToCollection, WithHeadingRow
                 continue;
             }
 
-            $client = Client::find($item['client_code']);
+            $client = Client::where('client_code', $item['client_code'])->get()->first();
             if ($client == null) {
                 $this->failedItems[] = [
                     'client_code' => $item['client_code'],
