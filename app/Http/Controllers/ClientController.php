@@ -274,7 +274,7 @@ class ClientController extends SmartController
 
     public function edit(Client $client)
     {
-        $dealers = User::withRoles(['Dealer'])->get();
+        $dealers = User::withRoles(['Dealer', 'Team Leader'])->get();
         $pfo_types = Config('appSettings.client_pfo_types');
         $categories = Config('appSettings.client_categories');
         $types = Config('appSettings.client_types');

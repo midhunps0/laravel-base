@@ -234,7 +234,7 @@
                             <label class="label mb-0 pb-0">
                             <span class="label-text">PFO Type</span>
                             </label>
-                            <select x-model="dealer" class="select select-bordered" :disabled="mode == 'view'">
+                            <select x-model="pfo_type" class="select select-bordered" :disabled="mode == 'view'">
                             <option value="0" disabled selected>Select PFO Type</option>
                             @foreach ($pfo_types as $type)
                                 <option value="{{$type}}">{{$type}}</option>
@@ -245,7 +245,7 @@
                             <label class="label mb-0 pb-0">
                             <span class="label-text">Category</span>
                             </label>
-                            <select x-model="dealer" class="select select-bordered" :disabled="mode == 'view'">
+                            <select x-model="category" class="select select-bordered" :disabled="mode == 'view'">
                             <option value="0" disabled selected>Select Category</option>
                             @foreach ($categories as $category)
                                 <option value="{{$category}}">{{$category}}</option>
@@ -256,7 +256,7 @@
                             <label class="label mb-0 pb-0">
                             <span class="label-text">Type</span>
                             </label>
-                            <select x-model="dealer" class="select select-bordered" :disabled="mode == 'view'">
+                            <select x-model="type" class="select select-bordered" :disabled="mode == 'view'">
                             <option value="0" disabled selected>Select</option>
                             @foreach ($types as $type)
                                 <option value="{{$type}}">{{$type}}</option>
@@ -267,7 +267,7 @@
                             <label class="label mb-0 pb-0">
                             <span class="label-text">FNO</span>
                             </label>
-                            <select x-model="dealer" class="select select-bordered" :disabled="mode == 'view'">
+                            <select x-model="fno" class="select select-bordered" :disabled="mode == 'view'">
                                 <option value="0" disabled selected>Select</option>
                                 <option value="1">Yes</option>
                                 <option value="0">No</option>

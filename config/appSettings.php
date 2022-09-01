@@ -4,14 +4,16 @@
             'ASHOKLEY'
         ],
         'client_pfo_types' => [
-            'HNI'
+            'HNI',
+            'MNI'
         ],
         'client_categories' => [
             'LT',
             'ST'
         ],
         'client_types' => [
-            'Active'
+            'Active',
+            'Inactive'
         ]
     ];
 ?>
