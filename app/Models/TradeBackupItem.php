@@ -17,5 +17,6 @@ class TradeBackupItem extends Model
         'date',
         'client_id',
         'script_id',
+        'trade_no'
     ];
 }
