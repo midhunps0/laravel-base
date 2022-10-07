@@ -168,7 +168,8 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
             TradeBackupItem::create([
                 'date' => $ddate,
                 'client_id' => $client->id,
-                'script_id' => $scriptId
+                'script_id' => $scriptId,
+                'orderno' => $item['trade_no']
             ]);
             info('----Finish----');
         }
