@@ -18,8 +18,8 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
     public $failedItems = [];
     public $totalItems = 0;
     /**
-    * @param Collection $collection
-    */
+     * @param Collection $collection
+     */
     public function collection(Collection $data)
     {
         // get Client Code, Symbol -> get client, get symbol -> sript id
@@ -41,7 +41,7 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
                 continue;
             }
             info('----Start----');
-            info('Client: '.$item['client_code']);
+            info('Client: ' . $item['client_code']);
             $success = true;
             $itemStatus = ['client' => 'Ok', 'script' => 'Unchecked', 'client_script' => 'Unchecked', 'trade_date' => 'Ok'];
             $client = Client::with('scripts')->where('client_code', $item['client_code'])->get()->first();
@@ -66,7 +66,7 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
             } else {
                 $itemStatus['trade_date'] = 'Invalid date';
             }
-            $ddate = $d[2].'-'.$d[1].'-'.$d[0];
+            $ddate = $d[2] . '-' . $d[1] . '-' . $d[0];
 
             if ($success) {
                 $tbi = TradeBackupItem::where('date', $ddate)
@@ -84,16 +84,16 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
             $amt = $price * $qty;
             if ($success) {
                 $theScript = $client->scripts->find($scriptId);
-                info('qty: '.$qty. 'price: '.$price.'amt: '.$amt);
-                if($theScript != null) {
+                info('qty: ' . $qty . 'price: ' . $price . 'amt: ' . $amt);
+                if ($theScript != null) {
                     info('Script:');
                     info($theScript);
                     $oldQty = $theScript->pivot->dp_qty;
-                    info('b a price: '. $theScript->pivot->buy_avg_price);
+                    info('b a price: ' . $theScript->pivot->buy_avg_price);
                     $oldAvgBuyPrice = $theScript->pivot->buy_avg_price;
-                    info('oldqty = '. $oldQty);
-                    info('oldavgprice = '. $oldAvgBuyPrice);
-                } else if($item['buysell'] == 'B') {
+                    info('oldqty = ' . $oldQty);
+                    info('oldavgprice = ' . $oldAvgBuyPrice);
+                } else if ($item['buysell'] == 'B') {
                     $oldQty = 0;
                     $oldAvgBuyPrice = 0;
                 } else {
@@ -104,77 +104,77 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
             }
             if (!$success) {
                 $this->failedItems[] = $itemStatus;
-                info('Skipping - item not found:');
+                info('Skipping: ');
                 info($itemStatus);
                 continue;
-            }
+            } else {
+                // $newQty = $oldQty;
+                // $newAvgPrice = $oldAvgBuyPrice;
+                $oldRealisedPnl = $client->realised_pnl;
+                $newRealisedPnl = $oldRealisedPnl;
+                switch ($item['buysell']) {
+                    case 'B':
+                        info('Case B');
+                        $newQty = $oldQty + $qty;
+                        info('new qty: ' . $newQty);
+                        $newAvgPrice = (($oldAvgBuyPrice * $oldQty) + $amt) / $newQty;
+                        info('new avg price: ' . $newAvgPrice);
 
-            // $newQty = $oldQty;
-            // $newAvgPrice = $oldAvgBuyPrice;
-            $oldRealisedPnl = $client->realised_pnl;
-            $newRealisedPnl = $oldRealisedPnl;
-            switch($item['buysell']) {
-                case 'B':
-                    info('Case B');
-                    $newQty = $oldQty + $qty;
-                    info('new qty: '.$newQty);
-                    $newAvgPrice = (($oldAvgBuyPrice * $oldQty) + $amt) / $newQty;
-                    info('new avg price: '.$newAvgPrice);
+                        if (isset($theScript)) {
+                            $client->scripts()->updateExistingPivot(
+                                $scriptId,
+                                [
+                                    'dp_qty' => $newQty,
+                                    'buy_avg_price' => $newAvgPrice
+                                ]
+                            );
+                        } else {
+                            $client->scripts()->attach(
+                                $scriptId,
+                                [
+                                    'dp_qty' => $newQty,
+                                    'available_qty' => $newQty,
+                                    'entry_date' => date('Y-m-d'),
+                                    'buy_avg_price' => $newAvgPrice
+                                ]
+                            );
+                        }
+                        break;
+                    case 'S':
+                        info('Case S');
+                        $newQty = $oldQty - $qty;
+                        info('new qty: ' . $newQty);
+                        if ($newQty < 0) {
+                            $newQty = 0;
+                            info('new qty corrected: ' . $newQty);
+                        }
+                        $pnl = $amt - ($oldAvgBuyPrice * $qty);
+                        info('pnl: ' . $pnl);
 
-                    if (isset($theScript)) {
+                        info('old realisedPnl: ' . $oldRealisedPnl);
+                        $newRealisedPnl = $oldRealisedPnl + $pnl;
+                        info('new realisedPnl: ' . $newRealisedPnl);
+
                         $client->scripts()->updateExistingPivot(
                             $scriptId,
                             [
-                                'dp_qty' => $newQty,
-                                'buy_avg_price' => $newAvgPrice
+                                'dp_qty' => $newQty
                             ]
                         );
-                    } else {
-                        $client->scripts()->attach(
-                            $scriptId,
-                            [
-                                'dp_qty' => $newQty,
-                                'available_qty' => $newQty,
-                                'entry_date' => date('Y-m-d'),
-                                'buy_avg_price' => $newAvgPrice
-                            ]
-                        );
-                    }
-                    break;
-                case 'S':
-                    info('Case S');
-                    $newQty = $oldQty - $qty;
-                    info('new qty: '.$newQty);
-                    if ($newQty < 0) {
-                        $newQty = 0;
-                        info('new qty corrected: '.$newQty);
-                    }
-                    $pnl = $amt - ($oldAvgBuyPrice * $qty);
-                    info('pnl: '.$pnl);
+                        $client->update(['realised_pnl' => $newRealisedPnl]);
+                        break;
+                }
+                info('Trade No: ' . $item['trade_no']);
 
-                    info('old realisedPnl: '.$oldRealisedPnl);
-                    $newRealisedPnl = $oldRealisedPnl + $pnl;
-                    info('new realisedPnl: '.$newRealisedPnl);
-
-                    $client->scripts()->updateExistingPivot(
-                        $scriptId,
-                        [
-                            'dp_qty' => $newQty
-                        ]
-                    );
-                    $client->update(['realised_pnl' => $newRealisedPnl]);
-                    break;
+                TradeBackupItem::create([
+                    'date' => $ddate,
+                    'client_id' => $client->id,
+                    'script_id' => $scriptId,
+                    'trade_no' => $item['trade_no']
+                ]);
+                $success_items[] = $item['trade_no'];
+                info('----Finish----');
             }
-            info('Trade No: '.$item['trade_no']);
-
-            TradeBackupItem::create([
-                'date' => $ddate,
-                'client_id' => $client->id,
-                'script_id' => $scriptId,
-                'trade_no' => $item['trade_no']
-            ]);
-            $success_items[] = $item['trade_no'];
-            info('----Finish----');
         }
         info('Success Items: ');
         info($success_items);
