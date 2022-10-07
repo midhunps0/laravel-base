@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('trade_backup_items', function (Blueprint $table) {
-            $table->string('orderno')->unique();
+            $table->string('trade_no');
         });
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('trade_backup_items', function (Blueprint $table) {
-            $table->dropColumn(['orderno']);
+            $table->dropColumn(['trade_no']);
         });
     }
 };

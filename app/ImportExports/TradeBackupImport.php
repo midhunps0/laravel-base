@@ -70,7 +70,7 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
 
             if ($success) {
                 $tbi = TradeBackupItem::where('date', $ddate)
-                    ->where('orderno', $item['trade_no'])
+                    ->where('trade_no', $item['trade_no'])
                     // ->where('script_id', $scriptId)
                     // ->where('client_id', $client->id)
                     ->get()->first();
@@ -170,7 +170,7 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
                 'date' => $ddate,
                 'client_id' => $client->id,
                 'script_id' => $scriptId,
-                'orderno' => $item['trade_no']
+                'trade_no' => $item['trade_no']
             ]);
             info('----Finish----');
         }
