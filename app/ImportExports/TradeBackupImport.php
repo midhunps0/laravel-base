@@ -33,7 +33,7 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
         // $post->tags()->updateExistingPivot($tagId, [
         //     'name' => 'Give me a name',
         // ]);
-
+        $success_items = [];
         foreach ($data as $item) {
             if (isset($item['client_code'])) {
                 $this->totalItems++;
@@ -166,14 +166,18 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
                     break;
             }
             info('Trade No: '.$item['trade_no']);
+
             TradeBackupItem::create([
                 'date' => $ddate,
                 'client_id' => $client->id,
                 'script_id' => $scriptId,
                 'trade_no' => $item['trade_no']
             ]);
+            $success_items[] = $item['trade_no'];
             info('----Finish----');
         }
+        info('Success Items: ');
+        info($success_items);
         return [$this->totalItems, $this->failedItems];
     }
 
