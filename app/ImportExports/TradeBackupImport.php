@@ -165,6 +165,7 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
                     $client->update(['realised_pnl' => $newRealisedPnl]);
                     break;
             }
+            info('Trade No: '.$item['trade_no']);
             TradeBackupItem::create([
                 'date' => $ddate,
                 'client_id' => $client->id,
