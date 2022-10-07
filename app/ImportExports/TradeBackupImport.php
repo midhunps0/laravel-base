@@ -99,7 +99,7 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
                 } else {
                     $success = false;
                     $itemStatus['client_script'] = 'Not Found';
-                    continue;
+                    // continue;
                 }
             }
             if (!$success) {
