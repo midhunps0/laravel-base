@@ -2,7 +2,6 @@
     <x-utils.bulk-import
     title="Import Clients"
     actionRoute="clients.import.store"
-    filename="clients.xlsx"
     buttonText="Import"
     :headings="[
         'RM',

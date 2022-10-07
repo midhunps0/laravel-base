@@ -2,7 +2,6 @@
     <x-utils.bulk-import
     title="Import Trade Backup"
     actionRoute="post.import.trade_backup"
-    filename="tbk.xlsx"
     buttonText="Import"
     :headings="[
         'Client Code',
@@ -10,6 +9,7 @@
         'Trade Date Time',
         'Trade Qty',
         'Trade Price',
+        'Trade No',
         'Buy/Sell',
     ]"
     notes="<span class='font-bold text-warning'>Trade Date Time</span> shall be in the format <span class='font-bold text-warning'>dd-mm-yyyy</span>">

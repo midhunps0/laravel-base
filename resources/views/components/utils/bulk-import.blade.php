@@ -1,4 +1,4 @@
-@props(['title', 'actionRoute', 'filename' => 'file', 'buttonText' => 'Import File', 'headings' => [], 'notes'])
+@props(['title', 'actionRoute', 'filename' => 'inputfile', 'buttonText' => 'Import File', 'headings' => [], 'notes'])
 <div class="p-3">
     <h3 class="text-xl font-bold">{{$title}}</h3>
     <div class="mt-4">
@@ -23,7 +23,8 @@
             },
             doSubmit() {
                 var formData = new FormData();
-                formData.append('file', this.file, '{{$filename}}');
+                /*formData.append('file', this.file, '{{$filename}}');*/
+                formData.append('file', this.file);
                 this.processing = true;
                 this.uploadResult = {
                     status: false,
@@ -36,7 +37,7 @@
                     data: formData,
                     headers: { 'Content-Type': 'multipart/form-data' },
                   }).then((r) => {
-                    console.log(r);
+                    {{-- console.log(r); --}}
                     if (r.data.success) {
                         this.message = 'Import finished.';
                         this.uploadResult.totalItems = r.data.total_items;
@@ -68,7 +69,7 @@
                 <button x-show="file != null"
                     @click.prevent.stop="files = null; $dispatch('filechange', {files: files}); processing = false; finished = false;"
                     class="p-1 border border-error rounded-md text-error mr-2"><x-display.icon icon="icons.close"/></button>
-                <input x-ref="ifile" type="file" class="sr-only" id="ifile" @change="console.log($event.target.files);$dispatch('filechange', {files: Object.values($event.target.files)});" accept=".xlsx">
+                <input x-ref="ifile" type="file" class="sr-only" id="ifile" @change="console.log($event.target.files);$dispatch('filechange', {files: Object.values($event.target.files)});" accept=".xlsx, .csv">
                 <span x-text="file ? file.name : 'Choose file...'" class="font-bold text-accent"></span>
             </label>
             <div x-show="file != null">

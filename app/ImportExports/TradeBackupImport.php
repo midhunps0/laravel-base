@@ -68,15 +68,17 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
             }
             $ddate = $d[2].'-'.$d[1].'-'.$d[0];
 
-            $tbi = TradeBackupItem::where('date', $ddate)
-                ->where('script_id', $scriptId)
-                ->where('client_id', $client->id)
-                ->get()->first();
-            if ($tbi != null) {
-                $success = false;
-                $itemStatus['trade_date'] = 'Duplicate backup.';
+            if ($success) {
+                $tbi = TradeBackupItem::where('date', $ddate)
+                    ->where('orderno', $item['trade_no'])
+                    // ->where('script_id', $scriptId)
+                    // ->where('client_id', $client->id)
+                    ->get()->first();
+                if ($tbi != null) {
+                    $success = false;
+                    $itemStatus['trade_date'] = 'Duplicate backup.';
+                }
             }
-
             $qty = intval($item['trade_qty']);
             $price = floatval($item['trade_price']);
             $amt = $price * $qty;

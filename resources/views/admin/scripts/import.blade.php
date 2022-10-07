@@ -2,7 +2,6 @@
     <x-utils.bulk-import
     title="Import Scripts"
     actionRoute="scripts.import.store"
-    filename="scripts.xlsx"
     buttonText="Import"
     :headings="[
         'ISIN Code',
