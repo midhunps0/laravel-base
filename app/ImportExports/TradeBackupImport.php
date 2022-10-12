@@ -76,7 +76,7 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
                     ->get()->first();
                 if ($tbi != null) {
                     $success = false;
-                    $itemStatus['trade_date'] = 'Duplicate backup.';
+                    $itemStatus['trade_date'] = 'Duplicate backup: trade_no:'.$item['trade_no'];
                 }
             }
             $qty = intval($item['trade_qty']);
