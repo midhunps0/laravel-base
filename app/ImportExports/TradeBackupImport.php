@@ -56,7 +56,7 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
                 $scriptId = $script->id;
             } else {
                 $success = false;
-                $itemStatus['client'] = 'Not Found';
+                $itemStatus['script'] = 'Not Found';
             }
 
             if (strpos($item['trade_date_time'], '-') > 0) {
