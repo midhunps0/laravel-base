@@ -7,10 +7,11 @@
             'HNI',
             'MNI'
         ],
-        'client_categories' => [
-            'A',
-            'B'
-        ],
+        // 'client_categories' => [
+        //     'A',
+        //     'B'
+        // ],
+        'default_client_category' => 'A',
         'client_types' => [
             'Active',
             'Inactive'

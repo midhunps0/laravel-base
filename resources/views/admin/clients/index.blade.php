@@ -82,17 +82,17 @@
                         fieldname="tracked"
                     /> --}}
                     <select x-data="{
-                        'val': 'A'
+                        'val': '{{config('appSettings.default_client_category')}}'
                         }"
                         @change.stop.prevent="$dispatch('spotfilter', {data: {category: val}});"
                         x-model="val" class="select select-bordered select-sm max-w-xs py-0 m-1"
                         :class="val == -1 || 'text-accent'">
                         <option value="All">All</option>
-                        @foreach (config('appSettings.client_categories') as $cat)
+                        @foreach (\App\Helpers\AppHelper::getDistinctCategories() as $cat)
                             <option value="{{ $cat }}"
-                            @if ($cat == 'A')
+                            {{-- @if ($cat == config('appSettings.default_client_category'))
                                 selected
-                            @endif
+                            @endif --}}
                             >
                                 {{ $cat }}
                             </option>
