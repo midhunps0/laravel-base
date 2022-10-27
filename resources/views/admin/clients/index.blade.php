@@ -71,12 +71,38 @@
         </th>
         <th class="border-l-2 border-base-100 sticky !left-72 z-30">
             <div class="flex flex-row items-center">
-                <x-utils.spotsort name="category" val="{{ $sort['category'] ?? 'none' }}" />
+                <div class="relative flex-grow ml-2 flex flex-row items-center justify-between">
+                    {{-- <span>Tracked ?</span> --}}
+                    {{-- <x-utils.spotfilter
+                        :options="[
+                            ['key' => 'A', 'text' => 'A'],
+                            ['key' => 'LT', 'text' => 'LT']
+                        ]"
+                        selectedoption=-1
+                        fieldname="tracked"
+                    /> --}}
+                    <select x-data="{
+                        'val': 'A'
+                        }"
+                        @change.stop.prevent="$dispatch('spotfilter', {data: {category: val}});"
+                        x-model="val" class="select select-bordered select-sm max-w-xs py-0 m-1"
+                        :class="val == -1 || 'text-accent'">
+                        <option value="All">All</option>
+                        @foreach (config('appSettings.client_categories') as $cat)
+                            <option value="{{ $cat }}"
+                            @if ($cat == 'A')
+                                selected
+                            @endif
+                            >
+                                {{ $cat }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                {{-- <x-utils.spotsort name="category" val="{{ $sort['category'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     Type
-                    {{-- <x-utils.spotsearch textval="{{ $params['category'] ?? '' }}" textname="category"
-                        label="Search category" /> --}}
-                </div>
+                </div> --}}
             </div>
         </th>
         <th class="text-center border-l-2 border-base-100">
@@ -204,12 +230,12 @@
                 {{-- @endif --}}
                 {{-- {{$rows}} --}}
                 <td class="sticky !left-6">
-                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id), route: 'clients.show'})"
+                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}?filter[]=tracked::1'.replace('0', result.id), route: 'clients.show'})"
                         class="link no-underline hover:underline" href="" x-text="result.client_code"></a>
                 </td>
                 <td class="sticky !left-36 z-20">
                     <div class="tooltip tooltip-top" :data-tip="result.name">
-                    <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.show', 0)}}'.replace('0', result.id), route: 'clients.show'})"
+                    <a @click.prevent.stop="$dispatch('linkaction', {link: ('{{route('clients.show', 'x0x')}}?filter[]=tracked::1&items_count=y0y'.replace('x0x', result.id)).replace('y0y', items_count), route: 'clients.show'})"
                         class="link no-underline hover:underline" href="" x-text="formatString(result.name, 10)"></a>
                     </div>
                 </td>

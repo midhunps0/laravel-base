@@ -245,6 +245,8 @@ trait IsModelViewConnector{
             throw new AccessDeniedException('You are not allowed to view this client');
         }
         $query = $this->getRelationQuery($item->id);
+        $aquery = clone $query;
+
         $queryData = $this->getRelationQueryAndParams(
             $query,
             $searches,
@@ -253,16 +255,32 @@ trait IsModelViewConnector{
             $advSearch,
             $selectedIds
         );
-        // dd($queryData['query']->select($this->relationSelects)->toSql());
+
         DB::statement("SET SQL_MODE=''");
+
         $relatedResults = $queryData['query']->paginate(
             $itemsCount,
             $this->relationSelects,
             'page',
             $page
         );
-        $aggregates = $queryData['query']->select($this->relAgrSelects())->get()->first();
+
         DB::statement("SET SQL_MODE='only_full_group_by'");
+
+
+        $aggrQueryData = $this->getRelationQueryAndParams(
+            $aquery,
+            $searches,
+            [],
+            $filters,
+            $advSearch,
+            $selectedIds
+        );
+        DB::statement("SET SQL_MODE=''");
+        $aggregates = $aggrQueryData['query']->select($this->relAgrSelects())->get()->first();
+        DB::statement("SET SQL_MODE='only_full_group_by'");
+
+// dd($aggregates);
 
         // $itemIds = $relatedResults->pluck('id')->toArray();
         $data = $relatedResults->toArray();
@@ -315,7 +333,7 @@ trait IsModelViewConnector{
             $ids = explode('|', $selectedIds);
             $this->querySelectedIds($query, $this->relSelIdsKey, $ids);
         }
-
+// dd($query->toSql());
         return [
             'query' => $query,
             'searchParams' => $searchParams,

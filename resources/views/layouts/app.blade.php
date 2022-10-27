@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html x-data="{theme: $persist('newdark'), href: '', currentpath: '{{url()->current()}}', currentroute: '{{ Route::currentRouteName() }}', timer: null, liveUpdate: false, url: '', timers: [], initialised: false}"
+<html x-data="{theme: $persist('newdark'), href: '', currentpath: '{{url()->current()}}', currentroute: '{{ Route::currentRouteName() }}', timer: null, liveUpdate: false, url: '', timers: [], initialised: false, items_count: 30}"
 @themechange.window="theme = $event.detail.darktheme ? 'newdark' : 'light';" lang="{{ str_replace('_', '-', app()->getLocale()) }}"
 x-init="window.landingUrl = '{{\Request::getRequestUri()}}'"
                     // timer = null;

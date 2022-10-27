@@ -8,8 +8,8 @@
             'MNI'
         ],
         'client_categories' => [
-            'LT',
-            'ST'
+            'A',
+            'B'
         ],
         'client_types' => [
             'Active',

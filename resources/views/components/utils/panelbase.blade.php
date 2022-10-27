@@ -1,4 +1,4 @@
-@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'soPriceField' => 'false', 'paginator', 'columns' => [], 'orderBaseUrl' => '', 'orderVerifyUrl' => '', 'orderCheckUrl' => '', 'id' => ''])
+@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'soPriceField' => 'false', 'paginator', 'columns' => [], 'orderBaseUrl' => '', 'orderVerifyUrl' => '', 'orderCheckUrl' => '', 'id' => '', 'filter' => []])
 <x-dashboard-base :ajax="$x_ajax">
     <div id="{{$id}}" x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 overflow-x-scroll relative h-full" :id="$id('panel-base')">
 
@@ -415,7 +415,7 @@
                     }
                     params.items_count = this.itemsCount;
                     params.page = this.paginatorPage;
-                    console.log('items: '+ this.itemsCount);
+                    console.log('items count: '+ this.itemsCount);
                     return params;
                 },
                 async triggerFetch() {
@@ -430,6 +430,7 @@
                             params: allParams
                         }
                     ).then((r) => {
+                        console.log(r.data);
                         this.results = this.setResults(JSON.parse(r.data.results_json));
                         this.aggregates = JSON.parse(r.data.aggregates);
                         this.totalResults = r.data.total_results;
@@ -484,7 +485,10 @@
                 },
                 setFilter(detail) {
                     let keys = Object.keys(detail.data);
-                    if (detail.data[keys[0]] >= 0) {
+                    console.log(keys);
+                    if (keys[0] == 'tracked' && detail.data[keys[0]] >= 0) {
+                        this.filters[keys[0]] = detail.data[keys[0]];
+                    } else if(keys[0] == 'category' && detail.data[keys[0]] != 'All') {
                         this.filters[keys[0]] = detail.data[keys[0]];
                     } else {
                         if (typeof(this.filters[keys[0]]) != 'undefined') {
@@ -493,6 +497,7 @@
                     }
                 },
                 doFilter(detail) {
+                    console.log('filter working');
                     this.setFilter(detail);
                     ajaxLoading = true;
                     this.paginator.currentPage = 1;
@@ -639,12 +644,14 @@
 
                     setDownloadUrl();
 
+
+
                     aggregates = JSON.parse(document.getElementById('aggregates').value);
 
                         url = '{{ $indexUrl }}';
                         params = {};
                         sort = {};
-                        filters = {};
+                        filters = JSON.parse('{{json_encode($filter)}}');
                         itemsCount = {{ $items_count }};
                         {{-- itemIds = JSON.parse('{{$items_ids}}'); --}}
                         itemIds = JSON.parse(document.getElementById('itemIds').value);

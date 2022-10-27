@@ -97,7 +97,7 @@ class ClientController extends SmartController
                 $this->request->input('page'),
                 $this->request->input('search', []),
                 $this->request->input('sort', []),
-                $this->request->input('filter', ['tracked::1']),
+                $this->request->input('filter', []),
                 $this->request->input('adv_search', []),
                 $this->request->input('selected_ids', ''),
                 'scripts'

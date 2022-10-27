@@ -26,7 +26,9 @@
     id="clients_show"
     :editbtn="true"
     editroute="clients.import.store"
-    :model_id="$model->id">
+    :model_id="$model->id"
+    :filter="$filter"
+    >
     <x-slot:searchbox>
         <x-utils.itemssearch
         itemsName="clients"
