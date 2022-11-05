@@ -156,7 +156,7 @@ class ClientController extends SmartController
             'symbol',
             'entry_date',
             'pa',
-            'category',
+            // 'category',
             'sector',
             'qty',
             'buy_avg_price',
