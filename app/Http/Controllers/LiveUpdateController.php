@@ -15,36 +15,22 @@ class LiveUpdateController extends Controller
 		$count = 0;
         try {
             foreach ($allItems as $item) {
-                switch($ltp['Exchange']) {
-                    case 'NSE':
-                        Script::where('instrument_token', $item['instrument_token'])->update(
-                            [
-                                'cmp' => $item['ltp'],
-                                'day_high' => $item['high'],
-                                'day_low' => $item['low'],
-                                'last_day_closing' => $item['close'],
-                            ]
-                        );
-                        break;
-                    case 'BSE':
-                        Script::where('bse_code', $item['instrument_token'])->update(
-                            [
-                                'cmp' => $item['ltp'],
-                                'day_high' => $item['high'],
-                                'day_low' => $item['low'],
-                                'last_day_closing' => $item['close'],
-                            ]
-                        );
-                        break;
-                    default:
-                        break;
+                $r = Script::where(
+                    'instrument_token',
+                    $item['instrument_token']
+                )->update(
+                    [
+                        'cmp' => $item['ltp'],
+                        'day_high' => $item['high'],
+                        'day_low' => $item['low'],
+                        'last_day_closing' => $item['close'],
+                    ]
+                );
+                if ($r > 0) {
+                    $count++;
                 }
-				if (!isset($script)) {
-                    continue;
-                }
-				$count++;
             }
-			info('LTP/OHLCss saved: '.$count);
+
             return response('Ok', 200);
         } catch (Exception $e) {
             return response('Invalid input.', 400);
