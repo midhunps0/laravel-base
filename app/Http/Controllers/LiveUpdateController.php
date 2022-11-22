@@ -10,43 +10,29 @@ class LiveUpdateController extends Controller
 {
     public function liveUpdate(Request $request)
     {
-        $ltps = $request->input('LTP', []);
-        $ohlcs = $request->input('OHLC', []);
-        $scriptcode = "ScripCode";
-		$savedLtps = [];
+		$allItems = $request->input('payload', []);
 
-		info('ltps: '.count($ltps).' OHLCs: '.count($ohlcs));
-
-        $allItems = [];
-        foreach ($ltps as $ltp) {
-            $allItems[$ltp[$scriptcode]]['ltp'] = $ltp;
-        }
-        foreach ($ohlcs as $ohlc) {
-            $allItems[$ohlc[$scriptcode]]['ohlc'] = $ohlc;
-        }
 		$count = 0;
         try {
-            foreach ($allItems as $code => $item) {
-                $ltp = $item['ltp'];
-                $ohlc = $item['ohlc'];
+            foreach ($allItems as $item) {
                 switch($ltp['Exchange']) {
                     case 'NSE':
-                        Script::where('nse_code', $code)->update(
+                        Script::where('instrument_token', $item['instrument_token'])->update(
                             [
-                                'cmp' => $ltp['LTP_Rate'],
-                                'day_high' => $ohlc['High'],
-                                'day_low' => $ohlc['Low'],
-                                'last_day_closing' => $ohlc['PrevDayClose'],
+                                'cmp' => $item['ltp'],
+                                'day_high' => $item['high'],
+                                'day_low' => $item['low'],
+                                'last_day_closing' => $item['close'],
                             ]
                         );
                         break;
                     case 'BSE':
-                        Script::where('bse_code', $code)->update(
+                        Script::where('bse_code', $item['instrument_token'])->update(
                             [
-                                'cmp' => $ltp['LTP_Rate'],
-                                'day_high' => $ohlc['High'],
-                                'day_low' => $ohlc['Low'],
-                                'last_day_closing' => $ohlc['PrevDayClose'],
+                                'cmp' => $item['ltp'],
+                                'day_high' => $item['high'],
+                                'day_low' => $item['low'],
+                                'last_day_closing' => $item['close'],
                             ]
                         );
                         break;
