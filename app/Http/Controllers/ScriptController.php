@@ -18,7 +18,7 @@ class ScriptController extends SmartController
     public function index(ScriptService $scriptService)
     {
         $data = $scriptService->index(
-            $this->request->input('items_count', 30),
+            $this->request->input('items_count', 100),
             $this->request->input('page'),
             $this->request->input('search', []),
             $this->request->input('sort', []),
@@ -88,7 +88,7 @@ class ScriptController extends SmartController
         }
         $data = $scriptService->getShowData(
             $id,
-            $this->request->input('items_count', 30),
+            $this->request->input('items_count', 100),
             $this->request->input('page'),
             $this->request->input('search', []),
             $this->request->input('sort', []),

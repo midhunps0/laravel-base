@@ -22,7 +22,7 @@ class ClientController extends SmartController
     public function index(ClientService $clientService)
     {
         $data = $clientService->index(
-            $this->request->input('items_count', 30),
+            $this->request->input('items_count', 100),
             $this->request->input('page'),
             $this->request->input('search', []),
             $this->request->input('sort', []),
@@ -93,7 +93,7 @@ class ClientController extends SmartController
         try {
             $data = $clientService->getShowData(
                 $id,
-                $this->request->input('items_count', 30),
+                $this->request->input('items_count', 100),
                 $this->request->input('page'),
                 $this->request->input('search', []),
                 $this->request->input('sort', []),
