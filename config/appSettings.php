@@ -11,7 +11,7 @@
         //     'A',
         //     'B'
         // ],
-        'default_client_category' => 'A',
+        'default_client_category' => 'B',
         'client_types' => [
             'Active',
             'Inactive'
