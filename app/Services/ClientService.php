@@ -228,12 +228,10 @@ class ClientService implements ModelViewConnector
         $lbs = AppHelper::getLiquidbees();
 
         $indexLBQ = DB::table('clients_scripts as lbcs')
-                ->join('scripts as s', 'script_id', '=', 'lbcs.script_id')
             ->select(
                 'lbcs.client_id as lbcs_client_id',
                 'lbcs.script_id as lbcs_script_id',
-                DB::raw(DB::raw('SUM(lbcs.dp_qty * s.cmp)').' as liquidbees')
-                // DB::raw(DB::raw('SUM(lbcs.dp_qty * lbcs.buy_avg_price)').' as liquidbees')
+                DB::raw(DB::raw('SUM(lbcs.dp_qty * lbcs.buy_avg_price)').' as liquidbees')
             )
             ->whereIn('script_id', $lbs)
             ->groupBy('lbcs.client_id');
