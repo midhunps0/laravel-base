@@ -228,7 +228,7 @@ class ClientService implements ModelViewConnector
         $lbs = AppHelper::getLiquidbees();
 
         $indexLBQ = DB::table('clients_scripts as lbcs')
-                ->join('scripts as s', 'scripts_id', '=', 'lbcs.script_id')
+                ->join('scripts as s', 'script_id', '=', 'lbcs.script_id')
             ->select(
                 'lbcs.client_id as lbcs_client_id',
                 'lbcs.script_id as lbcs_script_id',
