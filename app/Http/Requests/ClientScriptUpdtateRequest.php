@@ -16,8 +16,8 @@ class ClientScriptUpdtateRequest extends FormRequest
     {
         $user = auth()->user();
         $client = Client::find($this->route('id'));
-        return $user->hasPermissionTo('client.edit_any') ||
-            ($client->rm_id == $user->id && $user->hasPermissionTo('client.edit_own'));
+        return $user->hasPermissionTo('script.edit_any') ||
+            ($client->rm_id == $user->id && $user->hasPermissionTo('script.edit_own'));
     }
 
     /**
