@@ -71,34 +71,22 @@
         </th>
         <th class="border-l-2 border-base-100 sticky !left-72 z-30">
             <div class="flex flex-row items-center">
-                <div class="relative flex-grow ml-2 flex flex-row items-center justify-between">
-                    {{-- <span>Tracked ?</span> --}}
-                    {{-- <x-utils.spotfilter
-                        :options="[
-                            ['key' => 'A', 'text' => 'A'],
-                            ['key' => 'LT', 'text' => 'LT']
-                        ]"
-                        selectedoption=-1
-                        fieldname="tracked"
-                    /> --}}
-                    <select x-data="{
-                        'val': '{{config('appSettings.default_client_category')}}'
+                {{-- <div class="relative flex-grow ml-2 flex flex-row items-center justify-between"> --}}
+                    <x-utils.spotfilter name="category" :options="\App\Helpers\AppHelper::getDistinctCategories()" :selectedoption="$filter['category'] ?? config('appSettings.default_client_category')" />
+                    {{-- <select x-data="{
+                        'val': '{{$filter['category'] ?? config('appSettings.default_client_category')}}'
                         }"
                         @change.stop.prevent="$dispatch('spotfilter', {data: {category: val}});"
                         x-model="val" class="select select-bordered select-sm max-w-xs py-0 m-1"
                         :class="val == -1 || 'text-accent'">
-                        <option value="All">All</option>
+                        <option value="All">All Categories</option>
                         @foreach (\App\Helpers\AppHelper::getDistinctCategories() as $cat)
-                            <option value="{{ $cat }}"
-                            {{-- @if ($cat == config('appSettings.default_client_category'))
-                                selected
-                            @endif --}}
-                            >
+                            <option value="{{ $cat }}">
                                 {{ $cat }}
                             </option>
                         @endforeach
-                    </select>
-                </div>
+                    </select> --}}
+                {{-- </div> --}}
                 {{-- <x-utils.spotsort name="category" val="{{ $sort['category'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     Type

@@ -26,11 +26,11 @@
         }
     }"
     x-init="
-        {{-- console.log('spot sort init');
+        {{-- console.log('spot sort init'); --}}
         if(!options.includes(spotsort)) {
             spotsort = options['0'];
         }
-        $dispatch('setsort', {exclusive: exclusive, data: { {{$name}}: spotsort}}); --}}
+        $dispatch('setsort', {exclusive: exclusive, data: { {{$name}}: spotsort}});
     "
     @click.prevent.stop="processClick"
     @clearsorts.window="reset($event.detail.sorts);"

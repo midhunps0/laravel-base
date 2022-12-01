@@ -5,11 +5,11 @@
     visible: false,
     }"
     x-init="
-    {{-- $nextTick(() => {
+    $nextTick(() => {
         textval = '{{$textval}}';
         visible = textval != '';
         $dispatch('setparam', { {{$textname}}: textval});
-    }); --}}
+    });
     "
     class="form-control w-full max-w-full h-full flex flex-row justify-end items-center absolute top-0 left-0 flex-grow flex-shrink">
     <div x-show="visible" class="absolute z-10 w-full max-w-full flex flex-row">

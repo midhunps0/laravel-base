@@ -11,6 +11,7 @@ class LiveUpdateController extends Controller
     public function liveUpdate(Request $request)
     {
         if ($request->input('passkey') == '$2y$10$QDPc738aGgwcD/RUKN3sUOcFb4Cu1/OeiqUiC4rgcwrBC/5kMCmLG') {
+
             $allItems = $request->input('payload', []);
 
             $count = 0;
