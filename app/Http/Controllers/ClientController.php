@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\AppHelper;
 use App\Http\Requests\ClientScriptUpdtateRequest;
 use App\Models\User;
 use App\Models\Client;
@@ -276,7 +277,7 @@ class ClientController extends SmartController
     {
         $dealers = User::withRoles(['Dealer', 'Team Leader'])->get();
         $pfo_types = Config('appSettings.client_pfo_types');
-        $categories = Config('appSettings.client_categories');
+        $categories = AppHelper::getDistinctCategories();
         $types = Config('appSettings.client_types');
         return $this->buildResponse('admin.clients.edit',
             [

@@ -76,7 +76,7 @@
                     <div x-show="result == 1" class="absolute top-0 left-0 z-20 w-full h-full bg-base-200 text-center flex flex-col space-y-8 items-center justify-center">
                             <div class="text-success">User added successfully!</div>
                             <div class="flex flex-row justify-evenly space-x-4">
-                                <a href="#" @click.prevent.stop="result = 0; $dispatch('linkaction', {link: '{{route('users.index')}}', route: 'users.index'})" class="btn btn-sm capitalize">Back To All Users</a>
+                                <a href="#" @click.prevent.stop="result = 0; $dispatch('linkaction', {link: '{{route('users.index')}}', route: 'users.index', fresh:true})" class="btn btn-sm capitalize">Back To All Users</a>
                                 <button @click.prevent.stop="result = 0;" class="btn btn-sm capitalize">Close</button>
                             </div>
                     </div>
@@ -139,7 +139,7 @@
                 </form>
             </div>
             <div>
-                <a href="#" @click="$dispatch('linkaction', {link: '{{route('users.index')}}', route: 'users.index'})" class="text-warning">Go Back</a>
+                <a href="#" @click="$dispatch('linkaction', {link: '{{route('users.index')}}', route: 'users.index', fresh: true})" class="text-warning">Go Back</a>
             </div>
         </div>
     </div>

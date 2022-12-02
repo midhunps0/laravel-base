@@ -58,11 +58,11 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
                 $success = false;
                 $itemStatus['script'] = 'Not Found';
             }
-
-            if (strpos($item['trade_date_time'], '-') > 0) {
-                $d = explode('-', $item['trade_date_time']);
-            } else if (strpos($item['trade_date_time'], '/') > 0) {
-                $d = explode('/', $item['trade_date_time']);
+            $thedate = explode(' ', $item['trade_date_time'])[0];
+            if (strpos($thedate, '-') > 0) {
+                $d = explode('-', $thedate);
+            } else if (strpos($thedate, '/') > 0) {
+                $d = explode('/', $thedate);
             } else {
                 $itemStatus['trade_date'] = 'Invalid date';
             }
@@ -76,7 +76,7 @@ class TradeBackupImport implements ToCollection, WithHeadingRow
                     ->get()->first();
                 if ($tbi != null) {
                     $success = false;
-                    $itemStatus['trade_date'] = 'Duplicate backup: trade_no:'.$item['trade_no'];
+                    $itemStatus['trade_date'] = 'Duplicate backup: trade_no: '.$item['trade_no'].', date: '.$thedate;
                 }
             }
             $qty = intval($item['trade_qty']);

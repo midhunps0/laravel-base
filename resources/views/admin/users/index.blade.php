@@ -291,7 +291,7 @@
                                 <td>
                                     <div class="flex flex-row justify-center space-x-4 items-center">
                                         <a href="#"
-                                            @click.prevent.stop="$dispatch('linkaction', {link: '{{route('users.edit', $user->id)}}', route: 'users.edit'});"
+                                            @click.prevent.stop="$dispatch('linkaction', {link: '{{route('users.edit', $user->id)}}', route: 'users.edit', fresh: true});"
                                             class="btn btn-xs btn-warning capitalize">
                                             <span>Edit</span>&nbsp;<x-display.icon icon="icons.edit" height="h-4" width="w-4"/>
                                         </a>
