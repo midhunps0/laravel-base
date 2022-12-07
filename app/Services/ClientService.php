@@ -289,7 +289,7 @@ class ClientService implements ModelViewConnector
         // dd($results);
         $formatted = [];
         foreach ($results as $result) {
-            $aum = $result['total_aum'] ?? 0;
+            $aum = $result['aum'] ?? 0;
             $cv = $result['cur_value'];
             $al_aum = $result['allocated_aum'];
 
