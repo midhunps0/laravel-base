@@ -302,7 +302,7 @@ class ClientService implements ModelViewConnector
             $row['pnl_pc'] = isset($result['pnl_pc']) ? round($result['pnl_pc'], 2) : 0;
             $row['pa'] = isset($result['pa']) ? round($result['pa'], 2) : 0;
             $row['liquidbees'] = isset($result['liquidbees']) ? round($result['liquidbees']) : 0;
-            $row['cash'] = round(($row['total_aum'] - $row['allocated_aum'] + $row['liquidbees']), 2);
+            $row['cash'] = $aum - $al_aum + $result['liquidbees'];
             $cpc = $row['total_aum'] > 0 ? $row['cash'] / $row['total_aum'] * 100 : 0;
             $row['cash_pc'] = round($cpc, 2);
             // $row['cash'] = isset($result['cash']) ? round($result['cash'], 2) : 0;
