@@ -33,15 +33,15 @@ class ClientService implements ModelViewConnector
             'cst.cur_value as cur_value',
             'cst.tracked as tracked',
             DB::raw('(cst.cur_value - cst.allocated_aum) as pnl'),
-            DB::raw('(cst.cur_value - cst.allocated_aum) / cst.allocated_aum * 100 as pnl_pc'),
+            DB::raw('((cst.cur_value - cst.allocated_aum) / cst.allocated_aum * 100) as pnl_pc'),
             'cst.allocated_aum as allocated_aum',
-            DB::raw('cst.allocated_aum / c.total_aum * 100 as pa'),
+            DB::raw('(cst.allocated_aum / c.total_aum * 100) as pa'),
             'lbq.liquidbees as liquidbees',
-            DB::raw('c.total_aum - cst.allocated_aum + lbq.liquidbees as cash'),
-            DB::raw('(c.total_aum - cst.allocated_aum + lbq.liquidbees) / c.total_aum * 100 as cash_pc'),
+            DB::raw('(c.total_aum - cst.allocated_aum + lbq.liquidbees) as cash'),
+            DB::raw('((c.total_aum - cst.allocated_aum + lbq.liquidbees) / c.total_aum * 100) as cash_pc'),
             'c.ledger_balance as ledger_balance',
-            DB::raw('c.realised_pnl + cst.cur_value - c.total_aum as returns'),
-            DB::raw('(c.realised_pnl + cst.cur_value - c.total_aum) /c.total_aum * 100 as returns_pc'),
+            DB::raw('(c.realised_pnl + cst.cur_value - c.total_aum) as returns'),
+            DB::raw('((c.realised_pnl + cst.cur_value - c.total_aum) /c.total_aum * 100) as returns_pc'),
         ];
 
         // $this->agrSelects = array_merge($this->selects, [
@@ -302,8 +302,11 @@ class ClientService implements ModelViewConnector
             $row['pnl_pc'] = isset($result['pnl_pc']) ? round($result['pnl_pc'], 2) : 0;
             $row['pa'] = isset($result['pa']) ? round($result['pa'], 2) : 0;
             $row['liquidbees'] = isset($result['liquidbees']) ? round($result['liquidbees']) : 0;
-            $row['cash'] = isset($result['cash']) ? round($result['cash'], 2) : 0;
-            $row['cash_pc'] = isset($result['cash_pc']) ? round($result['cash_pc'], 2) : 0;
+            $row['cash'] = round(($row['total_aum'] - $row['allocated_aum'] + $row['liquidbees']), 2);
+            $cpc = $row['cash'] / $row['total_aum'] * 100;
+            $row['cash_pc'] = round($cpc, 2);
+            // $row['cash'] = isset($result['cash']) ? round($result['cash'], 2) : 0;
+            // $row['cash_pc'] = isset($result['cash_pc']) ? round($result['cash_pc'], 2) : 0;
             $row['returns'] = isset($result['returns']) ? round($result['returns'], 2) : 0;
             $row['returns_pc'] = isset($result['returns_pc']) ? round($result['returns_pc'], 2) : 0;
 
