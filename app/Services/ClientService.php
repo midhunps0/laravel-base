@@ -38,7 +38,7 @@ class ClientService implements ModelViewConnector
             DB::raw('cst.allocated_aum / c.total_aum * 100 as pa'),
             'lbq.liquidbees as liquidbees',
             DB::raw('c.total_aum - cst.allocated_aum + lbq.liquidbees as cash'),
-            DB::raw('(c.total_aum - cst.allocated_aum) / c.total_aum * 100 as cash_pc'),
+            DB::raw('(c.total_aum - cst.allocated_aum + lbq.liquidbees) / c.total_aum * 100 as cash_pc'),
             'c.ledger_balance as ledger_balance',
             DB::raw('c.realised_pnl + cst.cur_value - c.total_aum as returns'),
             DB::raw('(c.realised_pnl + cst.cur_value - c.total_aum) /c.total_aum * 100 as returns_pc'),
