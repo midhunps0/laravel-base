@@ -32,13 +32,13 @@ class ClientService implements ModelViewConnector
             'c.realised_pnl as realised_pnl',
             'cst.cur_value as cur_value',
             'cst.tracked as tracked',
-            DB::raw('(cst.cur_value - cst.allocated_aum) as pnl'),
-            DB::raw('((cst.cur_value - cst.allocated_aum) / cst.allocated_aum * 100) as pnl_pc'),
-            'cst.allocated_aum as allocated_aum',
+            DB::raw('(cst.cur_value - IFNULL(cst.allocated_aum, 0)) as pnl'),
+            DB::raw('((cst.cur_value - IFNULL(cst.allocated_aum, 0)) / cst.allocated_aum * 100) as pnl_pc'),
+            DB::raw('IFNULL(cst.allocated_aum, 0) as allocated_aum'),
             DB::raw('(cst.allocated_aum / c.total_aum * 100) as pa'),
             'lbq.liquidbees as liquidbees',
-            DB::raw('(c.total_aum - cst.allocated_aum + lbq.liquidbees) as cash'),
-            DB::raw('((c.total_aum - cst.allocated_aum + lbq.liquidbees) / c.total_aum * 100) as cash_pc'),
+            DB::raw('IFNULL((c.total_aum - cst.allocated_aum + IFNULL(lbq.liquidbees, 0)), 0) as cash'),
+            DB::raw('(IFNULL((c.total_aum - cst.allocated_aum + IFNULL(lbq.liquidbees, 0)) / c.total_aum * 100, 0)) as cash_pc'),
             'c.ledger_balance as ledger_balance',
             DB::raw('(c.realised_pnl + cst.cur_value - c.total_aum) as returns'),
             DB::raw('((c.realised_pnl + cst.cur_value - c.total_aum) /c.total_aum * 100) as returns_pc'),
@@ -77,7 +77,7 @@ class ClientService implements ModelViewConnector
         $this->itemQuery = Client::query();
         $this->relationSelects = [
             's.id as id',
-            'c.total_aum as aum',
+            'IFNULL(c.total_aum, 0) as aum',
             'c.client_code as client_code',
             'cs.entry_date as entry_date',
             's.symbol as symbol',
@@ -220,7 +220,7 @@ class ClientService implements ModelViewConnector
                 's.tracked as tracked',
                 'cs.buy_avg_price as buy_avg_price',
                 'cs.dp_qty as dp_qty',
-                DB::raw(DB::raw('SUM(cs.dp_qty * cs.buy_avg_price)').' as allocated_aum'),
+                DB::raw(DB::raw('IFNULL(SUM(cs.dp_qty * cs.buy_avg_price), 0)').' as allocated_aum'),
                 DB::raw(DB::raw('SUM(cs.dp_qty * s.cmp)').' as cur_value')
             )->where('s.tracked', 1)->groupBy('cs.client_id')
             ->where('cs.dp_qty', '>', 0);
@@ -231,7 +231,7 @@ class ClientService implements ModelViewConnector
             ->select(
                 'lbcs.client_id as lbcs_client_id',
                 'lbcs.script_id as lbcs_script_id',
-                DB::raw(DB::raw('SUM(lbcs.dp_qty * lbcs.buy_avg_price)').' as liquidbees')
+                DB::raw('IFNULL('.DB::raw('SUM(lbcs.dp_qty * lbcs.buy_avg_price)').', 0) as liquidbees')
             )
             ->whereIn('script_id', $lbs)
             ->groupBy('lbcs.client_id');
@@ -302,10 +302,12 @@ class ClientService implements ModelViewConnector
             $row['pnl_pc'] = isset($result['pnl_pc']) ? round($result['pnl_pc'], 2) : 0;
             $row['pa'] = isset($result['pa']) ? round($result['pa'], 2) : 0;
             $row['liquidbees'] = isset($result['liquidbees']) ? round($result['liquidbees']) : 0;
-            $row['cash'] = $aum - $al_aum + $result['liquidbees'];
-            $cpc = $row['total_aum'] > 0 ? $row['cash'] / $row['total_aum'] * 100 : 0;
-            $row['cash_pc'] = round($cpc, 2);
+            // $row['cash'] = $aum - $al_aum + $result['liquidbees'];
+            // $cpc = $row['total_aum'] > 0 ? $row['cash'] / $row['total_aum'] * 100 : 0;
+            // $row['cash_pc'] = round($cpc, 2);
+            $row['cash'] = round($result['cash'], 2);
             // $row['cash'] = isset($result['cash']) ? round($result['cash'], 2) : 0;
+            $row['cash_pc'] = round($result['cash_pc'], 2);
             // $row['cash_pc'] = isset($result['cash_pc']) ? round($result['cash_pc'], 2) : 0;
             $row['returns'] = isset($result['returns']) ? round($result['returns'], 2) : 0;
             $row['returns_pc'] = isset($result['returns_pc']) ? round($result['returns_pc'], 2) : 0;

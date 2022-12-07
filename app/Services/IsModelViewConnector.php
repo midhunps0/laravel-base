@@ -61,7 +61,7 @@ trait IsModelViewConnector{
             $advSearch,
             $selectedIds
         );
-
+// dd($queryData['query']->select($this->selects)->toSql());
         DB::statement("SET SQL_MODE=''");
 // dd($queryData['query']->select($this->selects)->toSql());
         $results = $queryData['query']->paginate(
