@@ -77,7 +77,7 @@ class ClientService implements ModelViewConnector
         $this->itemQuery = Client::query();
         $this->relationSelects = [
             's.id as id',
-            'IFNULL(c.total_aum, 0) as aum',
+            'c.total_aum as aum',
             'c.client_code as client_code',
             'cs.entry_date as entry_date',
             's.symbol as symbol',
