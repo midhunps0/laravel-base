@@ -48,7 +48,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('import/clients', [ClientController::class, 'bulkImportStore'])->name('clients.import.store');
     Route::get('import/client-portfolio', [ClientController::class, 'portfolioImportCreate'])->name('clientsportfolio.import.create');
     Route::post('import/client-portfolio', [ClientController::class, 'portfolioImportStore'])->name('clientsportfolio.import.store');
+    Route::post('clients/{id}/create-script', [ClientController::class, 'createScript'])->name('clients.script.create');
     Route::post('clients/{id}/update-script', [ClientController::class, 'updateScript'])->name('clients.script.update');
+    Route::post('clients/{id}/delete-script', [ClientController::class, 'deleteScript'])->name('clients.script.delete');
 
     Route::resource('clients', ClientController::class);
 

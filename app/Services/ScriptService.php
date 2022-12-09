@@ -69,6 +69,9 @@ class ScriptService implements ModelViewConnector
         //         DB::raw('(SUM(s.cmp * qcs.qty) - SUM(s.last_day_closing * qcs.qty)) / SUM(s.last_day_closing * qcs.qty) * 100 as dlr_todays_gain_pc')
         //     ]
         // );
+        $this->filtersMap = [
+            'category' => ['name' => 'qcs.category', 'type' => 'string']
+        ];
         $this->sortsMap = [
             'dealer' => ['name' => 'dealer', 'type' => 'string'],
             'dop' => ['name' => 'qcs.dop', 'type' => 'integer'],
@@ -208,6 +211,7 @@ class ScriptService implements ModelViewConnector
     {
        $qcs = Client::from('clients', 'c')->userAccessControlled()->join('clients_scripts as cs', 'c.id', '=', 'cs.client_id')->select(
             'c.rm_id as rm_id',
+            'c.category as category',
             'cs.script_id as script_id',
             DB::raw('SUM(cs.dp_qty) as qty'),
             DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) as amt_invested'),
@@ -355,9 +359,9 @@ class ScriptService implements ModelViewConnector
         $this->pa = 0;
     }
 
-    private function getFilterParams($query, $filters) {
-        return [];
-    }
+    // private function getFilterParams($query, $filters) {
+    //     return [];
+    // }
 
     public function update($id, $data)
     {

@@ -10,7 +10,7 @@
         $dispatch('setparam', { {{$textname}}: textval});
     }); --}}
     "
-    class="form-control w-full max-w-full h-full flex flex-row justify-end items-center flex-grow flex-shrink">
+    class="form-control w-full max-w-full flex flex-row justify-end items-center flex-grow flex-shrink">
     <div x-show="visible" class="z-10 w-full max-w-full flex flex-row">
         <select x-data="{
             val: ''

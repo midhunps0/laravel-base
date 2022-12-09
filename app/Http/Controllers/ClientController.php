@@ -2,20 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\AppHelper;
-use App\Http\Requests\ClientScriptUpdtateRequest;
 use App\Models\User;
 use App\Models\Client;
+use App\Helpers\AppHelper;
+use App\Http\Requests\ClientScriptCreateRequest;
+use Illuminate\Http\Request;
 use App\Services\ClientService;
 use App\ImportExports\ClientsImport;
 use Maatwebsite\Excel\Facades\Excel;
-use App\ImportExports\DefaultArrayExports;
-use App\Http\Requests\ClientsImportRequest;
-use App\Http\Requests\ClientUpdateRequest;
-use App\Http\Requests\PortfolioImportRequest;
-use App\ImportExports\DefaultCollectionExports;
 use App\ImportExports\PortfolioImport;
 use Illuminate\Support\Facades\Config;
+use App\Http\Requests\ClientUpdateRequest;
+use App\ImportExports\DefaultArrayExports;
+use App\Http\Requests\ClientsImportRequest;
+use App\Http\Requests\PortfolioImportRequest;
+use App\ImportExports\DefaultCollectionExports;
+use App\Http\Requests\ClientScriptUpdtateRequest;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 class ClientController extends SmartController
@@ -298,11 +300,29 @@ class ClientController extends SmartController
         ]);
     }
 
+    public function createScript(ClientScriptCreateRequest $request, $id, ClientService $clientService)
+    {
+        $result = $clientService->addScript(
+            $id,
+            $request->validated()
+        );
+        return response()->json($result);
+    }
+
     public function updateScript(ClientScriptUpdtateRequest $request, $id, ClientService $clientService)
     {
         $result = $clientService->updateScript($id, $request->validated());
         return response()->json([
             'success' => true,
+        ]);
+    }
+
+    public function deleteScript(Request $request, $id)
+    {
+        $client = Client::find($id);
+        $client->scripts()->detach($request->script_id);
+        return response()->json([
+            'success' => true
         ]);
     }
 }

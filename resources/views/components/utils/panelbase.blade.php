@@ -139,7 +139,11 @@
                 @endif
             @endif
         </div>
-
+        @if (isset($extra))
+        <div class="my-2">
+            {{$extra}}
+        </div>
+        @endif
         <div class="rounded-md relative">
             <form x-data="{
                 //url: '{{ $indexUrl }}',

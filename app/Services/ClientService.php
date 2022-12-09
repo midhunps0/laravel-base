@@ -4,9 +4,11 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Client;
 // use App\Models\Script;
+use App\Models\Script;
+use App\Helpers\AppHelper;
 use Illuminate\Support\Facades\DB;
 use App\Contracts\ModelViewConnector;
-use App\Helpers\AppHelper;
+use Exception;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 
 // use Hamcrest\Arrays\IsArray;
@@ -435,6 +437,30 @@ class ClientService implements ModelViewConnector
                 'dp_qty' => $data['qty'],
                 'buy_avg_price' => $data['buy_avg_price']
             ]);
+    }
+
+    public function addScript($id, $data)
+    {
+        $client = Client::find($id);
+        $script_id = Script::where('symbol', $data['symbol'])->get()->first()->id;
+        if (in_array(intval($script_id), $client->scripts()->pluck('id')->toArray())) {
+            return [
+                'success' => false,
+                'error' => ['Failed to add script. The script ' . $data['symbol'] . ' already exists in the client\'s porfolio. You can edit it instead.']
+            ];
+        }
+        try {
+            $client->scripts()->attach(
+                $script_id,
+                [
+                    'dp_qty' => intval($data['qty']),
+                    'buy_avg_price' => floatval($data['buy_avg_price'])
+                ]
+            );
+            return ['success' => true];
+        } catch(Exception $e) {
+            return false;
+        }
     }
 }
 

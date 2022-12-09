@@ -454,7 +454,7 @@ trait IsModelViewConnector{
     {
         $filterData = [];
         $map = $sortType == 'index' ? $this->filtersMap : $this->relFiltersMap;
-
+// dd($filters, $map);
         foreach ($filters as $filter) {
             $data = explode('::', $filter);
             $key = $map[$data[0]] ?? $data[0];

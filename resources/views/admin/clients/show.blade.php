@@ -48,6 +48,12 @@
                 <x-display.icon icon="icons.view_on" height="h-5" width="w-5"/>
             </button>
         </div>
+        <div>
+            <button @click.prevent.stop="$dispatch('newcs');" class="btn btn-sm py-1">
+                <span>Add Script</span>
+                <x-display.icon icon="icons.plus" height="h-5" width="w-5"/>
+            </button>
+        </div>
         {{-- <x-utils.itemssearch
         itemsName="clients"
         url="{{route('clients.show', 0)}}"
@@ -263,9 +269,14 @@
                     <div class="flex flex-row justify-between items-center">
                         <a @click.prevent.stop="$dispatch('linkaction', {link: '{{route('scripts.show', 0)}}'.replace('0', result.id), route: 'scripts.show'})"
                             class="link no-underline hover:underline" href="" x-text="result.symbol"></a>
-                        <button @click.prevent.stop="$dispatch('editcs', {symbol: result.symbol, script_id: result.id, qty: result.qty, buy_avg_price: result.buy_avg_price});" class="btn btn-xs btn-ghost text-warning">
-                            <x-display.icon icon="icons.edit" height="h-4" width="w-4"/>
-                        </button>
+                        <div class="flex flex-row">
+                            <button @click.prevent.stop="$dispatch('deletecs', {script_id: result.id});" class="btn btn-xs btn-ghost text-error">
+                                <x-display.icon icon="icons.delete" height="h-4" width="w-4"/>
+                            </button>
+                            <button @click.prevent.stop="$dispatch('editcs', {symbol: result.symbol, script_id: result.id, qty: result.qty, buy_avg_price: result.buy_avg_price});" class="btn btn-xs btn-ghost text-warning">
+                                <x-display.icon icon="icons.edit" height="h-4" width="w-4"/>
+                            </button>
+                        </div>
                     </div>
                         <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
                 </td>
@@ -298,65 +309,216 @@
         </template>
         {{-- @endforeach --}}
     <div x-data="{
-        client_id: {{$model->id}},
-        symbol: '',
-        script_id: 0,
-        qty: 0,
-        buy_avg_price: 0,
-        show: false,
-        result: 0,
-        error: '',
-        get formvalid() {
-            return this.qty.toString().length > 0 &&
-                this.buy_avg_price.toString().length > 0;
-        },
-        updatecs() {
-            let params = {
-                script_id: this.script_id,
-                qty: this.qty,
-                buy_avg_price: this.buy_avg_price
-            };
-            axios.post(
-                '{{route('clients.script.update', $model->id)}}',
-                params
-            ).then((r) => {
-                if (r.data.success) {
-                    this.result = 1;
-                } else {
-                    this.result = -1;
-                    console.log(Object.values(r.data.error));
+            show: false,
+            sid: null,
+            cid: null,
+            success: false,
+            doDelete() {
+                axios.post(
+                    '{{route('clients.script.delete', $model->id)}}',
+                    {
+                        script_id: this.sid
+                    }
+                ).then((r) => {
+                    this.success = true;
+                    $dispatch('triggerfetch');
+                }).catch((e) => {
+                    console.log(e);
+                });
+            }
+        }"
+        x-init="
+            cid = {{$model->id}};
+        "
+        @deletecs.window="
+            show = true;
+            sid = $event.detail.script_id;
+        "
+        x-show="show"
+        class="fixed z-50 top-0 left-0 flex flex-row justify-center items-center w-full h-full bg-base-200 bg-opacity-70">
+        <div x-show="!success" class="bg-base-200 p-4 border border-base-300 rounded-md relative">
+            <div class="w-full text-right">
+                <button @click.prevent.stop="show = false;" class="btn btn-xs btn-ghost text-warning">
+                    <x-display.icon icon="icons.close" height="h-4" width="w-4"/>
+                </button>
+            </div>
+            <div class="flex flex-col space-y-4">
+                <div class="p-3">This will remove the script from the client's portfolio. Are you sure to continue?</div>
+                <div class="flex flex-row justify-center space-x-2">
+                    <button @click.prevent.stop="show=false;" class="btn btn-sm">No</button>
+                    <button @click.prevent.stop="doDelete();" class="btn btn-sm btn-warning">Yes</button>
+                </div>
+            </div>
+        </div>
+        <div x-show="success" class="bg-base-200 p-4 border border-base-300 rounded-md relative flex flex-col justify-center items-center space-y-4">
+            <span>The script was deleted!</span>
+            <button @click.prevent.stop="success=false; show=false; sid=null;" class="btn btn-sm btn-success">Ok</button>
+        </div>
+    </div>
+    <!--Add Script Form-->
+    <div x-data="{
+            client_id: {{$model->id}},
+            symbol: '',
+            qty: 0,
+            buy_avg_price: 0,
+            show: false,
+            result: 0,
+            error: '',
+            get formvalid() {
+                return this.qty.toString().length > 0 &&
+                    this.buy_avg_price.toString().length > 0;
+            },
+            createcs() {
+                let params = {
+                    symbol: this.symbol,
+                    qty: this.qty,
+                    buy_avg_price: this.buy_avg_price
+                };
+                axios.post(
+                    '{{route('clients.script.create', $model->id)}}',
+                    params
+                ).then((r) => {
+                    if (r.data.success) {
+                        this.result = 1;
+                        $dispatch('triggerfetch');
+                    } else {
+                        this.result = -1;
+                        console.log(Object.values(r.data.error));
 
-                    let estr = Object.values(r.data.error).reduce((s, e) => {
-                        e.forEach((ers) => {
-                            if (s.length > 0) {
-                                return s+', '+ers;
-                            }
-                            else {
-                                return s + ers;
-                            }
+                        let estr = Object.values(r.data.error).reduce((s, e) => {
+                            e.forEach((ers) => {
+                                if (s.length > 0) {
+                                    return s+', '+ers;
+                                }
+                                else {
+                                    return s + ers;
+                                }
+                            });
+                            console.log(e);
+                            return s;
                         });
-                        console.log(e);
-                        return s;
-                    });
-                    console.log(estr);
-                    this.error = estr;
-                }
-            }).catch((e) => {
-                this.result = -1;
-                this.error = 'Sorry, something went wrong.';
-                console.log(e);
-            });
-        }
-    }"
-    x-show="show"
-    @editcs.window="
-    show = true;
-    symbol = $event.detail.symbol;
-    script_id = $event.detail.script_id;
-    qty = $event.detail.qty;
-    buy_avg_price = $event.detail.buy_avg_price;
-    "
-    class="fixed z-50 top-0 left-0 flex flex-row justify-center items-center w-full h-full bg-base-200 bg-opacity-70">
+                        console.log(estr);
+                        this.error = estr;
+                    }
+                }).catch((e) => {
+                    this.result = -1;
+                    this.error = 'Please make sure the symbol you have entered is already there in the system.';
+                    console.log(e);
+                });
+            }
+        }"
+        x-show="show"
+        @newcs.window="
+            show = true;
+        "
+        class="fixed z-50 top-0 left-0 flex flex-row justify-center items-center w-full h-full bg-base-200 bg-opacity-70"
+        >
+        <div class="bg-base-200 p-4 border border-base-300 rounded-md relative">
+            <div class="w-full text-right">
+                <button @click.prevent.stop="show = false;" class="btn btn-xs btn-ghost text-warning">
+                    <x-display.icon icon="icons.close" height="h-4" width="w-4"/>
+                </button>
+            </div>
+            <form action="" class="max-w-md relative">
+                <div x-show="result == 1" class="absolute top-0 left-0 z-20 w-full h-full bg-base-200 text-center flex flex-col space-y-8 items-center justify-center">
+                    <div class="text-success">Script added.</div>
+                    <div class="flex flex-row justify-evenly space-x-4">
+                        <a href="#" @click.prevent.stop="result = 0; show=false; $dispatch('triggerfetch');" class="btn btn-sm capitalize">Ok</a>
+                    </div>
+                </div>
+                <div x-show="result == -1" class="absolute top-0 left-0 z-20 w-full h-full bg-base-200 text-center flex flex-col space-y-8 items-center justify-center">
+                    <div class="text-error">Couldn't create script:</div>
+                    <div class="flex flex-col space-y-4 justify-center items-center space-x-4 px-4">
+                        <span x-text="error"></span>
+                        <button @click.prevent.stop="result = 0;" class="btn btn-sm btn-error capitalize">Ok</button>
+                    </div>
+                </div>
+                <div class="form-control w-60 max-w-md my-3 relative">
+                    <label class="label mb-0 pb-0">
+                    <span class="label-text">Symbol</span>
+                    </label>
+                    <input x-model="symbol" type="text" class="input input-bordered w-full max-w-md read-only:bg-base-200"/>
+                </div>
+                <div class="form-control w-60 max-w-md my-3 relative">
+                    <label class="label mb-0 pb-0">
+                    <span class="label-text">Qty</span>
+                    </label>
+                    <input x-model="qty" type="number" class="input input-bordered w-full max-w-md read-only:bg-base-200"/>
+                </div>
+                <div class="form-control w-60 max-w-md my-3">
+                    <label class="label mb-0 pb-0">
+                    <span class="label-text">Buy Avg. Price</span>
+                    </label>
+                    <input x-model="buy_avg_price"  type="number" step="0.01" class="input input-bordered w-full max-w-md read-only:bg-base-200"/>
+                </div>
+                <div class="w-full mt-6 mb-3 text-center">
+                    <button @click.prevent.stop="createcs();" type="submit" class="btn btn-primary btn-sm" :disabled="!formvalid">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!--Edit Script Form-->
+    <div x-data="{
+            client_id: {{$model->id}},
+            symbol: '',
+            script_id: 0,
+            qty: 0,
+            buy_avg_price: 0,
+            show: false,
+            result: 0,
+            error: '',
+            get formvalid() {
+                return this.qty.toString().length > 0 &&
+                    this.buy_avg_price.toString().length > 0;
+            },
+            updatecs() {
+                let params = {
+                    script_id: this.script_id,
+                    qty: this.qty,
+                    buy_avg_price: this.buy_avg_price
+                };
+                axios.post(
+                    '{{route('clients.script.update', $model->id)}}',
+                    params
+                ).then((r) => {
+                    if (r.data.success) {
+                        this.result = 1;
+                    } else {
+                        this.result = -1;
+                        console.log(Object.values(r.data.error));
+
+                        let estr = Object.values(r.data.error).reduce((s, e) => {
+                            e.forEach((ers) => {
+                                if (s.length > 0) {
+                                    return s+', '+ers;
+                                }
+                                else {
+                                    return s + ers;
+                                }
+                            });
+                            console.log(e);
+                            return s;
+                        });
+                        console.log(estr);
+                        this.error = estr;
+                    }
+                }).catch((e) => {
+                    this.result = -1;
+                    this.error = 'Sorry, something went wrong.';
+                    console.log(e);
+                });
+            }
+        }"
+        x-show="show"
+        @editcs.window="
+        show = true;
+        symbol = $event.detail.symbol;
+        script_id = $event.detail.script_id;
+        qty = $event.detail.qty;
+        buy_avg_price = $event.detail.buy_avg_price;
+        "
+        class="fixed z-50 top-0 left-0 flex flex-row justify-center items-center w-full h-full bg-base-200 bg-opacity-70"
+        >
         <div class="bg-base-200 p-4 border border-base-300 rounded-md relative">
             <div class="w-full text-right">
                 <button @click.prevent.stop="show = false;" class="btn btn-xs btn-ghost text-warning">
