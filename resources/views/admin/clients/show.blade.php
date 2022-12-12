@@ -368,6 +368,14 @@
                 return this.qty.toString().length > 0 &&
                     this.buy_avg_price.toString().length > 0;
             },
+            reset() {
+                this.symbol = '';
+                this.qty = 0;
+                this.buy_avg_price = 0;
+                this.show = false;
+                this.result = 0;
+                this.error = '';
+            },
             createcs() {
                 let params = {
                     symbol: this.symbol,
@@ -415,10 +423,11 @@
         >
         <div class="bg-base-200 p-4 border border-base-300 rounded-md relative">
             <div class="w-full text-right">
-                <button @click.prevent.stop="show = false;" class="btn btn-xs btn-ghost text-warning">
+                <button @click.prevent.stop="reset();" class="btn btn-xs btn-ghost text-warning">
                     <x-display.icon icon="icons.close" height="h-4" width="w-4"/>
                 </button>
             </div>
+            <h3 class="text-center m-3 text-lg underline">Add A Script</h3>
             <form action="" class="max-w-md relative">
                 <div x-show="result == 1" class="absolute top-0 left-0 z-20 w-full h-full bg-base-200 text-center flex flex-col space-y-8 items-center justify-center">
                     <div class="text-success">Script added.</div>
@@ -437,8 +446,15 @@
                     <label class="label mb-0 pb-0">
                     <span class="label-text">Symbol</span>
                     </label>
-                    <input x-model="symbol" type="text" class="input input-bordered w-full max-w-md read-only:bg-base-200"/>
+                    <x-utils.suggestlist
+                        xmodel_name="symbol"
+                        itemsName="scripts"
+                        searchUrl="{{route('scripts.list')}}"
+                        :searchDisplayKeys="['symbol']"
+                        valueKey="symbol"
+                        />
                 </div>
+
                 <div class="form-control w-60 max-w-md my-3 relative">
                     <label class="label mb-0 pb-0">
                     <span class="label-text">Qty</span>

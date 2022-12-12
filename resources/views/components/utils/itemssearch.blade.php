@@ -8,8 +8,6 @@
     getItemsList() {
         axios.get(this.searchUrl, {params: {search: this.search}}).then((r) => {
             this.list = r.data.data.{{$itemsName}};
-            console.log(this.list);
-            console.log('ln: '+this.list.length);
         });
     }
 }"
