@@ -13,7 +13,7 @@ class AppHelper
     }
 
     public static function getDistinctCategories() {
-        return DB::table('clients')->selectRaw('DISTINCT category')->pluck('category');
+        return DB::table('clients')->selectRaw('DISTINCT category')->orderBy('category', 'asc')->pluck('category');
     }
 }
 ?>

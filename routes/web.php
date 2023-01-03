@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AggregatesController;
 use App\Services\ScriptService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -79,4 +80,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('clientscripts', ClientScriptController::class)->only('index');
 
     Route::post('pass-reset', [PasswordController::class, 'store'])->name('custom.password.reset');
+
+    Route::get('rms-summary', [AggregatesController::class, 'adminIndex'])->name('aggregates.admin');
 });
