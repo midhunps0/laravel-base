@@ -16,6 +16,7 @@ class ScriptService implements ModelViewConnector
 
     private $pa;
     private $tot_aum;
+    private $client_category = null;
 
     public function __construct()
     {
@@ -208,6 +209,42 @@ class ScriptService implements ModelViewConnector
         );
     }
 
+    public function getQueryAndParams(
+        array $searches,
+        array $sorts,
+        array $filters,
+        array $advSearch = [],
+        string $selectedIds = ''
+    ): array {
+        foreach ($filters as $filter) {
+            $data = explode('::', $filter);
+            if ($data[0] == 'category') {
+                $this->client_category = $data[1];
+            }
+        }
+        $query = $this->getQuery();
+        $filterData = $this->getFilterParams($query, $filters);
+        $searchParams = $this->getSearchParams($query, $searches);
+        $sortParams = $this->getSortParams($query, $sorts);
+        $advParams = $this->getAdvParams($query, $advSearch);
+
+        $this->extraConditions($query);
+
+        if (isset($selectedIds) && strlen(trim($selectedIds)) > 0) {
+            $ids = explode('|', $selectedIds);
+            // $this->query->whereIn('c.id', $ids);
+            $this->querySelectedIds($query, $this->selIdsKey, $ids);
+        }
+
+        return [
+            'query' => $query,
+            'searchParams' => $searchParams,
+            'sortParams' => $sortParams,
+            'filterData' => $filterData,
+            'advparams' => $advParams
+        ];
+    }
+
     private function getQuery(): Builder
     {
        $qcs = Client::from('clients', 'c')->userAccessControlled()->join('clients_scripts as cs', 'c.id', '=', 'cs.client_id')->select(
@@ -221,7 +258,9 @@ class ScriptService implements ModelViewConnector
             DB::raw('MIN(cs.entry_date) as dop')
         )->groupBy('cs.script_id')
         ->where('cs.dp_qty', '>', 0);
-
+        if(isset($this->client_category)) {
+            $qcs = $qcs->where('c.category', 'like', $this->client_category);
+        }
 
         $query = Script::from('scripts', 's')->joinSub($qcs, 'qcs', 'qcs.script_id', 's.id')
             ->join('users as u', 'u.id', '=', 'qcs.rm_id')
