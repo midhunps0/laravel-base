@@ -219,8 +219,8 @@ class ScriptService implements ModelViewConnector
             DB::raw('SUM(cs.buy_avg_price * cs.dp_qty) / SUM(cs.dp_qty) as abv'),
             'c.id as client_id',
             DB::raw('MIN(cs.entry_date) as dop')
-        )->groupBy('cs.script_id')
-        ->where('cs.dp_qty', '>', 0);
+        )->groupBy('cs.script_id');
+        // ->where('cs.dp_qty', '>', 0);
 
 
         $query = Script::from('scripts', 's')->joinSub($qcs, 'qcs', 'qcs.script_id', 's.id')
