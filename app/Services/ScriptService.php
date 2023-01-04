@@ -224,8 +224,8 @@ class ScriptService implements ModelViewConnector
 
 
         $query = Script::from('scripts', 's')->joinSub($qcs, 'qcs', 'qcs.script_id', 's.id')
-            ->join('users as u', 'u.id', '=', 'qcs.rm_id');
-            // ->where('s.tracked', 1);
+            ->join('users as u', 'u.id', '=', 'qcs.rm_id')
+            ->where('s.tracked', 1);
 
         return $query;
 
