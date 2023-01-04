@@ -42,6 +42,7 @@ class ScriptService implements ModelViewConnector
             DB::raw('qcs.amt_invested / '.$this->tot_aum.' * 100 as pa'),
             's.agio_indutry as sector',
             'qcs.qty as tot_qty',
+            'qcs.category as category',
             DB::raw('ROUND(qcs.abv, 2) as abv'),
             DB::raw('ROUND(qcs.amt_invested, 2) as amt_invested'),
             's.cmp as cmp',
