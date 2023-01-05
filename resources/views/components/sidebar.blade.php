@@ -1,5 +1,30 @@
-<div x-data="{hidden: false}"
-    x-init="hidden = screen.width < 768;"
+@php
+    $user = App\Models\User::find(auth()->user()->id);
+    $permissions = $user->permissions->pluck('name')->toArray();
+@endphp
+<div x-data="{
+    hidden: false,
+    permissions: [],
+    hasAnyPermissions(perms) {
+        let allowed = false;
+        perms.forEach((p) => {
+            if (this.permissions.includes(p)) {
+                allowed = true;
+            }
+        });
+        return allowed;
+    }
+}"
+    x-init="
+        hidden = screen.width < 768;
+        {{-- console.log('{{$permissions}}'); --}}
+        @foreach ($permissions as $p)
+            permissions.push('{{$p}}');
+        @endforeach
+
+        console.log('permissions');
+        console.log(permissions);
+    "
     @sidebarvisibility.window="hidden=$event.detail.hidden;"
     class="overflow-hidden fixed top-0 left-0 z-50 sm:relative bg-base-100 w-full sm:w-auto min-w-fit ransition-all"
     :class="!hidden || 'w-0'">
@@ -12,12 +37,13 @@
             <x-display.icon icon="icons.close" height="h-6" width="w-6"
             @click="$dispatch('sidebarvisibility', {'hidden': true});" class="sm:hidden"/>
             <span class="block px-5 py-3 overflow-hidden transition-all" :class="collapsed ? 'w-0 px-0' : 'w-40 px-5'" x-transition>
-                <span class="block w-36 transition-opacity" :class="!collapsed || 'opacity-0'">Dashboard</span>
+                {{-- <span class="block w-36 transition-opacity" :class="!collapsed || 'opacity-0'">Minimize</span> --}}
             </span>
         </span>
     </div>
     <ul>
-        <li><x-menu-item title="Summary" route="clients.index" href="{{route('clients.index').'?filter[]=category::'.config('appSettings.default_client_category')}}" icon="icons.users"/></li>
+        <li x-show="hasAnyPermissions(['dealer.create_any'])" ><x-menu-item title="Dashboard" route="dashboard" href="{{route('dashboard')}}" icon="icons.users"/></li>
+        <li x-show="hasAnyPermissions(['client.view_own'])" ><x-menu-item title="Dashboard" route="dashboard" href="{{route('dashboard')}}" icon="icons.users"/></li>
         <li><x-menu-item title="Clients Overview" route="clients.index" href="{{route('clients.index').'?filter[]=category::'.config('appSettings.default_client_category')}}" icon="icons.users"/></li>
         <li><x-menu-item title="Holdings Overview" route="scripts.index" href="{{route('scripts.index')}}" icon="icons.list"/></li>
         <li><x-menu-item title="Client wise" route="clients.show" href="{{route('clients.show', 0)}}" icon="icons.user"/></li>

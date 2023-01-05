@@ -37,7 +37,7 @@
                             </button>
                         </div>
                     </div>
-                    <div x-data="{ dropopen: false, url_all: '', url_selected: '', selectedCount: 0 }"
+                    {{-- <div x-data="{ dropopen: false, url_all: '', url_selected: '', selectedCount: 0 }"
                         @downloadurl.window="url_all = $event.detail.url_all; url_selected=$event.detail.url_selected; selectedCount = $event.detail.idscount;"
                         @click.outside="dropopen = false;" class="relative">
                         <label @click="dropopen = !dropopen;" tabindex="0"
@@ -55,7 +55,7 @@
                             <li class="py-2 px-4 hover:bg-base-100"><a :href="url_all"
                                     download>{{ __('Download All') }}</a></li>
                         </ul>
-                    </div>
+                    </div> --}}
                 </div>
                 {{-- <a href="#" role="button" class="btn btn-xs">Add&nbsp;
                     <x-display.icon icon="icons.plus" />
@@ -434,12 +434,12 @@
                             params: allParams
                         }
                     ).then((r) => {
-                        console.log(r.data);
+                        {{-- console.log(r.data); --}}
                         this.results = this.setResults(JSON.parse(r.data.results_json));
-                        this.aggregates = JSON.parse(r.data.aggregates);
+                        {{-- this.aggregates = JSON.parse(r.data.aggregates); --}}
                         this.totalResults = r.data.total_results;
-                        this.currentPage = r.data.current_page;
-                        $dispatch('setpagination', {paginator: JSON.parse(r.data.paginator)});
+                        {{-- this.currentPage = r.data.current_page; --}}
+                        {{-- $dispatch('setpagination', {paginator: JSON.parse(r.data.paginator)}); --}}
                         $dispatch('routechange', {route: r.data.route});
                         //let temp = JSON.parse(JSON.stringify(this.selectedIds));
                         //this.selectedIds = [];
@@ -647,12 +647,13 @@
                     console.log('init done');
 
                     setDownloadUrl();
+                    console.log('init done 1x');
+{{-- console.log(JSON.parse('[{&quot;rmid&quot;:4,&quot;rm&quot;:&quot;Praveena&quot;,&quot;count&quot;:122,&quot;aum&quot;:2493289.68,&quot;buy_value&quot;:null,&quot;current_value&quot;:null,&quot;pnl&quot;:null,&quot;pnl_pc&quot;:null,&quot;realised_pnl&quot;:342307.8,&quot;cash&quot;:null,&quot;cash_pc&quot;:null,&quot;returns&quot;:null,&quot;returns_pc&quot;:null},{&quot;rmid&quot;:5,&quot;rm&quot;:&quot;Sreejith P S&quot;,&quot;count&quot;:154,&quot;aum&quot;:219145390.37000003,&quot;buy_value&quot;:null,&quot;current_value&quot;:null,&quot;pnl&quot;:null,&quot;pnl_pc&quot;:null,&quot;realised_pnl&quot;:32145125.260000005,&quot;cash&quot;:null,&quot;cash_pc&quot;:null,&quot;returns&quot;:null,&quot;returns_pc&quot;:null},{&quot;rmid&quot;:6,&quot;rm&quot;:&quot;Aswathi Arjun&quot;,&quot;count&quot;:207,&quot;aum&quot;:73606812.04000002,&quot;buy_value&quot;:null,&quot;current_value&quot;:null,&quot;pnl&quot;:null,&quot;pnl_pc&quot;:null,&quot;realised_pnl&quot;:14720154.460000008,&quot;cash&quot;:null,&quot;cash_pc&quot;:null,&quot;returns&quot;:null,&quot;returns_pc&quot;:null},{&quot;rmid&quot;:7,&quot;rm&quot;:&quot;Renthik&quot;,&quot;count&quot;:66,&quot;aum&quot;:1330071.97,&quot;buy_value&quot;:null,&quot;current_value&quot;:null,&quot;pnl&quot;:null,&quot;pnl_pc&quot;:null,&quot;realised_pnl&quot;:183662.82,&quot;cash&quot;:null,&quot;cash_pc&quot;:null,&quot;returns&quot;:null,&quot;returns_pc&quot;:null},{&quot;rmid&quot;:9,&quot;rm&quot;:&quot;Rajitha M R&quot;,&quot;count&quot;:2150,&quot;aum&quot;:542938930.2099997,&quot;buy_value&quot;:5137573.1499999985,&quot;current_value&quot;:19854746.609999992,&quot;pnl&quot;:14717173.46,&quot;pnl_pc&quot;:286.4615846880935,&quot;realised_pnl&quot;:88490898.00999986,&quot;cash&quot;:537801357.0599997,&quot;cash_pc&quot;:99.05374750931696,&quot;returns&quot;:-434593285.5899998,&quot;returns_pc&quot;:-80.04459827957196},{&quot;rmid&quot;:10,&quot;rm&quot;:&quot;Aneeshya antony&quot;,&quot;count&quot;:209,&quot;aum&quot;:145029886.31000006,&quot;buy_value&quot;:null,&quot;current_value&quot;:null,&quot;pnl&quot;:null,&quot;pnl_pc&quot;:null,&quot;realised_pnl&quot;:19920533.71000002,&quot;cash&quot;:null,&quot;cash_pc&quot;:null,&quot;returns&quot;:null,&quot;returns_pc&quot;:null},{&quot;rmid&quot;:11,&quot;rm&quot;:&quot;Saji T A&quot;,&quot;count&quot;:50,&quot;aum&quot;:29936189.26,&quot;buy_value&quot;:null,&quot;current_value&quot;:null,&quot;pnl&quot;:null,&quot;pnl_pc&quot;:null,&quot;realised_pnl&quot;:3739748.619999999,&quot;cash&quot;:null,&quot;cash_pc&quot;:null,&quot;returns&quot;:null,&quot;returns_pc&quot;:null},{&quot;rmid&quot;:12,&quot;rm&quot;:&quot;Shinorans&quot;,&quot;count&quot;:320,&quot;aum&quot;:48059422.34000001,&quot;buy_value&quot;:null,&quot;current_value&quot;:null,&quot;pnl&quot;:null,&quot;pnl_pc&quot;:null,&quot;realised_pnl&quot;:5918677.559999999,&quot;cash&quot;:null,&quot;cash_pc&quot;:null,&quot;returns&quot;:null,&quot;returns_pc&quot;:null},{&quot;rmid&quot;:13,&quot;rm&quot;:&quot;Jobin O K&quot;,&quot;count&quot;:77,&quot;aum&quot;:20425382.78,&quot;buy_value&quot;:null,&quot;current_value&quot;:null,&quot;pnl&quot;:null,&quot;pnl_pc&quot;:null,&quot;realised_pnl&quot;:3620319.810000001,&quot;cash&quot;:null,&quot;cash_pc&quot;:null,&quot;returns&quot;:null,&quot;returns_pc&quot;:null}]')); --}}
+                    {{-- let v = document.getElementById('aggregates').value; --}}
 
-
-
-                    aggregates = JSON.parse(document.getElementById('aggregates').value);
-
+                    {{-- aggregates = JSON.parse(v); --}}
                         url = '{{ $indexUrl }}';
+console.log('init done 1');
                         params = {};
                         sort = {};
                         filters = JSON.parse('{{json_encode($filter)}}');
@@ -661,7 +662,7 @@
                         itemIds = JSON.parse(document.getElementById('itemIds').value);
                         {{-- itemIds = document.getElementById('itemIds').value.split(','); --}}
                         selectedIds = [];//$persist([]).as('{{ $unique_str }}ids');
-
+                    console.log('init done 2');
                         pageSelected = false;
                         allSelected = false;
                         pages = [];
@@ -680,7 +681,7 @@
                         order.processing = false;
                         order.message = '';
                         order.selIdsUrlStr = '';
-
+                    console.log('init done 3');
                         paginatorPage = null;
                         conditions = [{
                             field: 'none',
@@ -693,9 +694,9 @@
                         {{-- console.log(rs); --}}
                         results = setResults(rs);
                         paginator = JSON.parse('{{$paginator}}');
-                        $dispatch('setpagination', {paginator: paginator});
+                        {{-- $dispatch('setpagination', {paginator: paginator}); --}}
 
-
+                    console.log('init done 4');
                         if (!initialised) {
                             setTimeout(() => {
                                 liveUpdate = true;
@@ -714,6 +715,7 @@
                             initialised = true;
                             }, 1000);
                         }
+                    console.log('init done 5');
                 "
                 action="#"
                 class="max-w-full">

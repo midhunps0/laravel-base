@@ -1,7 +1,6 @@
 <?php
     return [
         'liquidbees' => [
-            // 'ASHOKLEY'
             'LIQUIDBEES'
         ],
         'client_pfo_types' => [

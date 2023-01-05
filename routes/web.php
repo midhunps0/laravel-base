@@ -26,7 +26,7 @@ use App\Http\Controllers\Auth\Custom\PasswordController;
 
 Route::get('/', [LoginController::class, 'create']);
 
-Route::get('/dashboard', [DashboardController::class, 'dashboard'])->middleware(['auth'])->name('dashboard');
+// Route::get('/dashboard', [DashboardController::class, 'dashboard'])->middleware(['auth'])->name('dashboard');
 
 require __DIR__.'/auth.php';
 
@@ -81,5 +81,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('pass-reset', [PasswordController::class, 'store'])->name('custom.password.reset');
 
-    Route::get('rms-summary', [AggregatesController::class, 'adminIndex'])->name('aggregates.admin');
+    Route::get('dashboard', [AggregatesController::class, 'adminIndex'])->name('dashboard');
+    Route::get('rms-summary-download', [AggregatesController::class, 'adminDownload'])->name('aggregates.admin.download');
+    Route::get('rms-summary-select-ids', [AggregatesController::class, 'adminSelectIds'])->name('aggregates.admin.selectIds');
+
+    Route::get('clients-summary', [AggregatesController::class, 'rmIndex'])->name('aggregates.rm');
+    Route::get('clients-summary-download', [AggregatesController::class, 'rmDownload'])->name('aggregates.rm.download');
+    Route::get('clients-summary-select-ids', [AggregatesController::class, 'rmSelectIds'])->name('aggregates.rm.selectIds');
 });
