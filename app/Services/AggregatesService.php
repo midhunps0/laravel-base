@@ -25,6 +25,7 @@ class AggregatesService implements ModelViewConnector
         $this->adminSelects = [
             'u.id as rmid',
             'u.name as rm',
+            'c.category as category',
             DB::raw('COUNT(DISTINCT c.id) as count'),
             DB::raw('SUM(c.total_aum) as aum'),
             DB::raw('SUM(cs.dp_qty * cs.buy_avg_price) as buy_value'),
@@ -37,6 +38,10 @@ class AggregatesService implements ModelViewConnector
             DB::raw('(SUM(c.total_aum) - SUM(cs.dp_qty * cs.buy_avg_price) + IFNULL(SUM(lb.liquidbees), 0)) / SUM(c.total_aum) * 100 as cash_pc'),
             DB::raw('SUM(c.realised_pnl) + SUM(cs.dp_qty * s.cmp) - SUM(c.total_aum) as returns'),
             DB::raw('(SUM(c.realised_pnl) + SUM(cs.dp_qty * s.cmp) - SUM(c.total_aum)) / SUM(c.total_aum) * 100 as returns_pc'),
+        ];
+
+        $this->searchesMap = [
+            'category' => 'c.category'
         ];
 
         $this->rmSelects = [

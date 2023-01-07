@@ -23,6 +23,14 @@
     "
     id="aggr_adm"
     :selectionEnabled="false">
+    <x-slot:extra>
+        <div class="flex flex-row space-x-4 items-center">
+            <div class="w-32">Client Category:</div>  <x-utils.spotfilter name="category" :options="\App\Helpers\AppHelper::getDistinctCategories()"
+            selectedoption="All"
+            />
+            {{-- :selectedoption="$filter['category'] ?? config('appSettings.default_client_category')" --}}
+        </div>
+    </x-slot>
     <x-slot:inputFields>
         {{-- <input type="hidden" value="{{$aggregates}}" id="aggregates"> --}}
         <input type="hidden" value="{{$results_json}}" id="results_json">
