@@ -43,9 +43,7 @@ trait IsModelViewConnector{
         string $selectedIds,
         string $resultsName = 'results'
     ): array {
-
         $this->preIndexExtra();
-
         $agrQuery = $this->getQueryAndParams(
             $searches,
             [],
@@ -70,7 +68,6 @@ trait IsModelViewConnector{
             'page',
             $page
         );
-
         // dd($agrQuery['query']->select($this->agrSelects)->toSql());
         $aggregates = $agrQuery['query']->select($this->agrSelects())->get()->first();
         DB::statement("SET SQL_MODE='only_full_group_by'");
@@ -86,6 +83,7 @@ trait IsModelViewConnector{
             'params' => $queryData['searchParams'],
             'sort' => $queryData['sortParams'],
             'filter' => $queryData['filterData'],
+            'advparams' => $queryData['advparams'],
             'items_count' => $itemsCount,
             'items_ids' => $this->getItemIds($results),
             'total_results' => $data['total'],
@@ -234,7 +232,7 @@ trait IsModelViewConnector{
         array $searches = [],
         array $sorts = [],
         array $filters = [],
-        array $advSearch,
+        array $advSearch = [],
         string $selectedIds = '',
         string $relationsResultsName = 'results'
     ) {
@@ -295,6 +293,7 @@ trait IsModelViewConnector{
             'params' => $queryData['searchParams'],
             'sort' => $queryData['sortParams'],
             'filter' => $queryData['filterData'],
+            'advparams' => $queryData['advparams'],
             'items_count' => $itemsCount,
             'items_ids' => $this->getRelItemIds($relatedResults),
             'total_results' => $data['total'],
@@ -322,7 +321,7 @@ trait IsModelViewConnector{
         array $advSearch,
         string $selectedIds = ''): array
     {
-        $filterData = $this->getFilterParams($query, $filters);
+        $filterData = $this->getFilterParams($query, $filters, 'show');
         $searchParams = $this->getSearchParams($query, $searches, 'relation');
         $sortParams = $this->getSortParams($query, $sorts);
         $this->getAdvParams($query, $advSearch, 'relation');
@@ -396,7 +395,7 @@ trait IsModelViewConnector{
             // dd($key, $op);
             // $query->having($key, $op['op'], $op['val']);
             $query->whereRaw($key.' '.$op['op'].' \''.$op['val'].'\'');
-            $searchParams[$data[0]] = $data[1];
+            $searchParams[$data[0]] = [$data[1], $data[2]];
         }
         return $searchParams;
     }
@@ -416,6 +415,9 @@ trait IsModelViewConnector{
 
     private function getSortParams($query, array $sorts, string $sortType = 'index'): array
     {
+
+        info('sorts getSP');
+        info($sorts);
         $map = $sortType == 'index' ? $this->sortsMap : $this->relSortssMap;
         $usortkey = $sortType == 'index' ? $this->uniqueSortKey : $this->relUniqueSortKey;
 
@@ -444,9 +446,11 @@ trait IsModelViewConnector{
             } else {
                 $query->orderBy($data[0], $data[1]);
             }
-            // $sortParams[$data[0]] = $data[1];
+            $sortParams[$data[0]] = $data[1];
         }
-        // dd($sortParams);
+
+        info('after getQ&P');
+        info($sorts);
         return $sortParams;
     }
 
@@ -475,8 +479,8 @@ trait IsModelViewConnector{
             }
 
             // $filterData[$data[0]]['selected'] = $data[1];
+            $filterData[$data[0]] = $data[1];
         }
-
         return $filterData;
     }
 

@@ -13,14 +13,35 @@
     unique_str="scrx"
     :results_json="$results_json"
     :paginator="$paginator"
+    :enableAdvSearch="true"
+    adv_fields="
+        {{-- pa: {key: 'pa', text: 'Allocation %', type: 'numeric'},
+        sector: {key: 'sector', text: 'Sector', type: 'string'}, --}}
+        gain_pc: {key: 'gain_pc', text: 'Gain %', type: 'numeric'},
+    "
+    :enableOrderform="false"
     total_disp_cols=19
+    :advsearch="$advparams"
+    :search="$params"
+    :sort="$sort"
+    :filter="$filter"
     id="scripts_index">
     <x-slot:extra>
-        <div class="flex flex-row space-x-4 items-center">
-            <div class="w-32">Client Category:</div>  <x-utils.spotfilter name="category" :options="\App\Helpers\AppHelper::getDistinctCategories()"
-            selectedoption="All"
-            />
-            {{-- :selectedoption="$filter['category'] ?? config('appSettings.default_client_category')" --}}
+        <div class="flex flex-row w-full space-x-8">
+            <div class="flex flex-row space-x-4 items-center">
+                <div class="w-48">Client Category:</div>
+                <x-utils.spotfilter name="category" :options="\App\Helpers\AppHelper::getDistinctCategories()"
+                selectedoption="{{$sort['category'] ?? ''}}"
+                />
+                {{-- :selectedoption="$filter['category'] ?? config('appSettings.default_client_category')" --}}
+            </div>
+            <div class="flex flex-row space-x-4 items-center">
+                <div class="w-16">RM:</div>  <x-utils.spotfilter name="dealer" :options="\App\Models\User::withRoles(['Dealer', 'Team Leader'])->get()->pluck('name', 'id')"
+                options_type="key_value"
+                selectedoption="{{$sort['dealer'] ?? ''}}"
+                any_option_label="All RMs"
+                />
+            </div>
         </div>
     </x-slot>
     <x-slot:inputFields>
@@ -142,8 +163,8 @@
                 <x-utils.spotsort name="dealer" val="{{ $sort['dealer'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     Dealer
-                    <x-utils.spotsearch textval="{{ $params['dealer'] ?? '' }}" textname="dealer"
-                        label="Search dealer" />
+                    {{-- <x-utils.spotsearch textval="{{ $params['dealer'] ?? '' }}" textname="dealer"
+                        label="Search dealer" /> --}}
                 </div>
             </div>
         </th>

@@ -79,6 +79,7 @@ class ClientService implements ModelViewConnector
         $this->itemQuery = Client::query();
         $this->relationSelects = [
             's.id as id',
+            'u.name as dealer',
             'c.total_aum as aum',
             'c.client_code as client_code',
             'cs.entry_date as entry_date',
@@ -117,6 +118,7 @@ class ClientService implements ModelViewConnector
         // ]);
 
         $this->relSearchesMap = [
+            'dealer' => 'u.id',
             'aum' => 'c.total_aum',
             'entry_date' => 'cs.entry_date',
             'symbol' => 's.symbol',
@@ -157,7 +159,8 @@ class ClientService implements ModelViewConnector
             'overall_gain' => ['name' => '(s.cmp - cs.buy_avg_price) * cs.dp_qty', 'type' => 'float']
         ];
         $this->relFiltersMap = [
-            'tracked' => ['name' => 's.tracked', 'type' => 'boolean']
+            'tracked' => ['name' => 's.tracked', 'type' => 'boolean'],
+            'dealer' => ['name' => 'u.id', 'type' => 'integer']
         ];
         $this->relAdvSearchesMap = array_merge(
             $this->relSearchesMap,
@@ -253,8 +256,9 @@ class ClientService implements ModelViewConnector
     protected function getRelationQuery(int $id = null)
     {
         return Client::from('clients as c')
-            ->join('clients_scripts as cs', 'c.id' , '=', 'cs.client_id')
+            ->join('clients_scripts as cs', 'c.id', '=', 'cs.client_id')
             ->join('scripts as s', 's.id', '=', 'cs.script_id')
+            ->join('users as u', 'u.id', '=', 'c.rm_id')
             ->where('c.id', $id)
             ->where('cs.dp_qty', '>', 0);
     }

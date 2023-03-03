@@ -21,7 +21,17 @@
         allocated_aum: {key: 'allocated_aum', text: 'ALCTD AUM', type: 'numeric'},
         aum: {key: 'aum', text: 'AUM', type: 'numeric'},
     "
-    id="clients_index">
+    id="clients_index"
+    :advsearch="$advparams"
+    :search="$params"
+    :sort="$sort"
+    :filter="$filter">
+    <x-slot:extra>
+        <div class="flex flex-row space-x-4 items-center">
+            <div class="w-32">Client Category:</div>
+            <x-utils.spotfilter name="category" :options="\App\Helpers\AppHelper::getDistinctCategories()" :selectedoption="$filter['category'] ?? config('appSettings.default_client_category')" />
+        </div>
+    </x-slot>
     <x-slot:inputFields>
         <input type="hidden" value="{{$aggregates}}" id="aggregates">
         <input type="hidden" value="{{$results_json}}" id="results_json">
@@ -71,8 +81,11 @@
         </th>
         <th class="border-l-2 border-base-100 sticky !left-72 z-30">
             <div class="flex flex-row items-center">
+                <div class="relative flex-grow ml-2">
+                    Category
+                </div>
                 {{-- <div class="relative flex-grow ml-2 flex flex-row items-center justify-between"> --}}
-                    <x-utils.spotfilter name="category" :options="\App\Helpers\AppHelper::getDistinctCategories()" :selectedoption="$filter['category'] ?? config('appSettings.default_client_category')" />
+                    {{-- <x-utils.spotfilter name="category" :options="\App\Helpers\AppHelper::getDistinctCategories()" :selectedoption="$filter['category'] ?? config('appSettings.default_client_category')" /> --}}
                     {{-- <select x-data="{
                         'val': '{{$filter['category'] ?? config('appSettings.default_client_category')}}'
                         }"

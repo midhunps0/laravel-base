@@ -31,6 +31,10 @@
     :editbtn="true"
     editroute="scripts.import.store"
     :model_id="$model->id"
+    :advsearch="$advparams"
+    :search="$params"
+    :sort="$sort"
+    :filter="$filter"
     >
     <x-slot:searchbox>
         <x-utils.itemssearch

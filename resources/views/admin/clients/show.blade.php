@@ -27,8 +27,21 @@
     :editbtn="true"
     editroute="clients.import.store"
     :model_id="$model->id"
+    :advsearch="$advparams"
+    :search="$params"
+    :sort="$sort"
     :filter="$filter"
     >
+    <x-slot:extra>
+        <div class="flex flex-row space-x-4 items-center">
+            <div class="w-10">RM:</div>
+            <x-utils.spotfilter name="dealer"
+            :options="\App\Models\User::withRoles(['Dealer', 'Team Leader'])->get()->pluck('name', 'id')"
+            options_type="key_value"
+            selectedoption="{{$sort['dealer'] ?? ''}}"
+            any_option_label="All RMs"/>
+        </div>
+    </x-slot>
     <x-slot:searchbox>
         <x-utils.itemssearch
         itemsName="clients"

@@ -1,4 +1,4 @@
-@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'soPriceField' => 'false', 'paginator', 'columns' => [], 'orderBaseUrl' => '', 'orderVerifyUrl' => '', 'orderCheckUrl' => '', 'id' => '', 'filter' => []])
+@props(['x_ajax', 'title', 'indexUrl', 'downloadUrl', 'selectIdsUrl', 'results', 'results_name', 'items_count', 'items_ids', 'total_results', 'current_page', 'unique_str', 'results_json' => '', 'result_calcs' => [], 'selectionEnabled' => true, 'total_disp_cols', 'adv_fields' => '', 'enableAdvSearch' => false, 'soPriceField' => 'false', 'paginator', 'columns' => [], 'orderBaseUrl' => '', 'orderVerifyUrl' => '', 'orderCheckUrl' => '', 'id' => '', 'enableOrderform' => true, 'search' => [], 'sort' => [], 'filter' => [], 'advsearch' => []])
 <x-dashboard-base :ajax="$x_ajax">
     <div id="{{$id}}" x-data="{ compact: $persist(false), showAdvSearch: false, showOrderForm: false, noconditions: true }" class="p-3 overflow-x-scroll relative h-full" :id="$id('panel-base')">
 
@@ -82,6 +82,7 @@
                         <x-display.icon icon="icons.doc_search" height="h-5" width="w-5" />&nbsp;Adv Search
                     </button>
                 </div>
+                @if ($enableOrderform)
                 <div>
                     <button @click.prevent.stop="$dispatch('showorderform');"
                     @keydown.window="
@@ -96,16 +97,17 @@
                         <x-display.icon icon="icons.play" height="h-5" width="w-5" />&nbsp;Sell Order
                     </button>
                 </div>
+                @endif
             </div>
             @endif
         </div>
         @endif
 
-        <div class="flex flex-row flex-wrap justify-between items-center mb-4">
+        <div class="flex flex-row flex-wrap justify-between items-center mb-2">
             @if (!isset($body))
                 {{-- <h3 class="text-xl font-bold">{{ $title }}</h3> --}}
                 @if ($enableAdvSearch)
-                <div class="flex flex-row items-center justify-end space-x-4 flex-wrap">
+                <div class="flex flex-row items-center justify-end space-x-4 flex-wrap w-full mt-4">
                     <div>
                         <button @click.prevent.stop="showAdvSearch = true;"
                             @keydown.window="
@@ -121,6 +123,7 @@
                             <x-display.icon icon="icons.doc_search" height="h-5" width="w-5" />&nbsp;Adv Search
                         </button>
                     </div>
+                    @if ($enableOrderform)
                     <div>
                         <button @click.prevent.stop="$dispatch('showorderform');"
                         @keydown.window="
@@ -135,6 +138,7 @@
                             <x-display.icon icon="icons.play" height="h-5" width="w-5" />&nbsp;Sell Order
                         </button>
                     </div>
+                    @endif
                 </div>
                 @endif
             @endif
@@ -414,9 +418,13 @@
                     if (Object.keys(this.filters).length > 0) {
                         params.filter = this.processParams(this.filters);
                     }
+                    console.log('conditions');
+                    console.log(this.conditions);
                     if (!(this.conditions.length == 1 && this.conditions[0].field == 'none')) {
                         params.adv_search = this.advQueryParams();
                     }
+                    console.log('params.adv_search');
+                    console.log(params.adv_search);
                     params.items_count = this.itemsCount;
                     params.page = this.paginatorPage;
                     console.log('items count: '+ this.itemsCount);
@@ -490,7 +498,13 @@
                 setFilter(detail) {
                     let keys = Object.keys(detail.data);
                     console.log(keys);
-                    if (keys[0] == 'tracked' && detail.data[keys[0]] >= 0) {
+                    if (detail.data[keys[0]] != '') {
+                        this.filters[keys[0]] = detail.data[keys[0]];
+                    } else {
+                        delete this.filters[keys[0]];
+                    }
+                    /*
+                    if (keys[0] == 'tracked' && detail.data[keys[0]] = 0) {
                         this.filters[keys[0]] = detail.data[keys[0]];
                     } else if(keys[0] == 'category' && detail.data[keys[0]] != 'All') {
                         this.filters[keys[0]] = detail.data[keys[0]];
@@ -498,10 +512,10 @@
                         if (typeof(this.filters[keys[0]]) != 'undefined') {
                             delete this.filters[keys[0]];
                         }
-                    }
+                    }*/
                 },
                 doFilter(detail) {
-                    console.log('filter working');
+                    console.log(detail);
                     this.setFilter(detail);
                     ajaxLoading = true;
                     this.paginator.currentPage = 1;
@@ -603,10 +617,10 @@
                     showOrderForm = true;
                 }
             }" @spotsearch.window="fetchResults($event.detail)"
-                @setparam.window="setParam($event.detail)"
+                {{-- @setparam.window="setParam($event.detail)"
                 @spotsort.window="console.log('se!');doSort($event.detail)"
-                @setsort.window="setSort($event.detail)"
-                @spotfilter.window="doFilter($event.detail);"
+                @setsort.window="setSort($event.detail)" --}}
+                @spotfilter.window="console.log('filter event captured');doFilter($event.detail);"
                 @setfilter.window="setFilter($event.detail)"
                 @countchange.window="pageUpdateCount($event.detail.count);"
                 @selectpage="selectPage();"
@@ -648,13 +662,22 @@
 
                     setDownloadUrl();
 
-
-
                     aggregates = JSON.parse(document.getElementById('aggregates').value);
 
                         url = '{{ $indexUrl }}';
-                        params = {};
-                        sort = {};
+                        let asjson = JSON.parse('{{json_encode($advsearch)}}');
+                        console.log('asjson');
+                        console.log(asjson);
+                        conditions = Object.keys(asjson).map((k) => {
+                            return {
+                                field: k,
+                                type: '',
+                                operation: asjson[k][0],
+                                value: asjson[k][1]
+                            };
+                        });
+                        params = JSON.parse('{{json_encode($search)}}');
+                        sort = JSON.parse('{{json_encode($sort)}}');
                         filters = JSON.parse('{{json_encode($filter)}}');
                         itemsCount = {{ $items_count }};
                         {{-- itemIds = JSON.parse('{{$items_ids}}'); --}}
@@ -682,12 +705,6 @@
                         order.selIdsUrlStr = '';
 
                         paginatorPage = null;
-                        conditions = [{
-                            field: 'none',
-                            type: '',
-                            operation: 'none',
-                            value: 0
-                        }];
 
                         let rs = JSON.parse(document.getElementById('results_json').value);
                         {{-- console.log(rs); --}}
@@ -758,189 +775,191 @@
                 </div>
                 @if ($enableAdvSearch)
                 <div  x-data="{
-                    myconditions: [{
-                        field: 'none',
-                        type: '',
-                        operation: 'none',
-                        value: 0
-                    }],
-                    addContition() {
-                        this.myconditions.push({
+                        myconditions: [{
                             field: 'none',
                             type: '',
                             operation: 'none',
                             value: 0
-                        });
-                    },
-                    resetAdvSearch() {
-                        this.myconditions = [{
-                            field: 'none',
-                            operation: 'none',
-                            value: 0
-                        }];
+                        }],
+                        addContition() {
+                            this.myconditions.push({
+                                field: 'none',
+                                type: '',
+                                operation: 'none',
+                                value: 0
+                            });
+                        },
+                        resetAdvSearch() {
+                            this.myconditions = [{
+                                field: 'none',
+                                operation: 'none',
+                                value: 0
+                            }];
 
-                    },
-                }"
-                x-show="showAdvSearch" x-transition
-                class="absolute top-0 left-0 z-30 w-full flex flex-row justify-center p-16 items-start bg-base-100 bg-opacity-60 min-h-full">
-                    <div
-                        class="flex flex-col items-center px-4 py-6 rounded-md w-2/3 mx-auto bg-base-200 shadow-lg relative">
-                        <button @click.prevent.stop="showAdvSearch = false;advSearchStatus();"
-                            class="w-8 h-8 p-1 bg-base-100 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center absolute top-2 right-2">
-                            <x-display.icon icon="icons.close" height="h-7" width="w-7" />
-                        </button>
-                        <div class="w-full flex flex-row justify-center">
-                            <h3 class="text-lg font-bold mb-4">Advanced Search</h3>
-                        </div>
-                        <div class="w-full flex flex-row justify-center mb-2">
-                            <div
-                                class="flex-1 px-2 py-1 mx-1 font-bold text-center border-b border-opacity-60 border-base-content">
-                                Field</div>
-                            <div
-                                class="flex-1 px-2 py-1 mx-1 font-bold text-center border-b border-opacity-60 border-base-content">
-                                Condition</div>
-                            <div
-                                class="w-24 px-2 py-1 mx-1 font-bold text-center border-b border-opacity-60 border-base-content">
-                                Value</div>
-                            <div class="w-10 px-2 flex flex-row space-x-2">
+                        },
+                    }"
+                    x-show="showAdvSearch" x-transition
+                    class="absolute top-0 left-0 z-30 w-full flex flex-row justify-center p-16 items-start bg-base-100 bg-opacity-60 min-h-full">
+                        <div
+                            class="flex flex-col items-center px-4 py-6 rounded-md w-2/3 mx-auto bg-base-200 shadow-lg relative">
+                            <button @click.prevent.stop="showAdvSearch = false;advSearchStatus();"
+                                class="w-8 h-8 p-1 bg-base-100 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center absolute top-2 right-2">
+                                <x-display.icon icon="icons.close" height="h-7" width="w-7" />
+                            </button>
+                            <div class="w-full flex flex-row justify-center">
+                                <h3 class="text-lg font-bold mb-4">Advanced Search</h3>
                             </div>
-                        </div>
-                        <template x-for="(condition, index) in myconditions" :key="'con'+index">
-                            <div class="w-full flex flex-row justify-center my-2">
-                                <div class="w-full flex-1 mx-1">
-                                    <select x-model="condition.field" :id="'advf' + index"
-                                        class="select select-sm select-bordered py-0 w-full"
-                                        @change.prevent.stop="document.getElementById('advop'+index).dispatchEvent(new Event('change', { 'bubbles': false }));">
-                                        {{-- <option value="none">Select Field</option> --}}
-                                        <template x-for="field in Object.values(advFields)">
-                                            <option :value="field.key"></span><span x-text="field.text"></span>
-                                            </option>
-                                        </template>
-                                    </select>
+                            <div class="w-full flex flex-row justify-center mb-2">
+                                <div
+                                    class="flex-1 px-2 py-1 mx-1 font-bold text-center border-b border-opacity-60 border-base-content">
+                                    Field</div>
+                                <div
+                                    class="flex-1 px-2 py-1 mx-1 font-bold text-center border-b border-opacity-60 border-base-content">
+                                    Condition</div>
+                                <div
+                                    class="w-24 px-2 py-1 mx-1 font-bold text-center border-b border-opacity-60 border-base-content">
+                                    Value</div>
+                                <div class="w-10 px-2 flex flex-row space-x-2">
                                 </div>
-                                <div class="flex-1 mx-1">
-                                    <select x-model="condition.operation" :id="'advop' + index"
-                                        class="select select-sm select-bordered py-0 w-full">
-                                        {{-- <option value="none">Choose Condition</option> --}}
-                                        <template x-for="op in fieldOperators[(advFields[condition.field]).type]"
-                                            :key="op.key">
-                                            <option :value="op.key"><span x-text="op.text"></span></option>
-                                        </template>
-                                    </select>
+                            </div>
+                            <template x-for="(condition, index) in myconditions" :key="'con'+index">
+                                <div class="w-full flex flex-row justify-center my-2">
+                                    <div class="w-full flex-1 mx-1">
+                                        <select x-model="condition.field" :id="'advf' + index"
+                                            class="select select-sm select-bordered py-0 w-full"
+                                            @change.prevent.stop="document.getElementById('advop'+index).dispatchEvent(new Event('change', { 'bubbles': false }));">
+                                            {{-- <option value="none">Select Field</option> --}}
+                                            <template x-for="field in Object.values(advFields)">
+                                                <option :value="field.key"></span><span x-text="field.text"></span>
+                                                </option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                    <div class="flex-1 mx-1">
+                                        <select x-model="condition.operation" :id="'advop' + index"
+                                            class="select select-sm select-bordered py-0 w-full">
+                                            {{-- <option value="none">Choose Condition</option> --}}
+                                            <template x-for="op in fieldOperators[(advFields[condition.field]).type]"
+                                                :key="op.key">
+                                                <option :value="op.key"><span x-text="op.text"></span></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                    <div class="w-24 mx-1">
+                                        <input type="text" x-model="condition.value"
+                                            class="input input-sm input-bordered w-full">
+                                    </div>
+                                    <div class="w-10 px-2 flex flex-row items-center">
+                                        <button @click.prevent.stop="myconditions.splice(index, 1);"
+                                            class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center disabled:bg-opacity-70" :disabled="myconditions.length == 1">
+                                            <x-display.icon icon="icons.close" height="h-5" width="w-5" />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="w-24 mx-1">
-                                    <input type="text" x-model="condition.value"
-                                        class="input input-sm input-bordered w-full">
+                            </template>
+                            <div class="w-full flex flex-row justify-center mt-6 mb-2">
+                                <div class="flex-1 flex-grow px-1">
+                                    <button @click.prevent.stop="addContition"
+                                        class="btn btn-sm btn-warning p-0 w-full border border-base-100 flex felx-row items-center justify-center">
+                                        <x-display.icon icon="icons.plus" height="h-4" width="w-4" />&nbsp;Add
+                                        Condition
+                                    </button>
+                                </div>
+                                <div class="flex-1 flex-grow px-1">
+                                    <button @click.prevent.stop="showAdvSearch = false;$dispatch('advsearch', {conditions: JSON.parse(JSON.stringify(myconditions))})"
+                                        class="btn btn-sm btn-success p-0 w-full border border-base-100 flex felx-row items-center justify-center">
+                                        <x-display.icon icon="icons.go_right" height="h-4" width="w-4" />&nbsp;Get Items List
+                                    </button>
                                 </div>
                                 <div class="w-10 px-2 flex flex-row items-center">
-                                    <button @click.prevent.stop="myconditions.splice(index, 1);"
-                                        class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center disabled:bg-opacity-70" :disabled="myconditions.length == 1">
-                                        <x-display.icon icon="icons.close" height="h-5" width="w-5" />
+                                    <button @click.prevent.stop="resetAdvSearch();$dispatch('advsearch', {conditions: JSON.parse(JSON.stringify(myconditions))});"
+                                        class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center">
+                                        <x-display.icon icon="icons.delete" height="h-5" width="w-5" />
                                     </button>
                                 </div>
                             </div>
-                        </template>
-                        <div class="w-full flex flex-row justify-center mt-6 mb-2">
-                            <div class="flex-1 flex-grow px-1">
-                                <button @click.prevent.stop="addContition"
-                                    class="btn btn-sm btn-warning p-0 w-full border border-base-100 flex felx-row items-center justify-center">
-                                    <x-display.icon icon="icons.plus" height="h-4" width="w-4" />&nbsp;Add
-                                    Condition
-                                </button>
-                            </div>
-                            <div class="flex-1 flex-grow px-1">
-                                <button @click.prevent.stop="showAdvSearch = false;$dispatch('advsearch', {conditions: JSON.parse(JSON.stringify(myconditions))})"
-                                    class="btn btn-sm btn-success p-0 w-full border border-base-100 flex felx-row items-center justify-center">
-                                    <x-display.icon icon="icons.go_right" height="h-4" width="w-4" />&nbsp;Get Items List
-                                </button>
-                            </div>
-                            <div class="w-10 px-2 flex flex-row items-center">
-                                <button @click.prevent.stop="resetAdvSearch();$dispatch('advsearch', {conditions: JSON.parse(JSON.stringify(myconditions))});"
-                                    class="w-6 h-6 p-1 bg-error text-base-content rounded-md flex flex-row items-center justify-center">
-                                    <x-display.icon icon="icons.delete" height="h-5" width="w-5" />
-                                </button>
-                            </div>
                         </div>
                     </div>
-                </div>
                 {{-- Order Form --}}
-                <div x-show="showOrderForm" x-transition
-                    class="absolute top-0 left-0 z-30 w-full flex flex-row justify-center p-16 items-start bg-base-100 bg-opacity-60 min-h-full">
-                    <div class="flex flex-col items-center px-4 py-6 rounded-md w-2/3 mx-auto bg-base-200 shadow-lg relative">
-                        <button @click.prevent.stop="showOrderForm = false;"
-                            class="w-8 h-8 p-1 bg-base-100 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center absolute top-2 right-2">
-                            <x-display.icon icon="icons.close" height="h-7" width="w-7" />
-                        </button>
-                        <div class="w-full flex flex-row justify-center">
-                            <h3 class="text-lg font-bold mb-4">Create Sell Order</h3>
-                        </div>
-                        <div class="w-full justify-center items-center rounded-md">
-                            <h6 class="text-sm p-4">
-                                This order will be generated for <span class="font-bold text-warning text-lg" x-text="getOrderItemsCount()"></span> items.<br/>
-                                {{-- <span x-show="order.uniqueSymbol">
-                                    Only one script in your list. You can set the price at which to create sell order. The current market price is chosen by default.
-                                </span>
-                                <span x-show="!order.uniqueSymbol">
-                                    More than one script in your list. You cannot set the price at which to create the sell order. The current market price will be taken to generate the sell order.
-                                </span> --}}
-                            </h6>
-                            <h6 x-show="order.uniqueSymbol" class="text-sm p-4">
-                                Chosen Script: <span x-text="order.chosenSymbol" class="font-bold text-warning"></span>
-                            </h6>
-                        </div>
-                        {{-- <div x-show="!order.statChecked" x-transition class="w-full border border-base-content border-opacity-30 rounded-md">
-                            <h6 class="w-full p-3 text-center animate-pulse">
-                                Analysing the list..
-                            </h6>
-                        </div> --}}
-                        <div x-transition class="w-full border border-base-content border-opacity-30 rounded-md">
-                            <div class="flex flex-row justify-between w-full mx-auto p-4 m-4 space-x-2">
-                                {{-- <div class="w-1/4">
-                                    <label for="bors">Action</label><br/>
-                                    <select x-model="order.bors" id="bors" class="select select-sm py-0 w-full">
-                                        <option value="Buy">Buy</option>
-                                        <option value="Sell">Sell</option>
-                                    </select>
-                                </div> --}}
-                                <div class="flex-1">
-                                    <label for="order_qty">Quantity %</label><br/>
-                                    <input x-model="order.qty" id="order_qty" type="number" min="0" class="input input-sm w-full" oninput="if (this.value < 0) {this.value = 0;} if (this.value.length != 0) {var val = Math.floor(this.value); this.value = null; this.value = val;}">
-                                </div>
-                                @if (isset($soPriceField) && $soPriceField)
-                                <div class="flex-1">
-                                    <label for="order_price">Price</label><br/>
-                                    <input x-model="order.price" type="number" min="0.00" step="0.01" id="order_price" type="text" class="input input-sm w-full"
-                                    oninput="if(this.value < 0) {this.value = 0.00;}"
-                                    @showorderform.window="order.price=results[0].cmp;">
-                                </div>
-                                @endif
-                                <div class="flex-1">
-                                    <label for="order_slippage">Slippage</label><br/>
-                                    <input x-model="order.slippage" type="number" min="0.00" max="2.00" step="0.01" id="order_slippage" type="text" class="input input-sm w-full" :class="order.slippage < 0.01 || order.slippage > 1 ? 'text-error border border-error' : ''" >
-                                    <label class="label">
-                                        <span class="label-text-alt" :class="order.slippage < 0.01 ? 'text-error' : ''">Min: 0.01</span>
-                                        <span class="label-text-alt" :class="order.slippage > 1 ? 'text-error' : ''">Max: 1.00</span>
-                                    </label>
-                                </div>
+                    @if ($enableOrderform)
+                    <div x-show="showOrderForm" x-transition
+                        class="absolute top-0 left-0 z-30 w-full flex flex-row justify-center p-16 items-start bg-base-100 bg-opacity-60 min-h-full">
+                        <div class="flex flex-col items-center px-4 py-6 rounded-md w-2/3 mx-auto bg-base-200 shadow-lg relative">
+                            <button @click.prevent.stop="showOrderForm = false;"
+                                class="w-8 h-8 p-1 bg-base-100 hover:bg-base-300 hover:text-warning transition-colors text-base-content rounded-md flex flex-row items-center justify-center absolute top-2 right-2">
+                                <x-display.icon icon="icons.close" height="h-7" width="w-7" />
+                            </button>
+                            <div class="w-full flex flex-row justify-center">
+                                <h3 class="text-lg font-bold mb-4">Create Sell Order</h3>
                             </div>
-                            <div class="my-4 px-1 text-center w-full flex flex-row justify-between space-x-4">
-                                <button @click.prevent.stop="order.reset();" :disabled="order.processing" class="btn btn-sm text-base-content"><x-display.icon icon="icons.refresh" height="h-4" width="w-4" />&nbsp;Reset</button>
-                                {{-- <button @click.prevent.stop="verifyOrderList()" x-show="!order.listVerified" :disabled="order.processing"
-                                    class="btn btn-sm btn-warning py-0 border border-base-100 flex felx-row items-center justify-center mx-auto" download :disabled="!order.enabled">
-                                    <x-display.icon icon="icons.doc_tick" height="h-4" width="w-4" />&nbsp;Verify Items List
-                                </button> --}}
-                                <a :href="order.url"
-                                    class="btn btn-sm btn-success py-0 border border-base-100 flex felx-row items-center justify-center mx-auto" download :disabled="!order.enabled || order.processing">
-                                    <x-display.icon icon="icons.doc_tick" height="h-4" width="w-4" />&nbsp;Generate Order
-                                </a>
+                            <div class="w-full justify-center items-center rounded-md">
+                                <h6 class="text-sm p-4">
+                                    This order will be generated for <span class="font-bold text-warning text-lg" x-text="getOrderItemsCount()"></span> items.<br/>
+                                    {{-- <span x-show="order.uniqueSymbol">
+                                        Only one script in your list. You can set the price at which to create sell order. The current market price is chosen by default.
+                                    </span>
+                                    <span x-show="!order.uniqueSymbol">
+                                        More than one script in your list. You cannot set the price at which to create the sell order. The current market price will be taken to generate the sell order.
+                                    </span> --}}
+                                </h6>
+                                <h6 x-show="order.uniqueSymbol" class="text-sm p-4">
+                                    Chosen Script: <span x-text="order.chosenSymbol" class="font-bold text-warning"></span>
+                                </h6>
                             </div>
-                            {{-- <div x-show="order.listVerified" class="p-3 m-3 border rounded-md"
-                                :class="order.listInvalid ? 'border-error text-error' : 'border-success text-success'">
-                                <span x-text="order.message"></span>
+                            {{-- <div x-show="!order.statChecked" x-transition class="w-full border border-base-content border-opacity-30 rounded-md">
+                                <h6 class="w-full p-3 text-center animate-pulse">
+                                    Analysing the list..
+                                </h6>
                             </div> --}}
+                            <div x-transition class="w-full border border-base-content border-opacity-30 rounded-md">
+                                <div class="flex flex-row justify-between w-full mx-auto p-4 m-4 space-x-2">
+                                    {{-- <div class="w-1/4">
+                                        <label for="bors">Action</label><br/>
+                                        <select x-model="order.bors" id="bors" class="select select-sm py-0 w-full">
+                                            <option value="Buy">Buy</option>
+                                            <option value="Sell">Sell</option>
+                                        </select>
+                                    </div> --}}
+                                    <div class="flex-1">
+                                        <label for="order_qty">Quantity %</label><br/>
+                                        <input x-model="order.qty" id="order_qty" type="number" min="0" class="input input-sm w-full" oninput="if (this.value < 0) {this.value = 0;} if (this.value.length != 0) {var val = Math.floor(this.value); this.value = null; this.value = val;}">
+                                    </div>
+                                    @if (isset($soPriceField) && $soPriceField)
+                                    <div class="flex-1">
+                                        <label for="order_price">Price</label><br/>
+                                        <input x-model="order.price" type="number" min="0.00" step="0.01" id="order_price" type="text" class="input input-sm w-full"
+                                        oninput="if(this.value < 0) {this.value = 0.00;}"
+                                        @showorderform.window="order.price=results[0].cmp;">
+                                    </div>
+                                    @endif
+                                    <div class="flex-1">
+                                        <label for="order_slippage">Slippage</label><br/>
+                                        <input x-model="order.slippage" type="number" min="0.00" max="2.00" step="0.01" id="order_slippage" type="text" class="input input-sm w-full" :class="order.slippage < 0.01 || order.slippage > 1 ? 'text-error border border-error' : ''" >
+                                        <label class="label">
+                                            <span class="label-text-alt" :class="order.slippage < 0.01 ? 'text-error' : ''">Min: 0.01</span>
+                                            <span class="label-text-alt" :class="order.slippage > 1 ? 'text-error' : ''">Max: 1.00</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="my-4 px-1 text-center w-full flex flex-row justify-between space-x-4">
+                                    <button @click.prevent.stop="order.reset();" :disabled="order.processing" class="btn btn-sm text-base-content"><x-display.icon icon="icons.refresh" height="h-4" width="w-4" />&nbsp;Reset</button>
+                                    {{-- <button @click.prevent.stop="verifyOrderList()" x-show="!order.listVerified" :disabled="order.processing"
+                                        class="btn btn-sm btn-warning py-0 border border-base-100 flex felx-row items-center justify-center mx-auto" download :disabled="!order.enabled">
+                                        <x-display.icon icon="icons.doc_tick" height="h-4" width="w-4" />&nbsp;Verify Items List
+                                    </button> --}}
+                                    <a :href="order.url"
+                                        class="btn btn-sm btn-success py-0 border border-base-100 flex felx-row items-center justify-center mx-auto" download :disabled="!order.enabled || order.processing">
+                                        <x-display.icon icon="icons.doc_tick" height="h-4" width="w-4" />&nbsp;Generate Order
+                                    </a>
+                                </div>
+                                {{-- <div x-show="order.listVerified" class="p-3 m-3 border rounded-md"
+                                    :class="order.listInvalid ? 'border-error text-error' : 'border-success text-success'">
+                                    <span x-text="order.message"></span>
+                                </div> --}}
+                            </div>
                         </div>
                     </div>
-                </div>
+                    @endif
                 @endif
             </form>
 

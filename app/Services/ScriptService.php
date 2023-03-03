@@ -71,8 +71,12 @@ class ScriptService implements ModelViewConnector
         //         DB::raw('(SUM(s.cmp * qcs.qty) - SUM(s.last_day_closing * qcs.qty)) / SUM(s.last_day_closing * qcs.qty) * 100 as dlr_todays_gain_pc')
         //     ]
         // );
+        $this->advSearchesMap = [
+            'gain_pc' => 'ROUND((s.cmp - qcs.abv) / qcs.abv * 100, 2)'
+        ];
         $this->filtersMap = [
-            'category' => ['name' => 'qcs.category', 'type' => 'string']
+            'category' => ['name' => 'qcs.category', 'type' => 'string'],
+            'dealer' => ['name' => 'u.id', 'type' => 'integer']
         ];
         $this->sortsMap = [
             'dealer' => ['name' => 'dealer', 'type' => 'string'],

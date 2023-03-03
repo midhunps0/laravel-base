@@ -45,7 +45,7 @@
         <li x-show="hasAnyPermissions(['dealer.create_any'])" ><x-menu-item title="Dashboard" route="dashboard" href="{{route('dashboard')}}" icon="icons.users"/></li>
         <li x-show="hasAnyPermissions(['client.view_own'])" ><x-menu-item title="Dashboard" route="dashboard" href="{{route('dashboard')}}" icon="icons.users"/></li>
         <li><x-menu-item title="Clients Overview" route="clients.index" href="{{route('clients.index').'?filter[]=category::'.config('appSettings.default_client_category')}}" icon="icons.users"/></li>
-        <li><x-menu-item title="Holdings Overview" route="scripts.index" href="{{route('scripts.index')}}" icon="icons.list"/></li>
+        <li><x-menu-item title="Holdings Overview" route="scripts.index" href="{{route('scripts.index').'?sort[]=todays_gain::desc'.''}}" icon="icons.list"/></li>
         <li><x-menu-item title="Client wise" route="clients.show" href="{{route('clients.show', 0)}}" icon="icons.user"/></li>
         <li><x-menu-item title="Script wise" route="scripts.show" href="{{route('scripts.show', 0)}}"
             icon="icons.clipboard"/></li>
