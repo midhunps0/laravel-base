@@ -324,7 +324,7 @@ trait IsModelViewConnector{
         $filterData = $this->getFilterParams($query, $filters, 'show');
         $searchParams = $this->getSearchParams($query, $searches, 'relation');
         $sortParams = $this->getSortParams($query, $sorts);
-        $this->getAdvParams($query, $advSearch, 'relation');
+        $advParams = $this->getAdvParams($query, $advSearch, 'relation');
 
         $this->extraRelationConditions($query);
 
@@ -337,7 +337,8 @@ trait IsModelViewConnector{
             'query' => $query,
             'searchParams' => $searchParams,
             'sortParams' => $sortParams,
-            'filterData' => $filterData
+            'filterData' => $filterData,
+            'advparams' => $advParams
         ];
     }
 
