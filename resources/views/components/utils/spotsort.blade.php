@@ -4,6 +4,7 @@
         options: ['none', 'asc', 'desc'],
         exclusive: {{$exclusive}},
         processClick() {
+            console.log('spotsort processing..');
             console.log('sp: '+this.spotsort);
             for(let i = 0; i < this.options.length; i++) {
                 if(this.options[i] == this.spotsort) {

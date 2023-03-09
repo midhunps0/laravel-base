@@ -617,9 +617,9 @@
                     showOrderForm = true;
                 }
             }" @spotsearch.window="fetchResults($event.detail)"
-                {{-- @setparam.window="setParam($event.detail)"
+                @setparam.window="setParam($event.detail)"
                 @spotsort.window="console.log('se!');doSort($event.detail)"
-                @setsort.window="setSort($event.detail)" --}}
+                {{-- @setsort.window="setSort($event.detail)" --}}
                 @spotfilter.window="console.log('filter event captured');doFilter($event.detail);"
                 @setfilter.window="setFilter($event.detail)"
                 @countchange.window="pageUpdateCount($event.detail.count);"
