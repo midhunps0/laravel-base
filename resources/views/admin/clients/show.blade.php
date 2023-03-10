@@ -32,16 +32,6 @@
     :sort="$sort"
     :filter="$filter"
     >
-    <x-slot:extra>
-        <div class="flex flex-row space-x-4 items-center">
-            <div class="w-10">RM:</div>
-            <x-utils.spotfilter name="dealer"
-            :options="\App\Models\User::withRoles(['Dealer', 'Team Leader'])->get()->pluck('name', 'id')"
-            options_type="key_value"
-            selectedoption="{{$sort['dealer'] ?? ''}}"
-            any_option_label="All RMs"/>
-        </div>
-    </x-slot>
     <x-slot:searchbox>
         <x-utils.itemssearch
         itemsName="clients"
@@ -54,7 +44,12 @@
     <x-slot:body>
     <div class="flex flex-row flex-wrap space-x-2 items-center">
         <div class="font-bold border border-base-300 rounded-md p-4 mb-2 md:mb-0">
-            <h1><span class="inline-block mr-1">Code: </span><span class="inline-block mr-4 text-warning">{{$model->client_code}}</span><span class="inline-block mr-1">Name: </span><span class="inline-block mr-4 text-warning">{{$model->name}}</span><span class="inline-block mr-1">AUM: </span><span class="inline-block mr-4 text-warning">{{$model->total_aum}}</span></h1>
+            <div>
+                <span class="inline-block mr-1">Code: </span><span class="inline-block mr-4 text-warning">{{$model->client_code}}</span>
+                <span class="inline-block mr-1">Name: </span><span class="inline-block mr-4 text-warning">{{$model->name}}</span>
+                <span class="inline-block mr-1">RM: </span><span class="inline-block mr-4 text-warning">{{$model->dealer->name}}</span>
+                <span class="inline-block mr-1">AUM: </span><span class="inline-block mr-4 text-warning">{{$model->total_aum}}</span>
+            </div>
         </div>
         <div>
             <button class="btn btn-sm btn-ghost text-warning" @click.prevent.stop="$dispatch('linkaction', {link: '{{route('clients.edit', $model->id)}}', route: 'clients.edit', fresh: true});">

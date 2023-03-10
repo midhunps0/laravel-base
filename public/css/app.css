@@ -2243,14 +2243,14 @@ body[dir="rtl"] .checkbox:checked,
 .\!left-36 {
   left: 9rem !important;
 }
-.\!left-72 {
-  left: 18rem !important;
-}
 .top-5 {
   top: 1.25rem;
 }
 .top-8 {
   top: 2rem;
+}
+.\!left-72 {
+  left: 18rem !important;
 }
 .\!left-44 {
   left: 11rem !important;

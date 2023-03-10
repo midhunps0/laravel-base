@@ -62,7 +62,7 @@ class ClientService implements ModelViewConnector
         //     DB::raw('SUM(c.realised_pnl + cst.cur_value - c.total_aum) / SUM(c.total_aum) * 100 as agr_returns_pc'),
         // ]);
         $this->searchesMap = [
-            'dealer' => 'u.name',
+            'dealer' => 'u.id',
             'name' => 'c.name',
             'aum' => 'c.total_aum',
             'cmp' => 's.cmp',
@@ -157,6 +157,9 @@ class ClientService implements ModelViewConnector
             'day_high' => ['name' => 's.day_high', 'type' => 'float'],
             'day_low' => ['name' => 's.day_low', 'type' => 'float'],
             'overall_gain' => ['name' => '(s.cmp - cs.buy_avg_price) * cs.dp_qty', 'type' => 'float']
+        ];
+        $this->filtersMap = [
+            'dealer' => ['name' => 'u.id', 'type' => 'integer']
         ];
         $this->relFiltersMap = [
             'tracked' => ['name' => 's.tracked', 'type' => 'boolean'],

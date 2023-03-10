@@ -28,8 +28,18 @@
     :filter="$filter">
     <x-slot:extra>
         <div class="flex flex-row space-x-4 items-center">
-            <div class="w-32">Client Category:</div>
-            <x-utils.spotfilter name="category" :options="\App\Helpers\AppHelper::getDistinctCategories()" :selectedoption="$filter['category'] ?? config('appSettings.default_client_category')" />
+            <div class="flex flex-row space-x-4 items-center">
+                <div class="w-32">Client Category:</div>
+                <x-utils.spotfilter name="category" :options="\App\Helpers\AppHelper::getDistinctCategories()" :selectedoption="$filter['category'] ?? config('appSettings.default_client_category')" />
+            </div>
+            <div class="flex flex-row space-x-4 items-center">
+                <div class="w-10">RM:</div>
+                <x-utils.spotfilter name="dealer"
+                :options="\App\Models\User::withRoles(['Dealer', 'Team Leader'])->get()->pluck('name', 'id')"
+                options_type="key_value"
+                selectedoption="{{$sort['dealer'] ?? ''}}"
+                any_option_label="All RMs"/>
+            </div>
         </div>
     </x-slot>
     <x-slot:inputFields>
@@ -42,7 +52,7 @@
             Totals:
         </th>
         <th class="sticky !left-36 z-20"></th>
-        <th class="sticky !left-72 z-30"></th>
+        {{-- <th class="sticky !left-72 z-30"></th> --}}
         <th class="text-right"><span x-text="formatted(aggregates.agr_aum)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_allocated_aum)"></span></th>
         <th class="text-right"><span x-text="formatted(aggregates.agr_pa, 2)"></span></th>
@@ -79,33 +89,13 @@
                 </div>
             </div>
         </th>
-        <th class="border-l-2 border-base-100 sticky !left-72 z-30">
+        {{-- <th class="border-l-2 border-base-100 sticky !left-72 z-30">
             <div class="flex flex-row items-center">
                 <div class="relative flex-grow ml-2">
                     Category
                 </div>
-                {{-- <div class="relative flex-grow ml-2 flex flex-row items-center justify-between"> --}}
-                    {{-- <x-utils.spotfilter name="category" :options="\App\Helpers\AppHelper::getDistinctCategories()" :selectedoption="$filter['category'] ?? config('appSettings.default_client_category')" /> --}}
-                    {{-- <select x-data="{
-                        'val': '{{$filter['category'] ?? config('appSettings.default_client_category')}}'
-                        }"
-                        @change.stop.prevent="$dispatch('spotfilter', {data: {category: val}});"
-                        x-model="val" class="select select-bordered select-sm max-w-xs py-0 m-1"
-                        :class="val == -1 || 'text-accent'">
-                        <option value="All">All Categories</option>
-                        @foreach (\App\Helpers\AppHelper::getDistinctCategories() as $cat)
-                            <option value="{{ $cat }}">
-                                {{ $cat }}
-                            </option>
-                        @endforeach
-                    </select> --}}
-                {{-- </div> --}}
-                {{-- <x-utils.spotsort name="category" val="{{ $sort['category'] ?? 'none' }}" />
-                <div class="relative flex-grow ml-2">
-                    Type
-                </div> --}}
             </div>
-        </th>
+        </th> --}}
         <th class="text-center border-l-2 border-base-100">
             <div class="flex flex-row items-center">
                 <x-utils.spotsort name="aum" val="{{ $sort['aum'] ?? 'none' }}" />
@@ -210,16 +200,13 @@
                 </div>
             </div>
         </th>
-        <th class="text-center border-l-2 border-base-100">
+        {{-- <th class="text-center border-l-2 border-base-100">
             <div class="flex flex-row items-center min-w-36">
-                <x-utils.spotsort name="dealer" val="{{ $sort['dealer'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     RM
-                    <x-utils.spotsearch textval="{{ $params['dealer'] ?? '' }}" textname="dealer"
-                        label="Search dealer" />
                 </div>
             </div>
-        </th>
+        </th> --}}
     </x-slot>
     <x-slot:rows>
         {{-- @foreach ($clients as $result) --}}
@@ -240,10 +227,10 @@
                         class="link no-underline hover:underline" href="" x-text="formatString(result.name, 10)"></a>
                     </div>
                 </td>
-                <td class="sticky !left-72 z-20 text-center">
+                {{-- <td class="sticky !left-72 z-20 text-center">
                     <span x-text="result.category"></span>
                     <div class="h-full w-1 absolute top-0 right-0 border-r border-base-300"></div>
-                </td>
+                </td> --}}
                 <td class="text-right" x-text="formatted(result.aum)"></td>
                 <td class="text-right" x-text="formatted(result.allocated_aum)"></td>
                 <td class="text-right" x-text="formatted(result.pa, 2)"></td>
@@ -285,7 +272,7 @@
                         <span x-text="formatted(result.returns_pc, 2)"></span>
                     </div>
                 </td>
-                <td x-text="result.dealer" class="text-left"></td>
+                {{-- <td x-text="result.dealer" class="text-left"></td> --}}
             </tr>
         </template>
         {{-- @endforeach --}}

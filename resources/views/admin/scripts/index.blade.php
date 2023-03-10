@@ -70,7 +70,7 @@
         <th></th>
         <th></th>
         <th></th>
-        <th></th>
+        {{-- <th></th> --}}
     </x-slot>
     <x-slot:thead>
         {{-- <th class="relative w-72">
@@ -158,16 +158,14 @@
             <x-utils.spotsort name="impact" val="{{ $sort['impact'] ?? 'none' }}" />
             <span>Impact</span>
         </th>
-        <th class="relative w-44">
+        {{-- <th class="relative w-44">
             <div class="flex flex-row items-center w-36">
                 <x-utils.spotsort name="dealer" val="{{ $sort['dealer'] ?? 'none' }}" />
                 <div class="relative flex-grow ml-2">
                     Dealer
-                    {{-- <x-utils.spotsearch textval="{{ $params['dealer'] ?? '' }}" textname="dealer"
-                        label="Search dealer" /> --}}
                 </div>
             </div>
-        </th>
+        </th> --}}
     </x-slot>
     <x-slot:rows>
         <template x-for="result in results">
@@ -236,7 +234,7 @@
                         <span x-text="formatted(result.impact, 2)"></span>
                     </div>
                 </td>
-                <td x-text="result.dealer"></td>
+                {{-- <td x-text="result.dealer"></td> --}}
             </tr>
         </template>
     </x-slot>

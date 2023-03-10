@@ -4,16 +4,16 @@
         options: ['none', 'asc', 'desc'],
         exclusive: {{$exclusive}},
         processClick() {
-            console.log('spotsort processing..');
-            console.log('sp: '+this.spotsort);
+            //console.log('spotsort processing..');
+            //console.log('sp: '+this.spotsort);
             for(let i = 0; i < this.options.length; i++) {
                 if(this.options[i] == this.spotsort) {
                     this.spotsort = (i+1) < this.options.length ? this.options[i+1] : this.options[0];
-                    console.log('i='+i);
+                    //console.log('i='+i);
                     break;
                 }
             }
-            console.log('sp: '+this.spotsort);
+            //console.log('sp: '+this.spotsort);
             $dispatch('spotsort', {exclusive: this.exclusive, data: { {{$name}}: this.spotsort}});
             console.log('sp: dispatched');
         },
